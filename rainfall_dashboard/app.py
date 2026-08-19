@@ -3628,66 +3628,72 @@ with main_tabs[1]:
         ax.set_facecolor(BG_COLOR)
 
         x = np.arange(len(months))
-
-        # ----------------------------------------------------
-        # 2 STATION
-        # ----------------------------------------------------
+        width = 0.35
 
         for i, result in enumerate(display_results[:2]):
 
             station_name = result["file_name"]
 
-            # Total rainfall semua tahun / bulan
-            station_total = (
-                result["rainfall_target"]
+            # ====================================================
+            # TOTAL RAINFALL - SEMUA TAHUN
+            # ====================================================
+
+            total_rainfall = (
+                result["yearly_monthly_total"]
+                .sum()
                 .reindex(months)
             )
 
-            # Mean rainfall semua tahun / bulan
-            station_mean = (
-                result["mean_monthly_total"]
+            # ====================================================
+            # MEAN RAINFALL - SEMUA TAHUN
+            # ====================================================
+
+            mean_rainfall = (
+                result["yearly_monthly_total"]
+                .mean()
                 .reindex(months)
             )
 
-            # ------------------------------------------------
-            # BAR
-            # ------------------------------------------------
+            # ====================================================
+            # BAR POSITION
+            # ====================================================
 
-            width = 0.35
+            if i == 0:
+                bar_position = x - width / 2
+            else:
+                bar_position = x + width / 2
 
-            offset = (
-                -width / 2
-                if i == 0
-                else width / 2
-            )
+            # ====================================================
+            # BAR - TOTAL SEMUA TAHUN
+            # ====================================================
 
             ax.bar(
-                x + offset,
-                station_total.values,
+                bar_position,
+                total_rainfall.values,
                 width=width,
-                alpha=0.65,
+                alpha=0.6,
                 label=f"{station_name} - Total"
             )
 
-            # ------------------------------------------------
-            # LINE
-            # ------------------------------------------------
+            # ====================================================
+            # LINE - MEAN SEMUA TAHUN
+            # ====================================================
 
             ax.plot(
                 x,
-                station_mean.values,
+                mean_rainfall.values,
                 marker="o",
                 linewidth=2.5,
                 markersize=6,
                 label=f"{station_name} - Mean"
             )
 
-        # ----------------------------------------------------
+        # ========================================================
         # TITLE
-        # ----------------------------------------------------
+        # ========================================================
 
         ax.set_title(
-            "Station Rainfall Comparison",
+            "Station Rainfall Comparison - All Years",
             fontsize=16,
             fontweight="bold"
         )
@@ -3701,11 +3707,6 @@ with main_tabs[1]:
         ax.set_xticks(x)
         ax.set_xticklabels(months)
 
-        ax.set_ylim(
-            RAINFALL_MIN,
-            RAINFALL_MAX
-        )
-
         ax.grid(
             True,
             axis="y",
@@ -3713,14 +3714,14 @@ with main_tabs[1]:
             alpha=0.4
         )
 
-        # ----------------------------------------------------
+        # ========================================================
         # LEGEND
-        # ----------------------------------------------------
+        # ========================================================
 
         ax.legend(
             title="Station",
-            loc="upper left",
-            bbox_to_anchor=(1.02, 1)
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left"
         )
 
         plt.tight_layout()
