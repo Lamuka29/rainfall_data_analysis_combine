@@ -1212,22 +1212,22 @@ def analyze_file(uploaded_file):
     )
 
     light_rain = sum(
-        0.1 <= value <= 2.5
+        0.1 <= value <= 10.0
         for value in pie_values
     )
 
     moderate_rain = sum(
-        2.5 < value <= 10.0
+        10.1 < value <= 30.0
         for value in pie_values
     )
 
     heavy_rain = sum(
-        10.0 < value <= 50.0
+        30.1 < value <= 60.0
         for value in pie_values
     )
     
     extreme_rain = sum(
-        value > 50.0
+        value > 60.1
         for value in pie_values
     )
 
@@ -1241,10 +1241,10 @@ def analyze_file(uploaded_file):
 
     category_labels = [
         "No Rain (0.0 mm)",
-        "Light Rain (0.1–2.5 mm)",
-        "Moderate Rain (>2.5–10.0 mm)",
-        "Heavy Rain (>10.0-50.0 mm)",
-        "Extreme Rain (>50 mm)"
+        "Light Rain (1.0–10.0 mm)",
+        "Moderate Rain (>10.0–30.0 mm)",
+        "Heavy Rain (>30.0-60.0 mm)",
+        "Extreme Rain (>60 mm)"
     ]
 
     # ========================================================
@@ -3876,24 +3876,30 @@ with main_tabs[1]:
             )
 
             light_rain = np.sum(
-                (rainfall_values > 0) &
+                (rainfall_values > 1) &
                 (rainfall_values <= 10)
             )
 
             moderate_rain = np.sum(
                 (rainfall_values > 10) &
-                (rainfall_values <= 50)
+                (rainfall_values <= 30)
             )
 
             heavy_rain = np.sum(
-                rainfall_values > 50
+                (rainfall_values > 30) &
+                (rainfall_values <= 60)
+            )
+            
+            extreme_rain = np.sum(
+                rainfall_values > 60
             )
 
             category_values = [
                 no_rain,
                 light_rain,
                 moderate_rain,
-                heavy_rain
+                heavy_rain,
+                extreme_rain
             ]
 
             category_labels = [
