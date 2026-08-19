@@ -58,24 +58,6 @@ if START_YEAR > END_YEAR:
     )
     st.stop()
 
-# ============================================================
-# STATION SELECTION
-# ============================================================
-
-st.sidebar.header("📍 Station Selection")
-
-station_options = [
-    result["file_name"]
-    for result in successful_results
-]
-
-selected_station = st.sidebar.selectbox(
-    "Select Station",
-    station_options,
-    index=0,
-    help="Pilih stesen yang mahu dipaparkan."
-)
-
 years = range(
     int(START_YEAR),
     int(END_YEAR) + 1
@@ -1412,6 +1394,23 @@ if not successful_results:
 
     st.stop()
 
+# ============================================================
+# STATION SELECTION
+# ============================================================
+
+st.sidebar.header("📍 Station Selection")
+
+station_options = [
+    result["file_name"]
+    for result in successful_results
+]
+
+selected_station = st.sidebar.selectbox(
+    "Select Station",
+    station_options,
+    index=0,
+    help="Pilih stesen yang mahu dipaparkan."
+)
 
 # ============================================================
 # GLOBAL AUTO Y-AXIS
