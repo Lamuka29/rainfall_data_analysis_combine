@@ -3620,107 +3620,183 @@ with main_tabs[1]:
 
     else:
 
-        fig, ax = plt.subplots(
-            figsize=(FIG_WIDTH, FIG_HEIGHT)
-        )
-
-        fig.patch.set_facecolor(BG_COLOR)
-        ax.set_facecolor(BG_COLOR)
-
-        x = np.arange(len(months))
-
         # ====================================================
         # STATION COLOURS
         # ====================================================
 
         station_colors = [
-            "orange",
-            "red",
-            "green",
-            "blue",
-            "purple",
-            "brown",
-            "pink",
-            "gray"
+            "tab:orange",
+            "tab:red",
+            "tab:green",
+            "tab:blue",
+            "tab:purple",
+            "tab:brown",
+            "tab:pink",
+            "tab:gray",
+            "tab:olive",
+            "tab:cyan"
         ]
 
-        # Lebar bar
-        n_stations = len(display_results)
-
-        width = 0.8 / n_stations
+        station_data = {}
 
         # ====================================================
-        # LOOP ALL STATIONS
+        # PREPARE STATION DATA
         # ====================================================
 
         for i, result in enumerate(display_results):
 
-            station_name = result["file_name"]
+            file_name = result["file_name"]
 
-            station_color = station_colors[
+            station_name = os.path.splitext(
+                file_name
+            )[0]
+
+            data = result["all_daily"].copy()
+
+            color = station_colors[
                 i % len(station_colors)
             ]
 
-            # ------------------------------------------------
-            # TOTAL RAINFALL SEMUA TAHUN IKUT BULAN
-            # ------------------------------------------------
+            monthly_total = {}
+            monthly_mean = {}
 
-            total_rainfall = (
-                result["yearly_monthly_total"]
-                .sum(axis=0)
-                .reindex(months)
+            for month in months:
+
+                if month in data.columns:
+
+                    values = pd.to_numeric(
+                        data[month],
+                        errors="coerce"
+                    ).dropna()
+
+                    monthly_total[month] = values.sum()
+                    monthly_mean[month] = values.mean()
+
+                else:
+
+                    monthly_total[month] = np.nan
+                    monthly_mean[month] = np.nan
+
+            # Semua nilai hujan untuk PIE
+            rainfall_values = []
+
+            for month in months:
+
+                if month in data.columns:
+
+                    values = pd.to_numeric(
+                        data[month],
+                        errors="coerce"
+                    )
+
+                    rainfall_values.extend(
+                        values.dropna().tolist()
+                    )
+
+            rainfall_values = np.array(
+                rainfall_values,
+                dtype=float
             )
 
-            # ------------------------------------------------
-            # MEAN RAINFALL SEMUA TAHUN IKUT BULAN
-            # ------------------------------------------------
+            station_data[station_name] = {
 
-            mean_rainfall = (
-                result["yearly_monthly_total"]
-                .mean(axis=0)
-                .reindex(months)
-            )
+                "total":
+                    pd.Series(
+                        monthly_total
+                    ).reindex(months),
 
-            # ------------------------------------------------
-            # BAR - TOTAL
-            # ------------------------------------------------
+                "mean":
+                    pd.Series(
+                        monthly_mean
+                    ).reindex(months),
 
-            bar_position = (
-                x
-                - 0.4
-                + width / 2
-                + i * width
-            )
+                "rainfall_values":
+                    rainfall_values,
+
+                "color":
+                    color
+            }
+
+        # ====================================================
+        # BAR + LINE
+        # ====================================================
+
+        st.subheader(
+            "🌧️ Monthly Rainfall Comparison - All Years"
+        )
+
+        fig, ax = plt.subplots(
+            figsize=(FIG_WIDTH, FIG_HEIGHT)
+        )
+
+        fig.patch.set_facecolor(
+            BG_COLOR
+        )
+
+        ax.set_facecolor(
+            BG_COLOR
+        )
+
+        x = np.arange(len(months))
+
+        n_stations = len(
+            station_data
+        )
+
+        bar_width = (
+            0.8 / n_stations
+        )
+
+        # ====================================================
+        # BAR - TOTAL RAINFALL
+        # ====================================================
+
+        for i, (
+            station_name,
+            station
+        ) in enumerate(
+            station_data.items()
+        ):
+
+            offset = (
+                i -
+                (n_stations - 1) / 2
+            ) * bar_width
 
             ax.bar(
-                bar_position,
-                total_rainfall.values,
-                width=width,
-                color=station_color,
-                alpha=0.45,
-                label=f"{station_name} - Total"
+                x + offset,
+                station["total"].values,
+                width=bar_width,
+                color=station["color"],
+                alpha=0.65,
+                label=(
+                    f"{station_name} - Total"
+                )
             )
 
-            # ------------------------------------------------
-            # LINE - MEAN
-            # ------------------------------------------------
+        # ====================================================
+        # LINE - MEAN RAINFALL
+        # ====================================================
+
+        for station_name, station in (
+            station_data.items()
+        ):
 
             ax.plot(
                 x,
-                mean_rainfall.values,
-                color=station_color,
+                station["mean"].values,
+                color=station["color"],
                 marker="o",
                 linewidth=2.5,
                 markersize=6,
-                label=f"{station_name} - Mean"
+                label=(
+                    f"{station_name} - Mean"
+                )
             )
 
-        # ====================================================
-        # TITLE
-        # ====================================================
-
         ax.set_title(
-            "Station Rainfall Comparison - All Years",
+            "Monthly Rainfall Comparison Between Stations\n"
+            "Total and Mean Rainfall - All Available Years",
             fontsize=16,
             fontweight="bold"
         )
@@ -3731,33 +3807,21 @@ with main_tabs[1]:
             "Rainfall (mm)"
         )
 
-        # ====================================================
-        # X AXIS
-        # ====================================================
-
         ax.set_xticks(x)
 
         ax.set_xticklabels(
             months
         )
 
-        # ====================================================
-        # GRID
-        # ====================================================
-
         ax.grid(
             True,
             axis="y",
             linestyle="--",
-            alpha=0.4
+            alpha=0.35
         )
 
-        # ====================================================
-        # LEGEND
-        # ====================================================
-
         ax.legend(
-            title="Station / Rainfall Type",
+            title="Station",
             bbox_to_anchor=(1.02, 1),
             loc="upper left"
         )
@@ -3771,109 +3835,137 @@ with main_tabs[1]:
 
         plt.close(fig)
 
-        # ============================================================
-        # PIE CHART - RAINFALL CATEGORY COMPARISON
-        # ALL YEARS
-        # ============================================================
-        
-        st.subheader("🥧 Percentage of Days by Rainfall Category")
-        
-        # Kategori hujan
-        rainfall_categories = [
-            "No Rain",
-            "Light Rain",
-            "Moderate Rain",
-            "Heavy Rain"
-        ]
-        
-        # Warna kategori
-        category_colors = [
-            "#d9d9d9",
-            "#90caf9",
-            "#42a5f5",
-            "#1565c0"
-        ]
-        
-        # Buat satu pie chart untuk setiap stesen
-        pie_cols = st.columns(len(display_results))
-        
-        for col, result in zip(pie_cols, display_results):
-        
-            station_name = result["file_name"]
-        
-            # Ambil data harian semua tahun
-            station_data = result["all_daily"].copy()
-        
-            # Pastikan column rainfall tersedia
-            rainfall_values = station_data["Rainfall"].dropna()
-        
-            # Kira kategori
-            no_rain = (rainfall_values == 0).sum()
-            light_rain = (
+        # ====================================================
+        # PIE CHART
+        # ====================================================
+
+        st.subheader(
+            "🥧 Percentage of Days by Rainfall Category"
+        )
+
+        st.caption(
+            "All available years for each station."
+        )
+
+        pie_cols = st.columns(
+            len(station_data)
+        )
+
+        # ====================================================
+        # PIE SETIAP STESEN
+        # ====================================================
+
+        for col, (
+            station_name,
+            station
+        ) in zip(
+            pie_cols,
+            station_data.items()
+        ):
+
+            rainfall_values = (
+                station["rainfall_values"]
+            )
+
+            # -----------------------------------------------
+            # KATEGORI
+            # -----------------------------------------------
+
+            no_rain = np.sum(
+                rainfall_values == 0
+            )
+
+            light_rain = np.sum(
                 (rainfall_values > 0) &
                 (rainfall_values <= 10)
-            ).sum()
-            moderate_rain = (
+            )
+
+            moderate_rain = np.sum(
                 (rainfall_values > 10) &
                 (rainfall_values <= 50)
-            ).sum()
-            heavy_rain = (
+            )
+
+            heavy_rain = np.sum(
                 rainfall_values > 50
-            ).sum()
-        
-            category_counts = [
+            )
+
+            category_values = [
                 no_rain,
                 light_rain,
                 moderate_rain,
                 heavy_rain
             ]
-        
-            # Buang kategori yang kosong
-            labels = []
-            values = []
-            colors = []
-        
-            for label, value, color in zip(
-                rainfall_categories,
-                category_counts,
-                category_colors
-            ):
-                if value > 0:
-                    labels.append(label)
-                    values.append(value)
-                    colors.append(color)
-        
-            # ========================================================
-            # PIE
-            # ========================================================
-        
-            fig, ax = plt.subplots(
-                figsize=(5, 5)
-            )
-        
-            ax.pie(
-                values,
-                labels=labels,
-                colors=colors,
-                autopct="%1.1f%%",
-                startangle=90
-            )
-        
-            ax.set_title(
-                station_name,
-                fontsize=12,
-                fontweight="bold"
-            )
-        
-            plt.tight_layout()
-        
-            col.pyplot(
-                fig,
-                use_container_width=True
-            )
-        
-            plt.close(fig)
 
+            category_labels = [
+                "No Rain",
+                "Light Rain",
+                "Moderate Rain",
+                "Heavy Rain"
+            ]
+
+            # -----------------------------------------------
+            # PIE
+            # -----------------------------------------------
+
+            with col:
+
+                if sum(category_values) > 0:
+
+                    fig, ax = plt.subplots(
+                        figsize=(5, 5)
+                    )
+
+                    fig.patch.set_facecolor(
+                        BG_COLOR
+                    )
+
+                    ax.set_facecolor(
+                        BG_COLOR
+                    )
+
+                    wedges, texts, autotexts = ax.pie(
+                        category_values,
+                        labels=category_labels,
+                        autopct="%1.1f%%",
+                        startangle=90,
+                        counterclock=False,
+                        wedgeprops={
+                            "edgecolor": "black",
+                            "linewidth": 0.8
+                        }
+                    )
+
+                    for autotext in autotexts:
+
+                        autotext.set_fontsize(
+                            10
+                        )
+
+                        autotext.set_fontweight(
+                            "bold"
+                        )
+
+                    ax.set_title(
+                        station_name,
+                        fontsize=13,
+                        fontweight="bold"
+                    )
+
+                    plt.tight_layout()
+
+                    st.pyplot(
+                        fig,
+                        use_container_width=True
+                    )
+
+                    plt.close(fig)
+
+                else:
+
+                    st.warning(
+                        f"Tiada data sah untuk "
+                        f"{station_name}"
+                    )
 # ============================================================
 # FOOTER
 # ============================================================
