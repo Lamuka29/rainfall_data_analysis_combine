@@ -3436,8 +3436,11 @@ with main_tabs[0]:
             )
         
             ax.legend(
+                title="Station / Rainfall Type",
                 bbox_to_anchor=(1.02, 1),
-                loc="upper left"
+                loc="upper left",
+                fontsize=10,
+                title_fontsize=11
             )
         
             plt.tight_layout()
@@ -3671,20 +3674,20 @@ with main_tabs[1]:
                 station_total.values,
                 width=width,
                 alpha=0.65,
-                label=f"{station_name} Total"
+                label=f"{station_name} — Total (All Years)"
             )
 
             # ====================================================
             # LINE - MEAN
             # ====================================================
-
+            
             ax.plot(
                 x,
                 station_mean.values,
                 marker="o",
                 linewidth=2.5,
                 markersize=6,
-                label=f"{station_name} Mean"
+                label=f"{station_name} — Mean (All Years)"
             )
 
         # ========================================================
