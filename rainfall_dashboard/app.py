@@ -3629,92 +3629,148 @@ with main_tabs[1]:
 
         x = np.arange(len(months))
 
+        # ====================================================
+        # STATION COLOURS
+        # ====================================================
+
+        station_colors = [
+            "orange",
+            "red",
+            "green",
+            "blue",
+            "purple",
+            "brown",
+            "pink",
+            "gray"
+        ]
+
         # Lebar bar
-        width = 0.35
+        n_stations = len(display_results)
 
-        # ============================================================
-        # STATION 1
-        # ============================================================
-        
-        result1 = display_results[0]
-        
-        station1 = result1["file_name"]
-        
-        # TOTAL RAINFALL SEMUA TAHUN
-        total1 = (
-            result1["yearly_monthly_total"]
-            .sum(axis=0)
-            .reindex(months)
-        )
-        
-        # MEAN RAINFALL SEMUA TAHUN
-        mean1 = (
-            result1["yearly_monthly_total"]
-            .mean(axis=0)
-            .reindex(months)
-        )
-        
-        
-        # ============================================================
-        # STATION 2
-        # ============================================================
-        
-        result2 = display_results[1]
-        
-        station2 = result2["file_name"]
-        
-        # TOTAL RAINFALL SEMUA TAHUN
-        total2 = (
-            result2["yearly_monthly_total"]
-            .sum(axis=0)
-            .reindex(months)
-        )
-        
-        # MEAN RAINFALL SEMUA TAHUN
-        mean2 = (
-            result2["yearly_monthly_total"]
-            .mean(axis=0)
-            .reindex(months)
+        width = 0.8 / n_stations
+
+        # ====================================================
+        # LOOP ALL STATIONS
+        # ====================================================
+
+        for i, result in enumerate(display_results):
+
+            station_name = result["file_name"]
+
+            station_color = station_colors[
+                i % len(station_colors)
+            ]
+
+            # ------------------------------------------------
+            # TOTAL RAINFALL SEMUA TAHUN IKUT BULAN
+            # ------------------------------------------------
+
+            total_rainfall = (
+                result["yearly_monthly_total"]
+                .sum(axis=0)
+                .reindex(months)
+            )
+
+            # ------------------------------------------------
+            # MEAN RAINFALL SEMUA TAHUN IKUT BULAN
+            # ------------------------------------------------
+
+            mean_rainfall = (
+                result["yearly_monthly_total"]
+                .mean(axis=0)
+                .reindex(months)
+            )
+
+            # ------------------------------------------------
+            # BAR - TOTAL
+            # ------------------------------------------------
+
+            bar_position = (
+                x
+                - 0.4
+                + width / 2
+                + i * width
+            )
+
+            ax.bar(
+                bar_position,
+                total_rainfall.values,
+                width=width,
+                color=station_color,
+                alpha=0.45,
+                label=f"{station_name} - Total"
+            )
+
+            # ------------------------------------------------
+            # LINE - MEAN
+            # ------------------------------------------------
+
+            ax.plot(
+                x,
+                mean_rainfall.values,
+                color=station_color,
+                marker="o",
+                linewidth=2.5,
+                markersize=6,
+                label=f"{station_name} - Mean"
+            )
+
+        # ====================================================
+        # TITLE
+        # ====================================================
+
+        ax.set_title(
+            "Station Rainfall Comparison - All Years",
+            fontsize=16,
+            fontweight="bold"
         )
 
-        # ============================================================
-        # BAR + LINE
-        # ============================================================
-        
-        width = 0.35
-        
-        ax.bar(
-            x - width / 2,
-            total1.values,
-            width,
-            label=f"{station1} - Total All Years"
+        ax.set_xlabel("Month")
+
+        ax.set_ylabel(
+            "Rainfall (mm)"
         )
-        
-        ax.plot(
-            x,
-            mean1.values,
-            marker="o",
-            linewidth=2.5,
-            label=f"{station1} - Mean All Years"
+
+        # ====================================================
+        # X AXIS
+        # ====================================================
+
+        ax.set_xticks(x)
+
+        ax.set_xticklabels(
+            months
         )
-        
-        ax.bar(
-            x + width / 2,
-            total2.values,
-            width,
-            label=f"{station2} - Total All Years"
+
+        # ====================================================
+        # GRID
+        # ====================================================
+
+        ax.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
         )
-        
-        ax.plot(
-            x,
-            mean2.values,
-            marker="o",
-            linewidth=2.5,
-            label=f"{station2} - Mean All Years"
+
+        # ====================================================
+        # LEGEND
+        # ====================================================
+
+        ax.legend(
+            title="Station / Rainfall Type",
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left"
+        )
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
         )
 
         plt.close(fig)
-
+        
 # ============================================================
 # FOOTER
 # ============================================================
