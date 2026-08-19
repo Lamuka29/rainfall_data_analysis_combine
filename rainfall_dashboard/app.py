@@ -3628,100 +3628,99 @@ with main_tabs[1]:
         ax.set_facecolor(BG_COLOR)
 
         x = np.arange(len(months))
+
+        # Lebar bar
         width = 0.35
 
-        for i, result in enumerate(display_results[:2]):
-
-            station_name = result["file_name"]
-
-            # ====================================================
-            # TOTAL RAINFALL - SEMUA TAHUN
-            # ====================================================
-
-            total_rainfall = (
-                result["yearly_monthly_total"]
-                .sum()
-                .reindex(months)
-            )
-
-            # ====================================================
-            # MEAN RAINFALL - SEMUA TAHUN
-            # ====================================================
-
-            mean_rainfall = (
-                result["yearly_monthly_total"]
-                .mean()
-                .reindex(months)
-            )
-
-            # ====================================================
-            # BAR POSITION
-            # ====================================================
-
-            if i == 0:
-                bar_position = x - width / 2
-            else:
-                bar_position = x + width / 2
-
-            # ====================================================
-            # BAR - TOTAL SEMUA TAHUN
-            # ====================================================
-
-            ax.bar(
-                bar_position,
-                total_rainfall.values,
-                width=width,
-                alpha=0.6,
-                label=f"{station_name} - Total"
-            )
-
-            # ====================================================
-            # LINE - MEAN SEMUA TAHUN
-            # ====================================================
-
-            ax.plot(
-                x,
-                mean_rainfall.values,
-                marker="o",
-                linewidth=2.5,
-                markersize=6,
-                label=f"{station_name} - Mean"
-            )
-
-        # ========================================================
-        # TITLE
-        # ========================================================
-
-        ax.set_title(
-            "Station Rainfall Comparison - All Years",
-            fontsize=16,
-            fontweight="bold"
+        # ============================================================
+        # STATION 1
+        # ============================================================
+        
+        result1 = display_results[0]
+        
+        station1 = result1["file_name"]
+        
+        # TOTAL RAINFALL SEMUA TAHUN
+        total1 = (
+            result1["yearly_monthly_total"]
+            .sum(axis=0)
+            .reindex(months)
+        )
+        
+        # MEAN RAINFALL SEMUA TAHUN
+        mean1 = (
+            result1["yearly_monthly_total"]
+            .mean(axis=0)
+            .reindex(months)
+        )
+        
+        
+        # ============================================================
+        # STATION 2
+        # ============================================================
+        
+        result2 = display_results[1]
+        
+        station2 = result2["file_name"]
+        
+        # TOTAL RAINFALL SEMUA TAHUN
+        total2 = (
+            result2["yearly_monthly_total"]
+            .sum(axis=0)
+            .reindex(months)
+        )
+        
+        # MEAN RAINFALL SEMUA TAHUN
+        mean2 = (
+            result2["yearly_monthly_total"]
+            .mean(axis=0)
+            .reindex(months)
         )
 
-        ax.set_xlabel("Month")
-
-        ax.set_ylabel(
-            "Rainfall (mm)"
+        # ============================================================
+        # BAR + LINE
+        # ============================================================
+        
+        width = 0.35
+        
+        ax.bar(
+            x - width / 2,
+            total1.values,
+            width,
+            label=f"{station1} - Total All Years"
+        )
+        
+        ax.plot(
+            x,
+            mean1.values,
+            marker="o",
+            linewidth=2.5,
+            label=f"{station1} - Mean All Years"
+        )
+        
+        ax.bar(
+            x + width / 2,
+            total2.values,
+            width,
+            label=f"{station2} - Total All Years"
+        )
+        
+        ax.plot(
+            x,
+            mean2.values,
+            marker="o",
+            linewidth=2.5,
+            label=f"{station2} - Mean All Years"
         )
 
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        # ========================================================
+        # ====================================================
         # LEGEND
-        # ========================================================
+        # ====================================================
 
         ax.legend(
-            title="Station",
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left"
+            title="Station / Rainfall Type",
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1)
         )
 
         plt.tight_layout()
