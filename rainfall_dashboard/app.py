@@ -3431,14 +3431,6 @@ with main_tabs[0]:
                     monthly_qc_status,
                     use_container_width=True
                 )
-                
-            # ========================================================
-            # TARGET YEAR DATA FOR PLOTS
-            # ========================================================
-            
-            target_data = all_daily[
-                all_daily["Year"] == target_year
-            ].copy()
 
     else:
     
