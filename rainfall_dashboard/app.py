@@ -31,22 +31,6 @@ st.caption(
 
 st.sidebar.header("⚙️ Analysis Settings")
 
-# ---------------------------------------------------------
-# SIDEBAR: KAWALAN PENGGUNA & FAIL
-# ---------------------------------------------------------
-with st.sidebar:
-    selected_lang = st.selectbox("🌐 Bahasa / Language", options=["Bahasa Melayu", "English"])
-    lang_key = "BM" if selected_lang == "Bahasa Melayu" else "EN"
-    t = TEXTS[lang_key]
-    
-    with st.expander(t["manual_header"], expanded=False):
-        st.markdown(t["manual_desc"])
-        try:
-            with open("WMO Guidelines on the Calculation of Climate Normals_en.pdf", "rb") as f:
-                pdf_bytes = f.read()
-                
-        except Exception:
-            st.caption("ℹ️ Fail rujukan WMO-No. 1203 sedia ada.")
 # ============================================================
 # TAHUN CLIMATOLOGY
 # ============================================================
