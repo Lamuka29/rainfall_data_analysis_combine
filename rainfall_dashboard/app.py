@@ -3616,6 +3616,7 @@ with main_tabs[1]:
         )
 
     else:
+
         fig, ax = plt.subplots(
             figsize=(FIG_WIDTH, FIG_HEIGHT)
         )
@@ -3625,41 +3626,83 @@ with main_tabs[1]:
 
         x = np.arange(len(months))
 
-        for result in display_results:
+        # Lebar bar ikut jumlah stesen
+        n_stations = len(display_results)
+        width = 0.8 / n_stations
+
+        for i, result in enumerate(display_results):
 
             station_name = result["file_name"]
 
-            station_rainfall = (
-                result["rainfall_target"]
+            # ====================================================
+            # TOTAL RAINFALL - SEMUA TAHUN
+            # ====================================================
+
+            yearly_monthly_total = result[
+                "yearly_monthly_total"
+            ]
+
+            station_total = (
+                yearly_monthly_total
+                .sum(axis=0)
                 .reindex(months)
             )
 
+            # ====================================================
+            # MEAN RAINFALL - SEMUA TAHUN
+            # ====================================================
+
+            station_mean = (
+                yearly_monthly_total
+                .mean(axis=0)
+                .reindex(months)
+            )
+
+            # ====================================================
+            # BAR - TOTAL
+            # ====================================================
+
+            offset = (
+                i - (n_stations - 1) / 2
+            ) * width
+
+            ax.bar(
+                x + offset,
+                station_total.values,
+                width=width,
+                alpha=0.65,
+                label=f"{station_name} Total"
+            )
+
+            # ====================================================
+            # LINE - MEAN
+            # ====================================================
+
             ax.plot(
                 x,
-                station_rainfall.values,
+                station_mean.values,
                 marker="o",
                 linewidth=2.5,
                 markersize=6,
-                label=station_name
+                label=f"{station_name} Mean"
             )
 
+        # ========================================================
+        # TITLE
+        # ========================================================
+
         ax.set_title(
-            f"Monthly Rainfall Comparison Between Stations - "
-            f"{target_year}",
+            "Monthly Rainfall Comparison Between Stations\n"
+            "Total and Mean Rainfall - All Available Years",
             fontsize=16,
             fontweight="bold"
         )
 
         ax.set_xlabel("Month")
-        ax.set_ylabel("Total Rainfall (mm)")
+        ax.set_ylabel("Rainfall (mm)")
 
         ax.set_xticks(x)
         ax.set_xticklabels(months)
-
-        ax.set_ylim(
-            RAINFALL_MIN,
-            RAINFALL_MAX
-        )
 
         ax.grid(
             True,
@@ -3680,8 +3723,9 @@ with main_tabs[1]:
             fig,
             use_container_width=True
         )
-        plt.close(fig)
 
+        plt.close(fig)
+        
 # ============================================================
 # FOOTER
 # ============================================================
