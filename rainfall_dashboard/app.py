@@ -3713,23 +3713,6 @@ with main_tabs[1]:
             label=f"{station2} - Mean All Years"
         )
 
-        # ====================================================
-        # LEGEND
-        # ====================================================
-
-        ax.legend(
-            title="Station / Rainfall Type",
-            loc="upper left",
-            bbox_to_anchor=(1.02, 1)
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
-            fig,
-            use_container_width=True
-        )
-
         plt.close(fig)
 
 # ============================================================
