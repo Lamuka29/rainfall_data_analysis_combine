@@ -406,45 +406,6 @@ elif selected_chart == "Maximum Daily Rainfall":
     )
 
 # ============================================================
-# WET DAYS
-# ============================================================
-
-elif selected_chart == "Wet Days":
-
-    st.session_state.wet_days_color = (
-        st.sidebar.color_picker(
-            "Wet Days Colour",
-            st.session_state.wet_days_color
-        )
-    )
-
-# ============================================================
-# STANDARD DEVIATION
-# ============================================================
-
-elif selected_chart == "Standard Deviation":
-
-    st.session_state.std_color = (
-        st.sidebar.color_picker(
-            "Standard Deviation Colour",
-            st.session_state.std_color
-        )
-    )
-
-# ============================================================
-# HISTOGRAM
-# ============================================================
-
-elif selected_chart == "Histogram":
-
-    st.session_state.hist_color = (
-        st.sidebar.color_picker(
-            "Histogram Colour",
-            st.session_state.hist_color
-        )
-    )
-
-# ============================================================
 # MEAN LINE
 # ============================================================
 
@@ -2658,7 +2619,7 @@ with main_tabs[0]:
                 x,
                 wet_days,
                 width=0.60,
-                color=st.session_state.wet_days_color,
+                color="steelblue",
                 edgecolor="black",
                 linewidth=0.8
             )
@@ -2752,7 +2713,7 @@ with main_tabs[0]:
                 x,
                 std_daily,
                 width=0.60,
-                color=st.session_state.std_color,
+                color="purple",
                 edgecolor="black",
                 linewidth=0.8
             )
@@ -2846,7 +2807,7 @@ with main_tabs[0]:
                 ax.hist(
                     hist_values,
                     bins=15,
-                    color=st.session_state.hist_color,
+                    color="green",
                     edgecolor="black",
                     linewidth=0.8
                 )
