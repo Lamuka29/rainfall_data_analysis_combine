@@ -1574,7 +1574,7 @@ with st.expander(
 # DISPLAY EACH FILE
 # ============================================================
 
-for result in display_results:
+for result in successful_results:
 
     file_name = result[
         "file_name"
