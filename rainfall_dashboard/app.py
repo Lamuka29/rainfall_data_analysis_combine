@@ -445,6 +445,7 @@ st.sidebar.success(
     f"📅 Tahun tersedia: "
     f"{all_available_years[0]}–"
     f"{all_available_years[-1]}"
+)
 
 # ============================================================
 # TAHUN CLIMATOLOGY
