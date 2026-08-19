@@ -6,7 +6,6 @@ import calendar
 import io
 import streamlit as st
 
-
 # ============================================================
 # STREAMLIT CONFIGURATION
 # ============================================================
