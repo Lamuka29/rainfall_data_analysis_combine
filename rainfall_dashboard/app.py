@@ -1,13 +1,12 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import calendar
 import io
 import zipfile
-
+import plotly.graph_objects as go
 import streamlit as st
-
+import matplotlib.pyplot as plt
 
 # ============================================================
 # STREAMLIT CONFIGURATION
@@ -153,6 +152,22 @@ months = [
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ]
 
+# ============================================================
+# PLOTLY CONFIGURATION
+# ============================================================
+
+def plotly_config(filename):
+
+    return {
+        "displaylogo": False,
+        "toImageButtonOptions": {
+            "format": "png",
+            "filename": filename,
+            "height": 800,
+            "width": 1400,
+            "scale": 2
+        }
+    }
 
 # ============================================================
 # GRAPH SETTINGS
@@ -1893,511 +1908,376 @@ for result in display_results:
     
     # ========================================================
     # TAB 1
-    # BAR + LINE
+    # BAR + LINE - INTERACTIVE PLOTLY
     # ========================================================
-
+    
     with tabs[0]:
-
+    
         st.subheader(
             f"Monthly Rainfall {target_year} vs "
             f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}"
         )
-
-        x = np.arange(
-            len(months)
-        )
-
-        fig, ax = plt.subplots(
-            figsize=(
-                FIG_WIDTH,
-                FIG_HEIGHT
-            )
-        )
-
-        bg_color = BG_COLOR
-        
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
-        ax.bar(
-            x,
-            rainfall_target.values,
-            width=0.60,
-            color=st.session_state.bar_colors,
-            edgecolor="black",
-            linewidth=0.8,
-            label=(
-                f"Total Rainfall {target_year}"
-            )
-        )
-
-        ax.plot(
-            x,
-            mean_monthly_total.values,
-            color=LINE_COLOR,
-            marker="o",
-            linewidth=2.5,
-            markersize=7,
-            label=(
-                f"Mean Monthly Rainfall "
-                f"{YEAR_RANGE_TEXT}"
-            )
-        )
-
+    
+        fig = go.Figure()
+    
         # ----------------------------------------------------
-        # Mean labels
+        # BAR - TARGET YEAR
         # ----------------------------------------------------
-
-        for i, value in enumerate(
-            mean_monthly_total.values
-        ):
-
-            if pd.notna(value):
-
-                ax.annotate(
-                    f"{value:.1f}",
-                    (
-                        i,
-                        value
-                    ),
-                    xytext=(0, 10),
-                    textcoords="offset points",
-                    ha="center",
-                    fontsize=11,
-                    fontweight="bold"
+    
+        bar_text = [
+            f"{value:.1f}" if pd.notna(value) else ""
+            for value in rainfall_target.values
+        ]
+    
+        fig.add_trace(
+            go.Bar(
+                x=months,
+                y=rainfall_target.values,
+                text=bar_text,
+                textposition="outside",
+                name=f"Total Rainfall {target_year}",
+                marker=dict(
+                    color=st.session_state.bar_colors,
+                    line=dict(
+                        color="black",
+                        width=0.8
+                    )
+                ),
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    f"Rainfall {target_year}: "
+                    "%{y:.2f} mm"
+                    "<extra></extra>"
                 )
-
+            )
+        )
+    
         # ----------------------------------------------------
-        # Minimum
+        # MEAN LINE
         # ----------------------------------------------------
-
+    
+        mean_text = [
+            f"{value:.1f}" if pd.notna(value) else ""
+            for value in mean_monthly_total.values
+        ]
+    
+        fig.add_trace(
+            go.Scatter(
+                x=months,
+                y=mean_monthly_total.values,
+                mode="lines+markers+text",
+                text=mean_text,
+                textposition="top center",
+                name=f"Mean {YEAR_RANGE_TEXT}",
+                line=dict(
+                    color=LINE_COLOR,
+                    width=3
+                ),
+                marker=dict(
+                    size=8
+                ),
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    f"Mean {YEAR_RANGE_TEXT}: "
+                    "%{y:.2f} mm"
+                    "<extra></extra>"
+                )
+            )
+        )
+    
+        # ----------------------------------------------------
+        # MINIMUM
+        # ----------------------------------------------------
+    
         if min_target_month is not None:
-
-            min_index = months.index(
-                min_target_month
-            )
-
-            ax.scatter(
-                min_index,
-                min_target_value,
-                s=50,
-                color=MIN_COLOR,
-                edgecolor="black",
-                linewidth=1,
-                zorder=5,
-                label=(
-                    f"Minimum {target_year}: "
-                    f"{min_target_month} "
-                    f"({min_target_value:.1f} mm)"
+    
+            fig.add_trace(
+                go.Scatter(
+                    x=[min_target_month],
+                    y=[min_target_value],
+                    mode="markers",
+                    name=(
+                        f"Minimum {target_year}: "
+                        f"{min_target_month} "
+                        f"({min_target_value:.1f} mm)"
+                    ),
+                    marker=dict(
+                        color=MIN_COLOR,
+                        size=11,
+                        line=dict(
+                            color="black",
+                            width=1
+                        )
+                    ),
+                    hovertemplate=(
+                        "<b>Minimum</b><br>"
+                        "%{x}<br>"
+                        "%{y:.2f} mm"
+                        "<extra></extra>"
+                    )
                 )
             )
-
+    
         # ----------------------------------------------------
-        # Maximum
+        # MAXIMUM
         # ----------------------------------------------------
-
+    
         if max_target_month is not None:
-
-            max_index = months.index(
-                max_target_month
-            )
-
-            ax.scatter(
-                max_index,
-                max_target_value,
-                s=50,
-                color=MAX_COLOR,
-                edgecolor="black",
-                linewidth=1,
-                zorder=5,
-                label=(
-                    f"Maximum {target_year}: "
-                    f"{max_target_month} "
-                    f"({max_target_value:.1f} mm)"
+    
+            fig.add_trace(
+                go.Scatter(
+                    x=[max_target_month],
+                    y=[max_target_value],
+                    mode="markers",
+                    name=(
+                        f"Maximum {target_year}: "
+                        f"{max_target_month} "
+                        f"({max_target_value:.1f} mm)"
+                    ),
+                    marker=dict(
+                        color=MAX_COLOR,
+                        size=11,
+                        line=dict(
+                            color="black",
+                            width=1
+                        )
+                    ),
+                    hovertemplate=(
+                        "<b>Maximum</b><br>"
+                        "%{x}<br>"
+                        "%{y:.2f} mm"
+                        "<extra></extra>"
+                    )
                 )
             )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Monthly Rainfall {target_year} vs "
-            f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}",
-            fontsize=16,
-            fontweight="bold"
+    
+        # ----------------------------------------------------
+        # LAYOUT
+        # ----------------------------------------------------
+    
+        fig.update_layout(
+    
+            title=(
+                f"{file_name}<br>"
+                f"Monthly Rainfall {target_year} vs "
+                f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}"
+            ),
+    
+            xaxis_title="Month",
+    
+            yaxis_title="Rainfall (mm)",
+    
+            yaxis=dict(
+                range=[
+                    RAINFALL_MIN,
+                    RAINFALL_MAX
+                ]
+            ),
+    
+            height=650,
+    
+            plot_bgcolor=BG_COLOR,
+    
+            paper_bgcolor=BG_COLOR,
+    
+            hovermode="x unified",
+    
+            legend=dict(
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.02
+            ),
+    
+            margin=dict(
+                l=60,
+                r=220,
+                t=100,
+                b=60
+            )
         )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
+    
+        # ----------------------------------------------------
+        # GRID
+        # ----------------------------------------------------
+    
+        fig.update_yaxes(
+            showgrid=True,
+            gridwidth=1,
+            gridcolor="lightgray"
         )
-
-        ax.set_ylabel(
-            "Rainfall (mm)",
-            fontsize=12
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.set_ylim(
-            RAINFALL_MIN,
-            RAINFALL_MAX
-        )
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        ax.legend(
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left",
-            fontsize=9
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+    
+        # ----------------------------------------------------
+        # DISPLAY
+        # ----------------------------------------------------
+    
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_Monthly_Rainfall_graf_{target_year}"
+            )
         )
-
-        plt.close(fig)
-
+        
     # ========================================================
     # TAB 2
     # HEATMAP
     # ========================================================
-
+    
     with tabs[1]:
-
+    
         st.subheader(
             f"Monthly Total Rainfall Heatmap "
             f"{YEAR_RANGE_TEXT}"
         )
-
+    
         heatmap_data = (
             yearly_monthly_total
             .reindex(columns=months)
         )
+    
+        fig = go.Figure()
 
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        bg_color = BG_COLOR
-
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
-        plot_data = heatmap_data.copy()
-
-        valid_values = plot_data.values[
-            ~pd.isna(
-                plot_data.values
+        fig.add_trace(
+            go.Heatmap(
+                z=heatmap_data.values,
+                x=months,
+                y=heatmap_data.index.astype(str),
+    
+                colorscale="YlGnBu",
+    
+                colorbar=dict(
+                    title="Total Rainfall (mm)"
+                ),
+    
+                hovertemplate=(
+                    "<b>Year:</b> %{y}<br>"
+                    "<b>Month:</b> %{x}<br>"
+                    "<b>Rainfall:</b> %{z:.2f} mm"
+                    "<extra></extra>"
+                ),
+    
+                text=[
+                    [
+                        f"{value:.0f}"
+                        if pd.notna(value)
+                        else "N.A."
+                        for value in row
+                    ]
+                    for row in heatmap_data.values
+                ],
+    
+                texttemplate="%{text}",
+    
+                textfont=dict(
+                    size=9
+                )
             )
-        ]
-
-        if len(valid_values) > 0:
-
-            vmin = valid_values.min()
-            vmax = valid_values.max()
-
-            if vmin == vmax:
-                vmax = vmin + 1
-
-        else:
-
-            vmin = 0
-            vmax = 1
-
-        im = ax.imshow(
-            plot_data.values,
-            aspect="auto",
-            cmap="YlGnBu",
-            vmin=vmin,
-            vmax=vmax
         )
-
-        ax.set_xticks(
-            range(len(months))
+    
+        fig.update_layout(
+            title=(
+                f"{file_name}<br>"
+                f"Monthly Total Rainfall Heatmap "
+                f"{YEAR_RANGE_TEXT}"
+            ),
+    
+            xaxis_title="Month",
+    
+            yaxis_title="Year",
+    
+            plot_bgcolor=BG_COLOR,
+    
+            paper_bgcolor=BG_COLOR,
+    
+            height=650
         )
-
-        ax.set_xticklabels(
-            months
-        )
-
-        ax.set_yticks(
-            range(len(plot_data.index))
-        )
-
-        ax.set_yticklabels(
-            plot_data.index.astype(str)
-        )
-
-        # Grid
-        ax.set_xticks(
-            [
-                i - 0.5
-                for i in range(
-                    len(months) + 1
-                )
-            ],
-            minor=True
-        )
-
-        ax.set_yticks(
-            [
-                i - 0.5
-                for i in range(
-                    len(plot_data.index) + 1
-                )
-            ],
-            minor=True
-        )
-
-        ax.grid(
-            which="minor",
-            color="white",
-            linestyle="-",
-            linewidth=1
-        )
-
-        ax.tick_params(
-            which="minor",
-            bottom=False,
-            left=False
-        )
-
-        # Values
-        for i in range(
-            len(plot_data.index)
-        ):
-
-            for j in range(
-                len(months)
-            ):
-
-                value = plot_data.iloc[
-                    i,
-                    j
-                ]
-
-                if pd.notna(value):
-
-                    ax.text(
-                        j,
-                        i,
-                        f"{value:.0f}",
-                        ha="center",
-                        va="center",
-                        fontsize=7
-                    )
-
-                else:
-
-                    ax.add_patch(
-                        plt.Rectangle(
-                            (
-                                j - 0.5,
-                                i - 0.5
-                            ),
-                            1,
-                            1,
-                            facecolor="lightgray",
-                            edgecolor="white",
-                            linewidth=1
-                        )
-                    )
-
-                    ax.text(
-                        j,
-                        i,
-                        "N.A.",
-                        ha="center",
-                        va="center",
-                        fontsize=7
-                    )
-
-        cbar = fig.colorbar(
-            im,
-            ax=ax
-        )
-
-        cbar.set_label(
-            "Total Rainfall (mm)",
-            fontsize=11
-        )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Monthly Total Rainfall Heatmap, "
-            f"{YEAR_RANGE_TEXT}",
-            fontsize=16,
-            fontweight="bold"
-        )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
-        )
-
-        ax.set_ylabel(
-            "Year",
-            fontsize=12
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+    
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_Heatmap_{YEAR_RANGE_TEXT}"
+            )
         )
-
-        plt.close(fig)
 
     # ========================================================
     # TAB 3
     # ANOMALY
     # ========================================================
-
+    
     with tabs[2]:
-
+    
         st.subheader(
             f"Rainfall Anomaly {target_year} "
             f"Relative to Mean {YEAR_RANGE_TEXT}"
         )
-
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        bg_color = BG_COLOR
-
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
+    
         anomaly_colors = []
-
+    
         for value in anomaly_percent.values:
-
+        
             if pd.isna(value):
-
-                anomaly_colors.append(
-                    "lightgray"
-                )
-
+                anomaly_colors.append("lightgray")
+        
             elif value >= 0:
-
-                anomaly_colors.append(
-                    "darkorange"
-                )
-
+                anomaly_colors.append("darkorange")
+        
             else:
-
-                anomaly_colors.append(
-                    "steelblue"
-                )
-
-        bars = ax.bar(
-            x,
-            anomaly_percent.values,
-            width=0.60,
-            color=anomaly_colors,
-            edgecolor="black",
-            linewidth=0.8
+                anomaly_colors.append("steelblue")
+        
+        
+        fig = go.Figure()
+        
+        fig.add_trace(
+            go.Bar(
+                x=months,
+                y=anomaly_percent.values,
+                marker_color=anomaly_colors,
+                marker_line_color="black",
+                marker_line_width=0.8,
+                text=[
+                    f"{v:.1f}%" if pd.notna(v) else ""
+                    for v in anomaly_percent.values
+                ],
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Anomaly: %{y:.2f}%"
+                    "<extra></extra>"
+                ),
+                name="Anomaly"
+            )
         )
-
-        ax.axhline(
-            0,
-            color="black",
-            linewidth=1
+        
+        fig.add_hline(
+            y=0,
+            line_color="black",
+            line_width=1
         )
-
-        for bar, value in zip(
-            bars,
-            anomaly_percent.values
-        ):
-
-            if pd.notna(value):
-
-                if value >= 0:
-
-                    offset = 4
-                    vertical = "bottom"
-
-                else:
-
-                    offset = -12
-                    vertical = "top"
-
-                ax.annotate(
-                    f"{value:.1f}%",
-                    (
-                        bar.get_x()
-                        + bar.get_width() / 2,
-                        value
-                    ),
-                    xytext=(0, offset),
-                    textcoords="offset points",
-                    ha="center",
-                    va=vertical,
-                    fontsize=8
-                )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Rainfall Anomaly {target_year} "
-            f"Relative to Mean {YEAR_RANGE_TEXT}",
-            fontsize=16,
-            fontweight="bold"
+        
+        fig.update_layout(
+            title=(
+                f"{file_name}<br>"
+                f"Rainfall Anomaly {target_year} "
+                f"Relative to Mean {YEAR_RANGE_TEXT}"
+            ),
+            xaxis_title="Month",
+            yaxis_title="Anomaly (%)",
+            plot_bgcolor=BG_COLOR,
+            paper_bgcolor=BG_COLOR,
+            height=650
         )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
-        )
-
-        ax.set_ylabel(
-            "Anomaly (%)",
-            fontsize=12
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+        
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_anomaly_{target_year}"
+            )     
         )
-
-        plt.close(fig)
-
+    
     # ========================================================
     # TAB 4
     # STATISTICS
@@ -2465,86 +2345,53 @@ for result in display_results:
             f"{target_year}"
         )
 
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        bg_color = BG_COLOR
-
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
-        bars = ax.bar(
-            x,
-            max_daily,
-            width=0.60,
-            color=st.session_state.max_daily_color,
-            edgecolor="black",
-            linewidth=0.8
-        )
-
-        for bar, value in zip(
-            bars,
-            max_daily
-        ):
-
-            if pd.notna(value):
-
-                ax.annotate(
-                    f"{value:.1f}",
-                    (
-                        bar.get_x()
-                        + bar.get_width() / 2,
-                        value
-                    ),
-                    xytext=(0, 6),
-                    textcoords="offset points",
-                    ha="center",
-                    fontsize=10,
-                    fontweight="bold"
+        fig = go.Figure()
+        
+        fig.add_trace(
+            go.Bar(
+                x=months,
+                y=max_daily,
+                name="Maximum Daily Rainfall",
+                marker_color=st.session_state.max_daily_color,
+                marker_line_color="black",
+                marker_line_width=0.8,
+                text=[
+                    f"{v:.1f}" if pd.notna(v) else ""
+                    for v in max_daily
+                ],
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Maximum Daily: %{y:.2f} mm"
+                    "<extra></extra>"
                 )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Maximum Daily Rainfall by Month - "
-            f"{target_year}",
-            fontsize=16,
-            fontweight="bold"
+            )
         )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
+        
+        fig.update_layout(
+            title=(
+                f"{file_name}<br>"
+                f"Maximum Daily Rainfall by Month - "
+                f"{target_year}"
+            ),
+            xaxis_title="Month",
+            yaxis_title="Maximum Daily Rainfall (mm)",
+            plot_bgcolor=BG_COLOR,
+            paper_bgcolor=BG_COLOR,
+            height=650,
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="lightgray"
+            )
         )
-
-        ax.set_ylabel(
-            "Maximum Daily Rainfall (mm)",
-            fontsize=12
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+        
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_max_rainfall_{target_year}"
+            )
         )
-
-        plt.close(fig)
 
     # ========================================================
     # TAB 6
@@ -2559,87 +2406,53 @@ for result in display_results:
             f"{target_year}"
         )
 
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        bg_color = BG_COLOR
-
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
-        bars = ax.bar(
-            x,
-            wet_days,
-            width=0.60,
-            color=st.session_state.wet_days_color,
-            edgecolor="black",
-            linewidth=0.8
-        )
-
-        for bar, value in zip(
-            bars,
-            wet_days
-        ):
-
-            if pd.notna(value):
-
-                ax.annotate(
-                    f"{int(value)}",
-                    (
-                        bar.get_x()
-                        + bar.get_width() / 2,
-                        value
-                    ),
-                    xytext=(0, 6),
-                    textcoords="offset points",
-                    ha="center",
-                    fontsize=10,
-                    fontweight="bold"
+        fig = go.Figure()
+        
+        fig.add_trace(
+            go.Bar(
+                x=months,
+                y=wet_days,
+                name="Wet Days",
+                marker_color=st.session_state.wet_days_color,
+                marker_line_color="black",
+                marker_line_width=0.8,
+                text=[
+                    f"{int(v)}" if pd.notna(v) else ""
+                    for v in wet_days
+                ],
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Wet Days: %{y}<extra></extra>"
                 )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Number of Wet Days "
-            f"(≥0.1 mm) - "
-            f"{target_year}",
-            fontsize=16,
-            fontweight="bold"
+            )
         )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
+        
+        fig.update_layout(
+            title=(
+                f"{file_name}<br>"
+                f"Number of Wet Days "
+                f"(≥{WET_DAY_MIN:.1f} mm) - "
+                f"{target_year}"
+            ),
+            xaxis_title="Month",
+            yaxis_title="Number of Wet Days",
+            plot_bgcolor=BG_COLOR,
+            paper_bgcolor=BG_COLOR,
+            height=650,
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="lightgray"
+            )
         )
-
-        ax.set_ylabel(
-            "Number of Wet Days",
-            fontsize=12
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+        
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_Wet_days_{target_year}"
+            )
         )
-
-        plt.close(fig)
 
     # ========================================================
     # TAB 7
@@ -2653,164 +2466,127 @@ for result in display_results:
             f"{target_year}"
         )
 
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        bg_color = BG_COLOR
-
-        fig.patch.set_facecolor(
-            bg_color
-        )
-
-        ax.set_facecolor(
-            bg_color
-        )
-
-        bars = ax.bar(
-            x,
-            std_daily,
-            width=0.60,
-            color=st.session_state.std_color,
-            edgecolor="black",
-            linewidth=0.8
-        )
-
-        for bar, value in zip(
-            bars,
-            std_daily
-        ):
-
-            if pd.notna(value):
-
-                ax.annotate(
-                    f"{value:.1f}",
-                    (
-                        bar.get_x()
-                        + bar.get_width() / 2,
-                        value
-                    ),
-                    xytext=(0, 6),
-                    textcoords="offset points",
-                    ha="center",
-                    fontsize=10,
-                    fontweight="bold"
+        fig = go.Figure()
+        
+        fig.add_trace(
+            go.Bar(
+                x=months,
+                y=std_daily,
+                name="Standard Deviation",
+                marker_color=st.session_state.std_color,
+                marker_line_color="black",
+                marker_line_width=0.8,
+                text=[
+                    f"{v:.1f}" if pd.notna(v) else ""
+                    for v in std_daily
+                ],
+                textposition="outside",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Standard Deviation: %{y:.2f} mm"
+                    "<extra></extra>"
                 )
-
-        ax.set_title(
-            f"{file_name}\n"
-            f"Daily Rainfall Standard Deviation - "
-            f"{target_year}",
-            fontsize=16,
-            fontweight="bold"
+            )
         )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
+        
+        fig.update_layout(
+            title=(
+                f"{file_name}<br>"
+                f"Daily Rainfall Standard Deviation - "
+                f"{target_year}"
+            ),
+            xaxis_title="Month",
+            yaxis_title="Standard Deviation (mm)",
+            plot_bgcolor=BG_COLOR,
+            paper_bgcolor=BG_COLOR,
+            height=650,
+            yaxis=dict(
+                showgrid=True,
+                gridcolor="lightgray"
+            )
         )
-
-        ax.set_ylabel(
-            "Standard Deviation (mm)",
-            fontsize=12
-        )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
+        
+        st.plotly_chart(
             fig,
-            use_container_width=True
+            use_container_width=True,
+            config=plotly_config(
+                f"{file_name}_Standard_Dev_{target_year}"
+            )
         )
-
-        plt.close(fig)
 
     # ========================================================
     # TAB 8
     # HISTOGRAM
     # ========================================================
-
+    
     with tabs[7]:
-
+    
         st.subheader(
             f"Distribution of Daily Rainfall - "
             f"{target_year}"
         )
-
+    
         if len(hist_values) > 0:
-
-            fig, ax = plt.subplots(
-                figsize=(14, 8)
+    
+            fig = go.Figure()
+    
+            fig.add_trace(
+                go.Histogram(
+    
+                    x=hist_values,
+    
+                    nbinsx=15,
+    
+                    marker_color=st.session_state.hist_color,
+    
+                    marker_line_color="black",
+    
+                    marker_line_width=0.8,
+    
+                    name="Daily Rainfall",
+    
+                    hovertemplate=(
+                        "Rainfall: %{x:.2f} mm<br>"
+                        "Number of Days: %{y}"
+                        "<extra></extra>"
+                    )
+                )
             )
-
-            bg_color = BG_COLOR
-
-            fig.patch.set_facecolor(
-                bg_color
+    
+            fig.update_layout(
+    
+                title=(
+                    f"{file_name}<br>"
+                    f"Distribution of Daily Rainfall - "
+                    f"{target_year}"
+                ),
+    
+                xaxis_title="Daily Rainfall (mm)",
+    
+                yaxis_title="Number of Days",
+    
+                plot_bgcolor=BG_COLOR,
+    
+                paper_bgcolor=BG_COLOR,
+    
+                height=650
             )
-
-            ax.set_facecolor(
-                bg_color
-            )
-
-            ax.hist(
-                hist_values,
-                bins=15,
-                color=st.session_state.hist_color,
-                edgecolor="black",
-                linewidth=0.8
-            )
-
-            ax.set_title(
-                f"{file_name}\n"
-                f"Distribution of Daily Rainfall - "
-                f"{target_year}",
-                fontsize=16,
-                fontweight="bold"
-            )
-
-            ax.set_xlabel(
-                "Daily Rainfall (mm)",
-                fontsize=12
-            )
-
-            ax.set_ylabel(
-                "Number of Days",
-                fontsize=12
-            )
-
-            ax.grid(
-                True,
-                axis="y",
-                linestyle="--",
-                alpha=0.4
-            )
-
-            plt.tight_layout()
-
-            st.pyplot(
+    
+            st.plotly_chart(
                 fig,
-                use_container_width=True
+                use_container_width=True,
+                config=plotly_config(
+                    f"{file_name}_Histogram_{target_year}"
+                )
             )
-
-            plt.close(fig)
-
+    
         else:
-
+    
             st.warning(
                 f"Tiada data hujan ≥ "
-                f"0.1 mm untuk histogram."
+                f"{WET_DAY_MIN:.1f} mm untuk histogram."
             )
-
+    
     # ========================================================
     # TAB 9
     # PIE CHART
@@ -2824,67 +2600,53 @@ for result in display_results:
         )
 
         if sum(category_values) > 0:
-
-            fig, ax = plt.subplots(
-                figsize=(10, 8)
+        
+            fig = go.Figure()
+        
+            fig.add_trace(
+                go.Pie(
+                    labels=category_labels,
+                    values=category_values,
+                    hole=0,
+                    textinfo="label+percent",
+                    hovertemplate=(
+                        "<b>%{label}</b><br>"
+                        "Number of Days: %{value}<br>"
+                        "Percentage: %{percent}"
+                        "<extra></extra>"
+                    )
+                )
             )
-
-            bg_color = BG_COLOR
-
-            fig.patch.set_facecolor(
-                bg_color
+        
+            fig.update_layout(
+                title=(
+                    f"{file_name}<br>"
+                    f"Percentage of Days by Rainfall "
+                    f"Category - {target_year}"
+                ),
+                paper_bgcolor=BG_COLOR,
+                plot_bgcolor=BG_COLOR,
+                height=650
             )
-
-            ax.set_facecolor(
-                bg_color
-            )
-
-            wedges, texts, autotexts = ax.pie(
-                category_values,
-                labels=category_labels,
-                autopct="%1.1f%%",
-                startangle=90,
-                counterclock=False,
-                wedgeprops={
-                    "edgecolor": "black",
-                    "linewidth": 0.8
-                }
-            )
-
-            for autotext in autotexts:
-
-                autotext.set_fontsize(11)
-                autotext.set_fontweight("bold")
-
-            ax.set_title(
-                f"{file_name}\n"
-                f"Percentage of Days by Rainfall "
-                f"Category - {target_year}",
-                fontsize=16,
-                fontweight="bold"
-            )
-
-            plt.tight_layout()
-
-            st.pyplot(
+        
+            st.plotly_chart(
                 fig,
-                use_container_width=True
+                use_container_width=True,
+                config=plotly_config(
+                    f"{file_name}_pie_chart_{target_year}"
+                )
             )
-
-            plt.close(fig)
-
-            total_days = sum(
-                category_values
-            )
-
+        
+            total_days = sum(category_values)
+        
             category_table = pd.DataFrame({
-
+        
                 "Rainfall Category":
                     category_labels,
-
+        
                 "Number of Days":
                     category_values,
-
+        
                 "Percentage (%)":
                     [
                         (
@@ -2894,21 +2656,21 @@ for result in display_results:
                         for count in category_values
                     ]
             })
-
+        
             category_table[
                 "Percentage (%)"
             ] = category_table[
                 "Percentage (%)"
             ].round(2)
-
+        
             st.dataframe(
                 category_table,
                 use_container_width=True,
                 hide_index=True
             )
-
+        
         else:
-
+        
             st.warning(
                 "Tiada data sah untuk pie chart."
             )
