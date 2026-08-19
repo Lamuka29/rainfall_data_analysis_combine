@@ -410,29 +410,6 @@ all_available_years = sorted(
 )
 
 # ============================================================
-# CHECK AVAILABLE YEARS
-# ============================================================
-
-if not all_available_years:
-
-    st.error(
-        "❌ Tiada sheet tahun yang sah dijumpai "
-        "dalam fail Excel."
-    )
-
-    st.stop()
-
-# ============================================================
-# AVAILABLE YEAR INFORMATION
-# ============================================================
-
-st.sidebar.success(
-    f"📅 Tahun tersedia: "
-    f"{all_available_years[0]}–"
-    f"{all_available_years[-1]}"
-)
-
-# ============================================================
 # TAHUN CLIMATOLOGY
 # ============================================================
 
@@ -508,6 +485,29 @@ target_year = st.sidebar.selectbox(
 )
 
 target_year = int(target_year)
+
+# ============================================================
+# CHECK AVAILABLE YEARS
+# ============================================================
+
+if not all_available_years:
+
+    st.error(
+        "❌ Tiada sheet tahun yang sah dijumpai "
+        "dalam fail Excel."
+    )
+
+    st.stop()
+
+# ============================================================
+# AVAILABLE YEAR INFORMATION
+# ============================================================
+
+st.sidebar.success(
+    f"📅 Tahun tersedia: "
+    f"{all_available_years[0]}–"
+    f"{all_available_years[-1]}"
+)
 
 # ============================================================
 # FUNCTION
