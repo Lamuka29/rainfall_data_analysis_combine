@@ -21,74 +21,6 @@ st.caption(
     "Pemprosesan, Quality Control dan Analisis Data Hujan Harian"
 )
 
-
-# ============================================================
-# SIDEBAR SETTINGS
-# ============================================================
-
-st.sidebar.header("⚙️ Analysis Settings")
-
-# ============================================================
-# WMO MISSING DATA RULE
-# ============================================================
-
-st.sidebar.subheader("WMO Missing Data Rule")
-
-MAX_MISSING_DAYS = st.sidebar.number_input(
-    "Maximum missing days",
-    min_value=0,
-    max_value=31,
-    value=10,
-    step=1,
-    help=(
-        "Bulan ditolak jika bilangan missing days melebihi "
-        "nilai ini. Default 10 bermaksud >=11 missing days ditolak."
-    )
-)
-
-MAX_CONSECUTIVE_MISSING = st.sidebar.number_input(
-    "Maximum consecutive missing days",
-    min_value=1,
-    max_value=31,
-    value=4,
-    step=1,
-    help=(
-        "Bulan ditolak jika terdapat missing days berturut-turut "
-        "melebihi nilai ini. Default 4 bermaksud >=5 berturut-turut ditolak."
-    )
-)
-
-
-# ============================================================
-# RAINFALL THRESHOLDS
-# ============================================================
-
-st.sidebar.subheader("🌧️ Rainfall Threshold")
-
-VALID_MIN = 0.0
-
-WET_DAY_MIN = st.sidebar.number_input(
-    "Wet day threshold (mm)",
-    min_value=0.0,
-    value=0.1,
-    step=0.01
-)
-
-SUSPECT_RAINFALL = st.sidebar.number_input(
-    "Suspect threshold (mm)",
-    min_value=0.0,
-    value=150.0,
-    step=10.0
-)
-
-EXTREME_RAINFALL = st.sidebar.number_input(
-    "Extreme threshold (mm)",
-    min_value=0.0,
-    value=250.0,
-    step=10.0
-)
-
-
 # ============================================================
 # MONTHS
 # ============================================================
@@ -105,198 +37,6 @@ months = [
 
 RAINFALL_MIN = 0
 RAINFALL_MAX = 500
-
-# ============================================================
-# PLOT SETTINGS - USER BOLEH UBAH
-# ============================================================
-
-st.sidebar.header("🎨 Plot Settings")
-
-
-# ============================================================
-# BACKGROUND
-# ============================================================
-
-BG_COLOR = st.sidebar.color_picker(
-    "Background Graf",
-    "#FFFFFF"
-)
-
-
-# ============================================================
-# DEFAULT BAR COLORS - MONTHLY RAINFALL
-# ============================================================
-
-default_colors = [
-    "#4682B4",  # Jan
-    "#87CEEB",  # Feb
-    "#3CB371",  # Mar
-    "#32CD32",  # Apr
-    "#FFD700",  # May
-    "#FFA500",  # Jun
-    "#FF7F50",  # Jul
-    "#FF6347",  # Aug
-    "#9370DB",  # Sep
-    "#DA70D6",  # Oct
-    "#6A5ACD",  # Nov
-    "#008080"   # Dec
-]
-
-
-# ============================================================
-# SESSION STATE
-# Supaya warna yang dipilih tidak reset
-# ============================================================
-
-if "bar_colors" not in st.session_state:
-
-    st.session_state.bar_colors = default_colors.copy()
-
-
-if "max_daily_color" not in st.session_state:
-
-    st.session_state.max_daily_color = "#FF6347"
-
-
-if "wet_days_color" not in st.session_state:
-
-    st.session_state.wet_days_color = "#3CB371"
-
-
-if "std_color" not in st.session_state:
-
-    st.session_state.std_color = "#9370DB"
-
-
-if "hist_color" not in st.session_state:
-
-    st.session_state.hist_color = "#4682B4"
-
-
-# ============================================================
-# SELECT BAR CHART
-# ============================================================
-
-chart_options = [
-    "Monthly Rainfall",
-    "Maximum Daily Rainfall",
-    "Wet Days",
-    "Standard Deviation",
-    "Histogram"
-]
-
-selected_chart = st.sidebar.selectbox(
-    "Select Bar Chart",
-    chart_options
-)
-
-
-# ============================================================
-# MONTHLY RAINFALL
-# ============================================================
-
-if selected_chart == "Monthly Rainfall":
-
-    selected_month = st.sidebar.selectbox(
-        "Select Month",
-        months
-    )
-
-    selected_index = months.index(
-        selected_month
-    )
-
-    st.session_state.bar_colors[
-        selected_index
-    ] = st.sidebar.color_picker(
-        f"{selected_month} Bar Colour",
-        st.session_state.bar_colors[selected_index]
-    )
-
-
-# ============================================================
-# MAXIMUM DAILY RAINFALL
-# ============================================================
-
-elif selected_chart == "Maximum Daily Rainfall":
-
-    st.session_state.max_daily_color = (
-        st.sidebar.color_picker(
-            "Maximum Daily Rainfall Colour",
-            st.session_state.max_daily_color
-        )
-    )
-
-
-# ============================================================
-# WET DAYS
-# ============================================================
-
-elif selected_chart == "Wet Days":
-
-    st.session_state.wet_days_color = (
-        st.sidebar.color_picker(
-            "Wet Days Colour",
-            st.session_state.wet_days_color
-        )
-    )
-
-
-# ============================================================
-# STANDARD DEVIATION
-# ============================================================
-
-elif selected_chart == "Standard Deviation":
-
-    st.session_state.std_color = (
-        st.sidebar.color_picker(
-            "Standard Deviation Colour",
-            st.session_state.std_color
-        )
-    )
-
-
-# ============================================================
-# HISTOGRAM
-# ============================================================
-
-elif selected_chart == "Histogram":
-
-    st.session_state.hist_color = (
-        st.sidebar.color_picker(
-            "Histogram Colour",
-            st.session_state.hist_color
-        )
-    )
-
-
-# ============================================================
-# MEAN LINE
-# ============================================================
-
-LINE_COLOR = st.sidebar.color_picker(
-    "Mean Line",
-    "#000000"
-)
-
-
-# ============================================================
-# MINIMUM
-# ============================================================
-
-MIN_COLOR = st.sidebar.color_picker(
-    "Minimum",
-    "#008000"
-)
-
-# ============================================================
-# MAXIMUM
-# ============================================================
-
-MAX_COLOR = st.sidebar.color_picker(
-    "Maximum",
-    "#FF0000"
-)
 
 # ============================================================
 # FIGURE SIZE
@@ -446,6 +186,12 @@ YEAR_RANGE_TEXT = (
 )
 
 # ============================================================
+# SIDEBAR SETTINGS
+# ============================================================
+
+st.sidebar.header("⚙️ Analysis Settings")
+
+# ============================================================
 # ANALYSIS MODE
 # ============================================================
 
@@ -484,6 +230,246 @@ target_year = st.sidebar.selectbox(
 )
 
 target_year = int(target_year)
+
+# ============================================================
+# WMO MISSING DATA RULE
+# ============================================================
+
+st.sidebar.subheader("WMO Missing Data Rule")
+
+MAX_MISSING_DAYS = st.sidebar.number_input(
+    "Maximum missing days",
+    min_value=0,
+    max_value=31,
+    value=10,
+    step=1,
+    help=(
+        "Bulan ditolak jika bilangan missing days melebihi "
+        "nilai ini. Default 10 bermaksud >=11 missing days ditolak."
+    )
+)
+
+MAX_CONSECUTIVE_MISSING = st.sidebar.number_input(
+    "Maximum consecutive missing days",
+    min_value=1,
+    max_value=31,
+    value=4,
+    step=1,
+    help=(
+        "Bulan ditolak jika terdapat missing days berturut-turut "
+        "melebihi nilai ini. Default 4 bermaksud >=5 berturut-turut ditolak."
+    )
+)
+
+# ============================================================
+# RAINFALL THRESHOLDS
+# ============================================================
+
+st.sidebar.subheader("🌧️ Rainfall Threshold")
+
+VALID_MIN = 0.0
+
+WET_DAY_MIN = st.sidebar.number_input(
+    "Wet day threshold (mm)",
+    min_value=0.0,
+    value=0.1,
+    step=0.01
+)
+
+SUSPECT_RAINFALL = st.sidebar.number_input(
+    "Suspect threshold (mm)",
+    min_value=0.0,
+    value=150.0,
+    step=10.0
+)
+
+EXTREME_RAINFALL = st.sidebar.number_input(
+    "Extreme threshold (mm)",
+    min_value=0.0,
+    value=250.0,
+    step=10.0
+)
+
+# ============================================================
+# PLOT SETTINGS - USER BOLEH UBAH
+# ============================================================
+
+st.sidebar.header("🎨 Plot Settings")
+
+# ============================================================
+# BACKGROUND
+# ============================================================
+
+BG_COLOR = st.sidebar.color_picker(
+    "Background Graf",
+    "#FFFFFF"
+)
+
+# ============================================================
+# DEFAULT BAR COLORS - MONTHLY RAINFALL
+# ============================================================
+
+default_colors = [
+    "#4682B4",  # Jan
+    "#87CEEB",  # Feb
+    "#3CB371",  # Mar
+    "#32CD32",  # Apr
+    "#FFD700",  # May
+    "#FFA500",  # Jun
+    "#FF7F50",  # Jul
+    "#FF6347",  # Aug
+    "#9370DB",  # Sep
+    "#DA70D6",  # Oct
+    "#6A5ACD",  # Nov
+    "#008080"   # Dec
+]
+
+# ============================================================
+# SESSION STATE
+# Supaya warna yang dipilih tidak reset
+# ============================================================
+
+if "bar_colors" not in st.session_state:
+
+    st.session_state.bar_colors = default_colors.copy()
+
+
+if "max_daily_color" not in st.session_state:
+
+    st.session_state.max_daily_color = "#FF6347"
+
+
+if "wet_days_color" not in st.session_state:
+
+    st.session_state.wet_days_color = "#3CB371"
+
+
+if "std_color" not in st.session_state:
+
+    st.session_state.std_color = "#9370DB"
+
+
+if "hist_color" not in st.session_state:
+
+    st.session_state.hist_color = "#4682B4"
+
+# ============================================================
+# SELECT BAR CHART
+# ============================================================
+
+chart_options = [
+    "Monthly Rainfall",
+    "Maximum Daily Rainfall",
+    "Wet Days",
+    "Standard Deviation",
+    "Histogram"
+]
+
+selected_chart = st.sidebar.selectbox(
+    "Select Bar Chart",
+    chart_options
+)
+
+# ============================================================
+# MONTHLY RAINFALL
+# ============================================================
+
+if selected_chart == "Monthly Rainfall":
+
+    selected_month = st.sidebar.selectbox(
+        "Select Month",
+        months
+    )
+
+    selected_index = months.index(
+        selected_month
+    )
+
+    st.session_state.bar_colors[
+        selected_index
+    ] = st.sidebar.color_picker(
+        f"{selected_month} Bar Colour",
+        st.session_state.bar_colors[selected_index]
+    )
+
+# ============================================================
+# MAXIMUM DAILY RAINFALL
+# ============================================================
+
+elif selected_chart == "Maximum Daily Rainfall":
+
+    st.session_state.max_daily_color = (
+        st.sidebar.color_picker(
+            "Maximum Daily Rainfall Colour",
+            st.session_state.max_daily_color
+        )
+    )
+
+# ============================================================
+# WET DAYS
+# ============================================================
+
+elif selected_chart == "Wet Days":
+
+    st.session_state.wet_days_color = (
+        st.sidebar.color_picker(
+            "Wet Days Colour",
+            st.session_state.wet_days_color
+        )
+    )
+
+# ============================================================
+# STANDARD DEVIATION
+# ============================================================
+
+elif selected_chart == "Standard Deviation":
+
+    st.session_state.std_color = (
+        st.sidebar.color_picker(
+            "Standard Deviation Colour",
+            st.session_state.std_color
+        )
+    )
+
+# ============================================================
+# HISTOGRAM
+# ============================================================
+
+elif selected_chart == "Histogram":
+
+    st.session_state.hist_color = (
+        st.sidebar.color_picker(
+            "Histogram Colour",
+            st.session_state.hist_color
+        )
+    )
+
+# ============================================================
+# MEAN LINE
+# ============================================================
+
+LINE_COLOR = st.sidebar.color_picker(
+    "Mean Line",
+    "#000000"
+)
+
+# ============================================================
+# MINIMUM
+# ============================================================
+
+MIN_COLOR = st.sidebar.color_picker(
+    "Minimum",
+    "#008000"
+)
+
+# ============================================================
+# MAXIMUM
+# ============================================================
+
+MAX_COLOR = st.sidebar.color_picker(
+    "Maximum",
+    "#FF0000"
+)
 
 # ============================================================
 # CHECK AVAILABLE YEARS
