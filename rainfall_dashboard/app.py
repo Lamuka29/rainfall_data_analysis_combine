@@ -4,8 +4,6 @@ import numpy as np
 import os
 import calendar
 import io
-import zipfile
-
 import streamlit as st
 
 
@@ -292,7 +290,6 @@ MIN_COLOR = st.sidebar.color_picker(
     "#008000"
 )
 
-
 # ============================================================
 # MAXIMUM
 # ============================================================
@@ -302,24 +299,12 @@ MAX_COLOR = st.sidebar.color_picker(
     "#FF0000"
 )
 
-
 # ============================================================
 # FIGURE SIZE
 # ============================================================
 
 FIG_WIDTH = 14
 FIG_HEIGHT = 9
-
-
-# ============================================================
-# BACKGROUND COLORS
-# ============================================================
-
-BACKGROUND_COLORS = {
-    "_ PUSAT PEMULIHAN ORANG UTAN SEPILOK.xlsx": "#EAF4F8",
-    "Tawau Agriculture 1995 - 2025.xlsx": "#F5F0E6"
-}
-
 
 # ============================================================
 # FILE UPLOAD
@@ -2569,28 +2554,7 @@ with main_tabs[0]:
                 use_container_width=True,
                 hide_index=True
             )
-    
-            # ----------------------------------------------------
-            # DOWNLOAD CSV
-            # ----------------------------------------------------
-    
-            csv_data = (
-                analysis_table
-                .to_csv(index=False)
-                .encode("utf-8-sig")
-            )
-    
-            st.download_button(
-                label="📥 Download Statistical Analysis CSV",
-                data=csv_data,
-                file_name=(
-                    f"{file_name}_"
-                    f"Statistical_Analysis_"
-                    f"{YEAR_RANGE_TEXT}.csv"
-                ),
-                mime="text/csv"
-            )
-    
+
         # ========================================================
         # TAB 5
         # MAX DAILY RAINFALL
@@ -3322,23 +3286,6 @@ with main_tabs[0]:
                         hide_index=True
                     )
     
-                    suspect_csv = (
-                        suspect_df
-                        .to_csv(index=False)
-                        .encode("utf-8-sig")
-                    )
-    
-                    st.download_button(
-                        "📥 Download Suspect CSV",
-                        suspect_csv,
-                        file_name=(
-                            f"{file_name}_"
-                            f"Suspect_Rainfall_GT"
-                            f"{SUSPECT_RAINFALL:.0f}mm.csv"
-                        ),
-                        mime="text/csv"
-                    )
-    
                 else:
     
                     st.success(
@@ -3363,23 +3310,6 @@ with main_tabs[0]:
                         extreme_df,
                         use_container_width=True,
                         hide_index=True
-                    )
-    
-                    extreme_csv = (
-                        extreme_df
-                        .to_csv(index=False)
-                        .encode("utf-8-sig")
-                    )
-    
-                    st.download_button(
-                        "📥 Download Extreme CSV",
-                        extreme_csv,
-                        file_name=(
-                            f"{file_name}_"
-                            f"Extreme_Rainfall_GT"
-                            f"{EXTREME_RAINFALL:.0f}mm.csv"
-                        ),
-                        mime="text/csv"
                     )
     
                 else:
@@ -3438,13 +3368,6 @@ with main_tabs[0]:
             "📊 Yearly Rainfall",
             "🔥 Heatmap",
             "📋 Yearly Statistics",
-            "📈 Maximum Daily",
-            "🌧️ Wet Days",
-            "📐 Standard Deviation",
-            "📊 Histogram",
-            "🥧 Rainfall Category",
-            "📦 Boxplot",
-            "⚠️ QC"
         ])
 
         with all_year_tabs[0]:
@@ -3671,23 +3594,6 @@ with main_tabs[0]:
                 hide_index=True
             )
         
-            csv_data = (
-                yearly_statistics
-                .to_csv(index=False)
-                .encode("utf-8-sig")
-            )
-        
-            st.download_button(
-                "📥 Download Yearly Statistics CSV",
-                csv_data,
-                file_name=(
-                    f"{file_name}_"
-                    f"Yearly_Statistics_"
-                    f"{YEAR_RANGE_TEXT}.csv"
-                ),
-                mime="text/csv"
-            )
-    
 # ============================================================
 # MAIN TAB 2 - STATION COMPARISON
 # ============================================================
@@ -3769,201 +3675,6 @@ with main_tabs[1]:
             use_container_width=True
         )
         plt.close(fig)
-
-# ============================================================
-# DOWNLOAD ALL RESULTS AS ZIP
-# ============================================================
-
-st.divider()
-
-st.header(
-    "📦 Download Analysis Results"
-)
-
-st.write(
-    "Muat turun semua jadual analisis, QC dan data suspect/extreme "
-    "sebagai satu fail ZIP."
-)
-
-
-zip_buffer = io.BytesIO()
-
-
-with zipfile.ZipFile(
-    zip_buffer,
-    "w",
-    zipfile.ZIP_DEFLATED
-) as zip_file:
-
-    for result in successful_results:
-
-        file_name = result[
-            "file_name"
-        ]
-
-        analysis_table = result[
-            "analysis_table"
-        ]
-
-        suspect_df = result[
-            "suspect_df"
-        ]
-
-        extreme_df = result[
-            "extreme_df"
-        ]
-
-        yearly_monthly_total = result[
-            "yearly_monthly_total"
-        ]
-
-        monthly_missing_count = result[
-            "monthly_missing_count"
-        ]
-
-        monthly_valid_count = result[
-            "monthly_valid_count"
-        ]
-
-        monthly_max_consecutive_missing = result[
-            "monthly_max_consecutive_missing"
-        ]
-
-        monthly_qc_status = result[
-            "monthly_qc_status"
-        ]
-
-        # ----------------------------------------------------
-        # Statistical Analysis
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Statistical_Analysis_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            analysis_table.to_csv(
-                index=False
-            )
-        )
-
-        # ----------------------------------------------------
-        # Monthly Total
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Monthly_Total_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            yearly_monthly_total.to_csv()
-        )
-
-        # ----------------------------------------------------
-        # Missing
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Missing_Days_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            monthly_missing_count.to_csv()
-        )
-
-        # ----------------------------------------------------
-        # Valid
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Valid_Days_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            monthly_valid_count.to_csv()
-        )
-
-        # ----------------------------------------------------
-        # Consecutive Missing
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Consecutive_Missing_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            monthly_max_consecutive_missing.to_csv()
-        )
-
-        # ----------------------------------------------------
-        # QC Status
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"QC_Status_"
-                f"{YEAR_RANGE_TEXT}.csv"
-            ),
-            monthly_qc_status.to_csv()
-        )
-
-        # ----------------------------------------------------
-        # Suspect
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Suspect_Rainfall.csv"
-            ),
-            suspect_df.to_csv(
-                index=False
-            )
-        )
-
-        # ----------------------------------------------------
-        # Extreme
-        # ----------------------------------------------------
-
-        zip_file.writestr(
-            (
-                f"{file_name}/"
-                f"{file_name}_"
-                f"Extreme_Rainfall.csv"
-            ),
-            extreme_df.to_csv(
-                index=False
-            )
-        )
-
-
-zip_buffer.seek(0)
-
-
-st.download_button(
-    label="📦 Download All Results (ZIP)",
-    data=zip_buffer.getvalue(),
-    file_name=(
-        f"Rainfall_Analysis_"
-        f"{YEAR_RANGE_TEXT}_"
-        f"Target_{target_year}.zip"
-    ),
-    mime="application/zip"
-)
-
 
 # ============================================================
 # FOOTER
