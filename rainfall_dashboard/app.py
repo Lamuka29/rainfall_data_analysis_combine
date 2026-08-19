@@ -485,16 +485,6 @@ if not all_available_years:
     st.stop()
 
 # ============================================================
-# AVAILABLE YEAR INFORMATION
-# ============================================================
-
-st.sidebar.success(
-    f"📅 Tahun tersedia: "
-    f"{all_available_years[0]}–"
-    f"{all_available_years[-1]}"
-)
-
-# ============================================================
 # FUNCTION
 # MAXIMUM CONSECUTIVE MISSING
 # ============================================================
