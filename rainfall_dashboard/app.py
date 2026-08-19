@@ -491,8 +491,8 @@ YEAR_RANGE_TEXT = (
 analysis_mode = st.sidebar.radio(
     "Analysis Mode",
     [
-        "🎯 Target Year",
-        "📅 All Years"
+        "Target Year",
+        "All Years"
     ]
 )
 
@@ -519,7 +519,7 @@ target_year = st.sidebar.selectbox(
     "Target Year",
     target_year_options,
     index=len(target_year_options) - 1,
-    disabled=(analysis_mode == "📅 All Years")
+    disabled=(analysis_mode == "All Years")
 )
 
 target_year = int(target_year)
