@@ -1723,11 +1723,15 @@ with main_tabs[0]:
         all_daily = result[
             "all_daily"
         ]
-    
+
+        target_data = all_daily[
+            all_daily["Year"] == target_year
+        ].copy()
+        
         yearly_monthly_total = result[
             "yearly_monthly_total"
         ]
-    
+        
         monthly_missing_count = result[
             "monthly_missing_count"
         ]
