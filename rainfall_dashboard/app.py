@@ -1413,6 +1413,16 @@ selected_station = st.sidebar.selectbox(
 )
 
 # ============================================================
+# FILTER DISPLAY RESULT
+# ============================================================
+
+display_results = [
+    result
+    for result in successful_results
+    if result["file_name"] == selected_station
+]
+
+# ============================================================
 # GLOBAL AUTO Y-AXIS
 # ============================================================
 
@@ -1574,7 +1584,7 @@ with st.expander(
 # DISPLAY EACH FILE
 # ============================================================
 
-for result in successful_results:
+for result in display_results:
 
     file_name = result[
         "file_name"
