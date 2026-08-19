@@ -32,38 +32,6 @@ st.caption(
 st.sidebar.header("⚙️ Analysis Settings")
 
 # ============================================================
-# STATION SELECTION
-# ============================================================
-
-st.sidebar.header("📍 Station Selection")
-
-station_options = ["All Stations"] + [
-    result["file_name"]
-    for result in successful_results
-]
-
-selected_station = st.sidebar.selectbox(
-    "Select Station",
-    station_options
-)
-
-if selected_station == "All Stations":
-
-    display_results = successful_results
-
-else:
-
-    display_results = [
-        result
-        for result in successful_results
-        if result["file_name"] == selected_station
-    ]
-
-st.sidebar.info(
-    f"Station displayed: {selected_station}"
-)
-
-# ============================================================
 # TAHUN CLIMATOLOGY
 # ============================================================
 
@@ -1410,18 +1378,29 @@ if not successful_results:
 # STATION SELECTION
 # ============================================================
 
-station_options = ["All Stations"] + [
+st.sidebar.header("📍 Station Selection")
+
+station_options = [
     result["file_name"]
     for result in successful_results
 ]
 
 selected_station = st.sidebar.selectbox(
-    "📍 Select Station",
+    "Select Station",
     station_options,
     index=0,
     help="Pilih stesen yang mahu dipaparkan."
 )
 
+# ============================================================
+# FILTER DISPLAY RESULT
+# ============================================================
+
+display_results = [
+    result
+    for result in successful_results
+    if result["file_name"] == selected_station
+]
 
 # ============================================================
 # FILTER STATION
