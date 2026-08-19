@@ -1405,11 +1405,15 @@ station_options = [
     for result in successful_results
 ]
 
-selected_station = st.sidebar.selectbox(
-    "Select Station",
+selected_stations = st.sidebar.multiselect(
+    "Select Station(s)",
     station_options,
-    index=0,
-    help="Pilih stesen yang mahu dipaparkan."
+    default=[station_options[0]],
+    help=(
+        "Pilih satu atau lebih stesen. "
+        "Jika lebih daripada satu stesen dipilih, "
+        "stesen boleh dibandingkan dalam graf yang sama."
+    )
 )
 
 # ============================================================
@@ -1419,8 +1423,16 @@ selected_station = st.sidebar.selectbox(
 display_results = [
     result
     for result in successful_results
-    if result["file_name"] == selected_station
+    if result["file_name"] in selected_stations
 ]
+
+if not selected_stations:
+
+    st.warning(
+        "Sila pilih sekurang-kurangnya satu stesen."
+    )
+
+    st.stop()
 
 # ============================================================
 # GLOBAL AUTO Y-AXIS
@@ -1579,291 +1591,301 @@ with st.expander(
             f"Month: {max_mean_month}"
         )
 
-
 # ============================================================
-# DISPLAY EACH FILE
+# MAIN TABS
 # ============================================================
 
-for result in display_results:
-
-    file_name = result[
-        "file_name"
-    ]
-
-    original_file_name = result[
-        "original_file_name"
-    ]
-
-    all_daily = result[
-        "all_daily"
-    ]
-
-    yearly_monthly_total = result[
-        "yearly_monthly_total"
-    ]
-
-    monthly_missing_count = result[
-        "monthly_missing_count"
-    ]
-
-    monthly_valid_count = result[
-        "monthly_valid_count"
-    ]
-
-    monthly_max_consecutive_missing = result[
-        "monthly_max_consecutive_missing"
-    ]
-
-    monthly_qc_status = result[
-        "monthly_qc_status"
-    ]
-
-    rainfall_target = result[
-        "rainfall_target"
-    ]
-
-    mean_monthly_total = result[
-        "mean_monthly_total"
-    ]
-
-    anomaly_percent = result[
-        "anomaly_percent"
-    ]
-
-    min_target_month = result[
-        "min_target_month"
-    ]
-
-    min_target_value = result[
-        "min_target_value"
-    ]
-
-    max_target_month = result[
-        "max_target_month"
-    ]
-
-    max_target_value = result[
-        "max_target_value"
-    ]
-
-    min_mean_month = result[
-        "min_mean_month"
-    ]
-
-    min_mean_value = result[
-        "min_mean_value"
-    ]
-
-    max_mean_month = result[
-        "max_mean_month"
-    ]
-
-    max_mean_value = result[
-        "max_mean_value"
-    ]
-
-    median_daily = result[
-        "median_daily"
-    ]
-
-    std_daily = result[
-        "std_daily"
-    ]
-
-    max_daily = result[
-        "max_daily"
-    ]
-
-    min_daily = result[
-        "min_daily"
-    ]
-
-    wet_days = result[
-        "wet_days"
-    ]
-
-    valid_data_percent = result[
-        "valid_data_percent"
-    ]
-
-    analysis_table = result[
-        "analysis_table"
-    ]
-
-    suspect_df = result[
-        "suspect_df"
-    ]
-
-    extreme_df = result[
-        "extreme_df"
-    ]
-
-    hist_values = result[
-        "hist_values"
-    ]
-
-    category_values = result[
-        "category_values"
-    ]
-
-    category_labels = result[
-        "category_labels"
-    ]
-
-    read_errors = result[
-        "read_errors"
-    ]
-
-    # ========================================================
-    # FILE HEADER
-    # ========================================================
-
-    st.divider()
-
-    st.header(
-        f"📁 {original_file_name}"
-    )
-
-    # ========================================================
-    # READ ERROR
-    # ========================================================
-
-    if read_errors:
-
-        with st.expander(
-            "⚠️ Sheet yang tidak berjaya dibaca"
-        ):
-
-            error_df = pd.DataFrame(
-                read_errors
-            )
-
-            st.dataframe(
-                error_df,
-                use_container_width=True,
-                hide_index=True
-            )
-
-    # ========================================================
-    # BASIC METRICS
-    # ========================================================
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-
-        if (
-            min_target_month is not None
-            and min_target_value is not None
-        ):
-
-            st.metric(
-                f"Minimum {target_year}",
-                f"{min_target_value:.2f} mm",
-                min_target_month
-            )
-
-        else:
-
-            st.metric(
-                f"Minimum {target_year}",
-                "N.A."
-            )
-
-    with col2:
-
-        if (
-            max_target_month is not None
-            and max_target_value is not None
-        ):
-
-            st.metric(
-                f"Maximum {target_year}",
-                f"{max_target_value:.2f} mm",
-                max_target_month
-            )
-
-        else:
-
-            st.metric(
-                f"Maximum {target_year}",
-                "N.A."
-            )
-
-    with col3:
-
-        if (
-            min_mean_month is not None
-            and min_mean_value is not None
-        ):
-
-            st.metric(
-                "Minimum Mean",
-                f"{min_mean_value:.2f} mm",
-                min_mean_month
-            )
-
-        else:
-
-            st.metric(
-                "Minimum Mean",
-                "N.A."
-            )
-
-    with col4:
-
-        if (
-            max_mean_month is not None
-            and max_mean_value is not None
-        ):
-
-            st.metric(
-                "Maximum Mean",
-                f"{max_mean_value:.2f} mm",
-                max_mean_month
-            )
-
-        else:
-
-            st.metric(
-                "Maximum Mean",
-                "N.A."
-            )
-
-    # ========================================================
-    # QC SUMMARY
-    # ========================================================
-
-    qc_col1, qc_col2, qc_col3 = st.columns(3)
-
-    with qc_col1:
-
-        st.metric(
-            "Suspect Records",
-            len(suspect_df)
+main_tabs = st.tabs([
+    "📍 Station Analysis",
+    "🔄 Station Comparison"
+])
+
+with main_tabs[0]:
+    
+    # ============================================================
+    # DISPLAY EACH FILE
+    # ============================================================
+    
+    for result in display_results:
+    
+        file_name = result[
+            "file_name"
+        ]
+    
+        original_file_name = result[
+            "original_file_name"
+        ]
+    
+        all_daily = result[
+            "all_daily"
+        ]
+    
+        yearly_monthly_total = result[
+            "yearly_monthly_total"
+        ]
+    
+        monthly_missing_count = result[
+            "monthly_missing_count"
+        ]
+    
+        monthly_valid_count = result[
+            "monthly_valid_count"
+        ]
+    
+        monthly_max_consecutive_missing = result[
+            "monthly_max_consecutive_missing"
+        ]
+    
+        monthly_qc_status = result[
+            "monthly_qc_status"
+        ]
+    
+        rainfall_target = result[
+            "rainfall_target"
+        ]
+    
+        mean_monthly_total = result[
+            "mean_monthly_total"
+        ]
+    
+        anomaly_percent = result[
+            "anomaly_percent"
+        ]
+    
+        min_target_month = result[
+            "min_target_month"
+        ]
+    
+        min_target_value = result[
+            "min_target_value"
+        ]
+    
+        max_target_month = result[
+            "max_target_month"
+        ]
+    
+        max_target_value = result[
+            "max_target_value"
+        ]
+    
+        min_mean_month = result[
+            "min_mean_month"
+        ]
+    
+        min_mean_value = result[
+            "min_mean_value"
+        ]
+    
+        max_mean_month = result[
+            "max_mean_month"
+        ]
+    
+        max_mean_value = result[
+            "max_mean_value"
+        ]
+    
+        median_daily = result[
+            "median_daily"
+        ]
+    
+        std_daily = result[
+            "std_daily"
+        ]
+    
+        max_daily = result[
+            "max_daily"
+        ]
+    
+        min_daily = result[
+            "min_daily"
+        ]
+    
+        wet_days = result[
+            "wet_days"
+        ]
+    
+        valid_data_percent = result[
+            "valid_data_percent"
+        ]
+    
+        analysis_table = result[
+            "analysis_table"
+        ]
+    
+        suspect_df = result[
+            "suspect_df"
+        ]
+    
+        extreme_df = result[
+            "extreme_df"
+        ]
+    
+        hist_values = result[
+            "hist_values"
+        ]
+    
+        category_values = result[
+            "category_values"
+        ]
+    
+        category_labels = result[
+            "category_labels"
+        ]
+    
+        read_errors = result[
+            "read_errors"
+        ]
+    
+        # ========================================================
+        # FILE HEADER
+        # ========================================================
+    
+        st.divider()
+    
+        st.header(
+            f"📁 {original_file_name}"
         )
-
-    with qc_col2:
-
-        st.metric(
-            "Extreme Records",
-            len(extreme_df)
-        )
-
-    with qc_col3:
-
-        st.metric(
-            "Valid Daily Records",
-            int(
-                (
-                    all_daily[months]
-                    .notna()
-                    .sum()
-                    .sum()
+    
+        # ========================================================
+        # READ ERROR
+        # ========================================================
+    
+        if read_errors:
+    
+            with st.expander(
+                "⚠️ Sheet yang tidak berjaya dibaca"
+            ):
+    
+                error_df = pd.DataFrame(
+                    read_errors
+                )
+    
+                st.dataframe(
+                    error_df,
+                    use_container_width=True,
+                    hide_index=True
+                )
+    
+        # ========================================================
+        # BASIC METRICS
+        # ========================================================
+    
+        col1, col2, col3, col4 = st.columns(4)
+    
+        with col1:
+    
+            if (
+                min_target_month is not None
+                and min_target_value is not None
+            ):
+    
+                st.metric(
+                    f"Minimum {target_year}",
+                    f"{min_target_value:.2f} mm",
+                    min_target_month
+                )
+    
+            else:
+    
+                st.metric(
+                    f"Minimum {target_year}",
+                    "N.A."
+                )
+    
+        with col2:
+    
+            if (
+                max_target_month is not None
+                and max_target_value is not None
+            ):
+    
+                st.metric(
+                    f"Maximum {target_year}",
+                    f"{max_target_value:.2f} mm",
+                    max_target_month
+                )
+    
+            else:
+    
+                st.metric(
+                    f"Maximum {target_year}",
+                    "N.A."
+                )
+    
+        with col3:
+    
+            if (
+                min_mean_month is not None
+                and min_mean_value is not None
+            ):
+    
+                st.metric(
+                    "Minimum Mean",
+                    f"{min_mean_value:.2f} mm",
+                    min_mean_month
+                )
+    
+            else:
+    
+                st.metric(
+                    "Minimum Mean",
+                    "N.A."
+                )
+    
+        with col4:
+    
+            if (
+                max_mean_month is not None
+                and max_mean_value is not None
+            ):
+    
+                st.metric(
+                    "Maximum Mean",
+                    f"{max_mean_value:.2f} mm",
+                    max_mean_month
+                )
+    
+            else:
+    
+                st.metric(
+                    "Maximum Mean",
+                    "N.A."
+                )
+    
+        # ========================================================
+        # QC SUMMARY
+        # ========================================================
+    
+        qc_col1, qc_col2, qc_col3 = st.columns(3)
+    
+        with qc_col1:
+    
+            st.metric(
+                "Suspect Records",
+                len(suspect_df)
+            )
+    
+        with qc_col2:
+    
+            st.metric(
+                "Extreme Records",
+                len(extreme_df)
+            )
+    
+        with qc_col3:
+    
+            st.metric(
+                "Valid Daily Records",
+                int(
+                    (
+                        all_daily[months]
+                        .notna()
+                        .sum()
+                        .sum()
+                    )
                 )
             )
-        )
-
+    
     # ========================================================
     # TABS
     # ========================================================
@@ -3293,6 +3315,87 @@ for result in display_results:
                 use_container_width=True
             )
 
+# ============================================================
+# MAIN TAB 2 - STATION COMPARISON
+# ============================================================
+
+with main_tabs[1]:
+
+    st.header("📊 Station Rainfall Comparison")
+
+    if len(display_results) < 2:
+
+        st.info(
+            "Sila pilih sekurang-kurangnya 2 stesen "
+            "untuk membuat perbandingan."
+        )
+
+    else:
+        fig, ax = plt.subplots(
+            figsize=(FIG_WIDTH, FIG_HEIGHT)
+        )
+
+        fig.patch.set_facecolor(BG_COLOR)
+        ax.set_facecolor(BG_COLOR)
+
+        x = np.arange(len(months))
+
+        for result in display_results:
+
+            station_name = result["file_name"]
+
+            station_rainfall = (
+                result["rainfall_target"]
+                .reindex(months)
+            )
+
+            ax.plot(
+                x,
+                station_rainfall.values,
+                marker="o",
+                linewidth=2.5,
+                markersize=6,
+                label=station_name
+            )
+
+        ax.set_title(
+            f"Monthly Rainfall Comparison Between Stations - "
+            f"{target_year}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month")
+        ax.set_ylabel("Total Rainfall (mm)")
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+
+        ax.set_ylim(
+            RAINFALL_MIN,
+            RAINFALL_MAX
+        )
+
+        ax.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
+        )
+
+        ax.legend(
+            title="Station",
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left"
+        )
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+        plt.close(fig)
 
 # ============================================================
 # DOWNLOAD ALL RESULTS AS ZIP
