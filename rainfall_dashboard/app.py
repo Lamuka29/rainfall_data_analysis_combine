@@ -3377,13 +3377,29 @@ with main_tabs[0]:
         with all_year_tabs[0]:
         
             st.subheader(
-                f"Monthly Rainfall by Year "
+                f"Annual Total Rainfall vs Mean Annual Rainfall "
                 f"{YEAR_RANGE_TEXT}"
             )
         
-            yearly_data = (
+            # ========================================================
+            # YEARLY TOTAL
+            # Jumlah Jan hingga Dec bagi setiap tahun
+            # ========================================================
+        
+            yearly_total = (
                 yearly_monthly_total
-                .reindex(columns=months)
+                .sum(axis=1, skipna=True)
+            )
+        
+            # ========================================================
+            # MEAN ANNUAL RAINFALL
+            # Purata jumlah hujan tahunan
+            # ========================================================
+        
+            mean_annual_rainfall = yearly_total.mean()
+        
+            x = np.arange(
+                len(yearly_total)
             )
         
             fig, ax = plt.subplots(
@@ -3393,36 +3409,87 @@ with main_tabs[0]:
             fig.patch.set_facecolor(BG_COLOR)
             ax.set_facecolor(BG_COLOR)
         
-            x = np.arange(len(months))
+            # ========================================================
+            # BAR
+            # ANNUAL TOTAL RAINFALL
+            # ========================================================
         
-            for year in yearly_data.index:
+            bars = ax.bar(
+                x,
+                yearly_total.values,
+                width=0.60,
+                color="steelblue",
+                edgecolor="black",
+                linewidth=0.8,
+                label="Annual Total Rainfall"
+            )
         
-                ax.plot(
-                    x,
-                    yearly_data.loc[year].values,
-                    marker="o",
-                    linewidth=2,
-                    markersize=5,
-                    label=str(year)
+            # ========================================================
+            # BAR LABEL
+            # ========================================================
+        
+            for bar, value in zip(
+                bars,
+                yearly_total.values
+            ):
+        
+                if pd.notna(value):
+        
+                    ax.annotate(
+                        f"{value:.1f}",
+                        (
+                            bar.get_x()
+                            + bar.get_width() / 2,
+                            value
+                        ),
+                        xytext=(0, 6),
+                        textcoords="offset points",
+                        ha="center",
+                        fontsize=9,
+                        fontweight="bold"
+                    )
+        
+            # ========================================================
+            # MEAN LINE
+            # ========================================================
+        
+            ax.axhline(
+                mean_annual_rainfall,
+                color=LINE_COLOR,
+                linewidth=2.5,
+                linestyle="--",
+                label=(
+                    f"Mean Annual Rainfall "
+                    f"({mean_annual_rainfall:.1f} mm)"
                 )
+            )
+        
+            # ========================================================
+            # TITLE
+            # ========================================================
         
             ax.set_title(
                 f"{file_name}\n"
-                f"Monthly Rainfall by Year "
+                f"Annual Total Rainfall vs Mean Annual Rainfall "
                 f"{YEAR_RANGE_TEXT}",
                 fontsize=16,
                 fontweight="bold"
             )
         
-            ax.set_xlabel("Month")
-            ax.set_ylabel("Total Rainfall (mm)")
+            ax.set_xlabel(
+                "Year",
+                fontsize=12
+            )
+        
+            ax.set_ylabel(
+                "Total Rainfall (mm)",
+                fontsize=12
+            )
         
             ax.set_xticks(x)
-            ax.set_xticklabels(months)
         
-            ax.set_ylim(
-                RAINFALL_MIN,
-                RAINFALL_MAX
+            ax.set_xticklabels(
+                yearly_total.index.astype(str)
             )
         
             ax.grid(
@@ -3433,7 +3500,6 @@ with main_tabs[0]:
             )
         
             ax.legend(
-                title="Year",
                 bbox_to_anchor=(1.02, 1),
                 loc="upper left"
             )
@@ -3446,7 +3512,7 @@ with main_tabs[0]:
             )
         
             plt.close(fig)
-
+    
         #-------------------------------------------
         # Heatmap
         #-------------------------------------------
