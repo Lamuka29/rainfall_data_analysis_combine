@@ -1570,13 +1570,6 @@ with summary_col2:
         target_year
     )
 
-with summary_col3:
-
-    st.metric(
-        "Climatology",
-        YEAR_RANGE_TEXT
-    )
-
 with summary_col4:
 
     st.metric(
