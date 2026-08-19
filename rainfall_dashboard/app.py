@@ -31,6 +31,7 @@ st.caption(
 
 st.sidebar.header("⚙️ Analysis Settings")
 
+
 # ============================================================
 # TAHUN CLIMATOLOGY
 # ============================================================
@@ -125,7 +126,7 @@ WET_DAY_MIN = st.sidebar.number_input(
     "Wet day threshold (mm)",
     min_value=0.0,
     value=0.1,
-    step=0.1
+    step=0.01
 )
 
 SUSPECT_RAINFALL = st.sidebar.number_input(
@@ -377,7 +378,7 @@ BACKGROUND_COLORS = {
 # ============================================================
 
 uploaded_files = st.file_uploader(
-    "📁 Upload Excel file",
+    "📁 Upload Excel file data hujan mengikut stesen AAWS",
     type=["xlsx", "xls"],
     accept_multiple_files=True
 )
@@ -443,10 +444,22 @@ def read_year_sheet(uploaded_file, year):
 
         file_bytes = uploaded_file.getvalue()
 
+        file_ext = os.path.splitext(
+            uploaded_file.name
+        )[1].lower()
+        
+        if file_ext == ".xls":
+            engine = "xlrd"
+        elif file_ext == ".xlsx":
+            engine = "openpyxl"
+        else:
+            return None, "Format fail tidak disokong."
+
         df = pd.read_excel(
             io.BytesIO(file_bytes),
             sheet_name=str(year),
-            header=6
+            header=6,
+            engine=engine
         )
 
     except Exception as e:
@@ -1159,16 +1172,21 @@ def analyze_file(uploaded_file):
     )
 
     light_rain = sum(
-        0.1 <= value <= 10.0
+        0.1 <= value <= 2.5
         for value in pie_values
     )
 
     moderate_rain = sum(
-        10.0 < value <= 50.0
+        2.5 < value <= 10.0
         for value in pie_values
     )
 
     heavy_rain = sum(
+        10.0 < value <= 50.0
+        for value in pie_values
+    )
+    
+    extreme_rain = sum(
         value > 50.0
         for value in pie_values
     )
@@ -1177,14 +1195,16 @@ def analyze_file(uploaded_file):
         no_rain,
         light_rain,
         moderate_rain,
-        heavy_rain
+        heavy_rain,
+        extreme_rain
     ]
 
     category_labels = [
         "No Rain (0.0 mm)",
-        "Light Rain (0.1–10 mm)",
-        "Moderate Rain (>10–50 mm)",
-        "Heavy Rain (>50 mm)"
+        "Light Rain (0.1–2.5 mm)",
+        "Moderate Rain (>2.5–10.0 mm)",
+        "Heavy Rain (>10.0-50.0 mm)",
+        "Extreme Rain (>50 mm)"
     ]
 
     # ========================================================
@@ -1392,6 +1412,7 @@ selected_station = st.sidebar.selectbox(
     help="Pilih stesen yang mahu dipaparkan."
 )
 
+
 # ============================================================
 # FILTER DISPLAY RESULT
 # ============================================================
@@ -1401,22 +1422,6 @@ display_results = [
     for result in successful_results
     if result["file_name"] == selected_station
 ]
-
-# ============================================================
-# FILTER STATION
-# ============================================================
-
-if selected_station == "All Stations":
-
-    display_results = successful_results
-
-else:
-
-    display_results = [
-        result
-        for result in successful_results
-        if result["file_name"] == selected_station
-    ]
 
 # ============================================================
 # GLOBAL AUTO Y-AXIS
@@ -1874,9 +1879,18 @@ for result in display_results:
         "📐 Standard Deviation",
         "📊 Histogram",
         "🥧 Rainfall Category",
+        "📦 Boxplot",
         "⚠️ QC"
     ])
 
+    # ========================================================
+    # TARGET YEAR DATA FOR PLOTS
+    # ========================================================
+    
+    target_data = all_daily[
+        all_daily["Year"] == target_year
+    ].copy()
+    
     # ========================================================
     # TAB 1
     # BAR + LINE
@@ -2541,7 +2555,7 @@ for result in display_results:
 
         st.subheader(
             f"Number of Wet Days "
-            f"(≥{WET_DAY_MIN:.1f} mm) - "
+            f"(≥0.1 mm) - "
             f"{target_year}"
         )
 
@@ -2592,7 +2606,7 @@ for result in display_results:
         ax.set_title(
             f"{file_name}\n"
             f"Number of Wet Days "
-            f"(≥{WET_DAY_MIN:.1f} mm) - "
+            f"(≥0.1 mm) - "
             f"{target_year}",
             fontsize=16,
             fontweight="bold"
@@ -2794,7 +2808,7 @@ for result in display_results:
 
             st.warning(
                 f"Tiada data hujan ≥ "
-                f"{WET_DAY_MIN:.1f} mm untuk histogram."
+                f"0.1 mm untuk histogram."
             )
 
     # ========================================================
@@ -2901,10 +2915,227 @@ for result in display_results:
 
     # ========================================================
     # TAB 10
+    # BOXPLOT
+    # ========================================================
+    
+    with tabs[9]:
+    
+        st.subheader(
+            f"Daily Rainfall Distribution by Month - "
+            f"{target_year}"
+        )
+    
+        # ----------------------------------------------------
+        # Collect daily rainfall ≥ 0.1 mm for each month
+        # ----------------------------------------------------
+    
+        boxplot_data = []
+    
+        boxplot_labels = []
+    
+        for month in months:
+    
+            month_index = (
+                months.index(month) + 1
+            )
+    
+            days_expected = calendar.monthrange(
+                target_year,
+                month_index
+            )[1]
+    
+            raw_values = target_data[
+                month
+            ].iloc[:days_expected].copy()
+    
+            values = raw_values[
+                raw_values.notna() &
+                (raw_values >= WET_DAY_MIN)
+            ]
+    
+            boxplot_data.append(
+                values.tolist()
+            )
+    
+            boxplot_labels.append(
+                month
+            )
+    
+        # ----------------------------------------------------
+        # Check whether data exists
+        # ----------------------------------------------------
+    
+        if any(
+            len(values) > 0
+            for values in boxplot_data
+        ):
+    
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+    
+            bg_color = BG_COLOR
+    
+            fig.patch.set_facecolor(
+                bg_color
+            )
+    
+            ax.set_facecolor(
+                bg_color
+            )
+    
+            # ------------------------------------------------
+            # Boxplot
+            # ------------------------------------------------
+    
+            bp = ax.boxplot(
+                boxplot_data,
+                tick_labels=boxplot_labels,
+                patch_artist=True,
+                showmeans=True,
+                meanline=False,
+                showfliers=True
+            )
+    
+            # ------------------------------------------------
+            # Box colour
+            # ------------------------------------------------
+    
+            for box in bp["boxes"]:
+    
+                box.set(
+                    facecolor="#87CEEB",
+                    edgecolor="black",
+                    linewidth=1
+                )
+    
+            # ------------------------------------------------
+            # Median
+            # ------------------------------------------------
+    
+            for median in bp["medians"]:
+    
+                median.set(
+                    color="red",
+                    linewidth=2
+                )
+    
+            # ------------------------------------------------
+            # Mean
+            # ------------------------------------------------
+    
+            for mean in bp["means"]:
+    
+                mean.set(
+                    marker="o",
+                    markerfacecolor="black",
+                    markeredgecolor="black",
+                    markersize=5
+                )
+    
+            # ------------------------------------------------
+            # Whisker
+            # ------------------------------------------------
+    
+            for whisker in bp["whiskers"]:
+    
+                whisker.set(
+                    color="black",
+                    linewidth=1
+                )
+    
+            # ------------------------------------------------
+            # Caps
+            # ------------------------------------------------
+    
+            for cap in bp["caps"]:
+    
+                cap.set(
+                    color="black",
+                    linewidth=1
+                )
+    
+            # ------------------------------------------------
+            # Outliers
+            # ------------------------------------------------
+    
+            for flier in bp["fliers"]:
+    
+                flier.set(
+                    marker="o",
+                    markerfacecolor="orange",
+                    markeredgecolor="black",
+                    markersize=5,
+                    alpha=0.7
+                )
+    
+            # ------------------------------------------------
+            # Title
+            # ------------------------------------------------
+    
+            ax.set_title(
+                f"{file_name}\n"
+                f"Daily Rainfall Distribution by Month - "
+                f"{target_year}",
+                fontsize=16,
+                fontweight="bold"
+            )
+    
+            ax.set_xlabel(
+                "Month",
+                fontsize=12
+            )
+    
+            ax.set_ylabel(
+                "Daily Rainfall (mm)",
+                fontsize=12
+            )
+    
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+    
+            plt.tight_layout()
+    
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+    
+            plt.close(fig)
+    
+            # ------------------------------------------------
+            # Explanation
+            # ------------------------------------------------
+    
+            st.info(
+                """
+                **Cara membaca Boxplot:**
+    
+                - Garis dalam kotak = Median
+                - Titik hitam = Mean
+                - Kotak = 50% data tengah (Q1–Q3)
+                - Whisker = julat data utama
+                - Titik di luar whisker = Outlier
+                """
+            )
+    
+        else:
+    
+            st.warning(
+                f"Tiada data hujan ≥ "
+                f"0.1 mm untuk boxplot."
+            )
+        
+    # ========================================================
+    # TAB 11
     # QUALITY CONTROL
     # ========================================================
 
-    with tabs[9]:
+    with tabs[10]:
 
         st.subheader(
             "⚠️ Quality Control"
@@ -2915,7 +3146,7 @@ for result in display_results:
             **QC Rules**
 
             - `0.0 mm` = data sah
-            - `≥ {WET_DAY_MIN:.1f} mm` = wet day
+            - `≥ 0.1 mm` = wet day
             - `> {SUSPECT_RAINFALL:.0f} mm` = suspect
             - `> {EXTREME_RAINFALL:.0f} mm` = extreme
             - Negative rainfall = invalid / dibuang
