@@ -1570,7 +1570,7 @@ with summary_col2:
         target_year
     )
 
-with summary_col4:
+with summary_col3:
 
     st.metric(
         "Auto Y-Axis Maximum",
