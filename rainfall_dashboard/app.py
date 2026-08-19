@@ -3770,7 +3770,110 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
+
+        # ============================================================
+        # PIE CHART - RAINFALL CATEGORY COMPARISON
+        # ALL YEARS
+        # ============================================================
         
+        st.subheader("🥧 Percentage of Days by Rainfall Category")
+        
+        # Kategori hujan
+        rainfall_categories = [
+            "No Rain",
+            "Light Rain",
+            "Moderate Rain",
+            "Heavy Rain"
+        ]
+        
+        # Warna kategori
+        category_colors = [
+            "#d9d9d9",
+            "#90caf9",
+            "#42a5f5",
+            "#1565c0"
+        ]
+        
+        # Buat satu pie chart untuk setiap stesen
+        pie_cols = st.columns(len(display_results))
+        
+        for col, result in zip(pie_cols, display_results):
+        
+            station_name = result["file_name"]
+        
+            # Ambil data harian semua tahun
+            station_data = result["all_daily"].copy()
+        
+            # Pastikan column rainfall tersedia
+            rainfall_values = station_data["Rainfall"].dropna()
+        
+            # Kira kategori
+            no_rain = (rainfall_values == 0).sum()
+            light_rain = (
+                (rainfall_values > 0) &
+                (rainfall_values <= 10)
+            ).sum()
+            moderate_rain = (
+                (rainfall_values > 10) &
+                (rainfall_values <= 50)
+            ).sum()
+            heavy_rain = (
+                rainfall_values > 50
+            ).sum()
+        
+            category_counts = [
+                no_rain,
+                light_rain,
+                moderate_rain,
+                heavy_rain
+            ]
+        
+            # Buang kategori yang kosong
+            labels = []
+            values = []
+            colors = []
+        
+            for label, value, color in zip(
+                rainfall_categories,
+                category_counts,
+                category_colors
+            ):
+                if value > 0:
+                    labels.append(label)
+                    values.append(value)
+                    colors.append(color)
+        
+            # ========================================================
+            # PIE
+            # ========================================================
+        
+            fig, ax = plt.subplots(
+                figsize=(5, 5)
+            )
+        
+            ax.pie(
+                values,
+                labels=labels,
+                colors=colors,
+                autopct="%1.1f%%",
+                startangle=90
+            )
+        
+            ax.set_title(
+                station_name,
+                fontsize=12,
+                fontweight="bold"
+            )
+        
+            plt.tight_layout()
+        
+            col.pyplot(
+                fig,
+                use_container_width=True
+            )
+        
+            plt.close(fig)
+
 # ============================================================
 # FOOTER
 # ============================================================
