@@ -3629,83 +3629,82 @@ with main_tabs[1]:
 
         x = np.arange(len(months))
 
-        # Lebar bar ikut jumlah stesen
-        n_stations = len(display_results)
-        width = 0.8 / n_stations
+        # ----------------------------------------------------
+        # 2 STATION
+        # ----------------------------------------------------
 
-        for i, result in enumerate(display_results):
+        for i, result in enumerate(display_results[:2]):
 
             station_name = result["file_name"]
 
-            # ====================================================
-            # TOTAL RAINFALL - SEMUA TAHUN
-            # ====================================================
-
-            yearly_monthly_total = result[
-                "yearly_monthly_total"
-            ]
-
+            # Total rainfall semua tahun / bulan
             station_total = (
-                yearly_monthly_total
-                .sum(axis=0)
+                result["rainfall_target"]
                 .reindex(months)
             )
 
-            # ====================================================
-            # MEAN RAINFALL - SEMUA TAHUN
-            # ====================================================
-
+            # Mean rainfall semua tahun / bulan
             station_mean = (
-                yearly_monthly_total
-                .mean(axis=0)
+                result["mean_monthly_total"]
                 .reindex(months)
             )
 
-            # ====================================================
-            # BAR - TOTAL
-            # ====================================================
+            # ------------------------------------------------
+            # BAR
+            # ------------------------------------------------
+
+            width = 0.35
 
             offset = (
-                i - (n_stations - 1) / 2
-            ) * width
+                -width / 2
+                if i == 0
+                else width / 2
+            )
 
             ax.bar(
                 x + offset,
                 station_total.values,
                 width=width,
                 alpha=0.65,
-                label=f"{station_name} — Total (All Years)"
+                label=f"{station_name} - Total"
             )
 
-            # ====================================================
-            # LINE - MEAN
-            # ====================================================
-            
+            # ------------------------------------------------
+            # LINE
+            # ------------------------------------------------
+
             ax.plot(
                 x,
                 station_mean.values,
                 marker="o",
                 linewidth=2.5,
                 markersize=6,
-                label=f"{station_name} — Mean (All Years)"
+                label=f"{station_name} - Mean"
             )
 
-        # ========================================================
+        # ----------------------------------------------------
         # TITLE
-        # ========================================================
+        # ----------------------------------------------------
 
         ax.set_title(
-            "Monthly Rainfall Comparison Between Stations\n"
-            "Total and Mean Rainfall - All Available Years",
+            "Station Rainfall Comparison",
             fontsize=16,
             fontweight="bold"
         )
 
         ax.set_xlabel("Month")
-        ax.set_ylabel("Rainfall (mm)")
+
+        ax.set_ylabel(
+            "Rainfall (mm)"
+        )
 
         ax.set_xticks(x)
         ax.set_xticklabels(months)
+
+        ax.set_ylim(
+            RAINFALL_MIN,
+            RAINFALL_MAX
+        )
 
         ax.grid(
             True,
@@ -3714,10 +3713,14 @@ with main_tabs[1]:
             alpha=0.4
         )
 
+        # ----------------------------------------------------
+        # LEGEND
+        # ----------------------------------------------------
+
         ax.legend(
             title="Station",
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left"
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1)
         )
 
         plt.tight_layout()
@@ -3728,7 +3731,7 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
-        
+
 # ============================================================
 # FOOTER
 # ============================================================
