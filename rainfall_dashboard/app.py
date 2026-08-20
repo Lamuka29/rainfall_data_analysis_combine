@@ -1371,9 +1371,26 @@ with main_tabs[0]:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum())))
         
         with qc_col4:
+        
+            years = (
+                all_daily["Year"]
+                .dropna()
+                .astype(int)
+            )
+        
+            if len(years) > 0:
+        
+                year_range = (
+                    f"{years.min()}–{years.max()}"
+                )
+        
+            else:
+        
+                year_range = "N.A."
+        
             st.metric(
-                "Years Available",
-                f"{years_available} years"
+                "Data Period",
+                year_range
             )
 # ===========================================================
 # main tab 1
