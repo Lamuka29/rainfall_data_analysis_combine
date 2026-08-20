@@ -2819,6 +2819,20 @@ with main_tabs[2]:
                         linewidth=0.8
                     )
 
+                    # MANUAL LEGEND
+                    if len(bars) > 0:
+
+                        legend_handles.append(
+                            Patch(
+                                facecolor=(
+                                    bars[0]
+                                    .get_facecolor()
+                                ),
+                                edgecolor="black",
+                                label=str(station)
+                            )
+                        )
+
                     # VALUE LABEL
                     for bar, value in zip(
                         bars,
@@ -2945,28 +2959,41 @@ with main_tabs[2]:
                 # --------------------------------------------
                 # LINES
                 # --------------------------------------------
+                legend_handles = []
                 
-                for station in comparison_stations:
+                for station in comparison_data:
                 
                     values = (
-                        comparison_data[
-                            station
-                        ]["mean"]
+                        comparison_data[station]["mean"]
+                        .reindex(months)
                     )
                 
-                    ax.plot(
+                    line, = ax.plot(
                         x_mean,
                         values.values,
                         marker="o",
                         linewidth=2.5,
-                        markersize=7,
-                        label=str(station)
+                        markersize=7
                     )
                 
                     # ----------------------------------------
-                    # LABEL NILAI
+                    # SIMPAN WARNA + NAMA STESEN
                     # ----------------------------------------
+                    legend_handles.append(
+                        Line2D(
+                            [0],
+                            [0],
+                            color=line.get_color(),
+                            marker="o",
+                            linewidth=2.5,
+                            markersize=7,
+                            label=str(station)
+                        )
+                    )
                 
+                    # ----------------------------------------
+                    # VALUE LABEL
+                    # ----------------------------------------
                     for i, value in enumerate(
                         values.values
                     ):
@@ -2984,7 +3011,7 @@ with main_tabs[2]:
                                 ha="center",
                                 fontsize=8
                             )
-                
+
                 # --------------------------------------------
                 # GRAPH SETTINGS
                 # --------------------------------------------
@@ -3014,13 +3041,17 @@ with main_tabs[2]:
                     linestyle="--",
                     alpha=0.4
                 )
+
+                # LEGEND
                 ax.legend(
+                    handles=legend_handles,
                     title="Station",
                     bbox_to_anchor=(1.02, 1),
                     loc="upper left",
                     fontsize=9,
                     title_fontsize=10
                 )
+
                 plt.tight_layout()
 
                 st.pyplot(
