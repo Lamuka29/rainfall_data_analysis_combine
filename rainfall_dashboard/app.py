@@ -2722,7 +2722,7 @@ with main_tabs[1]:
                 ).sum()
             ]
 
-all_category_values.append(category_values)
+        all_category_values.append(category_values)
         # ========================================================
         # PIE CHART SEBELAH-SEBELAH
         # ========================================================
