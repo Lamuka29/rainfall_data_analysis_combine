@@ -2533,7 +2533,7 @@ with main_tabs[1]:
         )
 
 # ============================================================
-# TAB 3 - STATION COMPARISON
+# Main TAB 3 - STATION COMPARISON
 # ============================================================
 
 with main_tabs[2]:
@@ -2806,27 +2806,25 @@ with main_tabs[2]:
             # ------------------------------------------------
             # BAR SETIAP STESEN
             # ------------------------------------------------
-
-            for i, station in enumerate(
-                comparison_stations
-            ):
-
+            
+            legend_handles = []
+            legend_labels = []
+            
+            for i, station in enumerate(comparison_stations):
+            
                 if station not in comparison_data:
                     continue
-
+            
                 values = (
-                    comparison_data[
-                        station
-                    ]["total"]
+                    comparison_data[station]["total"]
                     .reindex(months)
                 )
-
+            
                 offset = (
-                    i
-                    - (n_stations - 1) / 2
+                    i - (n_stations - 1) / 2
                 ) * bar_width
-
-                ax.bar(
+            
+                bars = ax.bar(
                     x + offset,
                     values.values,
                     width=bar_width,
@@ -2834,7 +2832,27 @@ with main_tabs[2]:
                     linewidth=0.8,
                     label=str(station)
                 )
-
+            
+                # SIMPAN UNTUK LEGEND
+                legend_handles.append(bars)
+                legend_labels.append(str(station))
+            
+            
+            # ------------------------------------------------
+            # LEGEND
+            # ------------------------------------------------
+            
+            if legend_handles:
+            
+                ax.legend(
+                    legend_handles,
+                    legend_labels,
+                    title="Station",
+                    loc="upper left",
+                    bbox_to_anchor=(1.02, 1),
+                    fontsize=9,
+                    title_fontsize=10
+                )
             # ------------------------------------------------
             # GRAPH SETTINGS
             # ------------------------------------------------
