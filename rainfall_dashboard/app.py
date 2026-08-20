@@ -19,7 +19,6 @@ st.set_page_config(
 
 st.title("🌧️ Rainfall Data Analysis")
 st.caption("Pemprosesan, Quality Control dan Analisis Data Hujan Harian")
-
 # ============================================================
 # MONTHS
 # ============================================================
@@ -27,19 +26,16 @@ months = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ]
-
 # ============================================================
 # GRAPH SETTINGS
 # ============================================================
 RAINFALL_MIN = 0
 RAINFALL_MAX = 500
-
 # ============================================================
 # FIGURE SIZE
 # ============================================================
 FIG_WIDTH = 14
 FIG_HEIGHT = 9
-
 # ============================================================
 # FILE UPLOAD
 # ============================================================
@@ -49,7 +45,6 @@ uploaded_files = st.file_uploader("📁 Upload Excel file data hujan mengikut st
 
 if not uploaded_files:
     st.info("Sila upload sekurang-kurangnya satu fail Excel.")
-
     st.markdown(
         """
         **Format data yang diperlukan:**
@@ -59,9 +54,7 @@ if not uploaded_files:
         - Column B:M = `Jan` hingga `Dec`
         """
     )
-
     st.stop()
-    
 # ============================================================
 # DETECT AVAILABLE YEARS
 # ============================================================
@@ -69,43 +62,30 @@ def get_available_years(uploaded_file):
 
     try:
         file_bytes = uploaded_file.getvalue()
-
-        file_ext = os.path.splitext(
-            uploaded_file.name
-        )[1].lower()
+        file_ext = os.path.splitext(uploaded_file.name)[1].lower()
 
         if file_ext == ".xls":
             engine = "xlrd"
         else:
             engine = "openpyxl"
 
-        excel_file = pd.ExcelFile(
-            io.BytesIO(file_bytes),
-            engine=engine
-        )
+        excel_file = pd.ExcelFile(io.BytesIO(file_bytes),engine=engine)
         available_years = []
 
         for sheet in excel_file.sheet_names:
-
             try:
-
                 year = int(str(sheet).strip())
-
                 if 1900 <= year <= 2100:
                     available_years.append(year)
 
             except:
-
                 continue
 
-        return sorted(
-            set(available_years)
-        )
+        return sorted(set(available_years))
 
     except Exception:
 
         return []
-
 # ============================================================
 # DETECT YEARS FROM ALL UPLOADED FILES
 # ============================================================
@@ -114,23 +94,12 @@ all_available_years = set()
 file_years = {}
 
 for uploaded_file in uploaded_files:
+    detected_years = get_available_years(uploaded_file)
 
-    detected_years = get_available_years(
-        uploaded_file
-    )
+    file_years[uploaded_file.name] = detected_years
+    all_available_years.update(detected_years)
 
-    file_years[
-        uploaded_file.name
-    ] = detected_years
-
-    all_available_years.update(
-        detected_years
-    )
-
-all_available_years = sorted(
-        all_available_years
-)
-
+all_available_years = sorted(all_available_years)
 # ============================================================
 # TAHUN CLIMATOLOGY
 # ============================================================
@@ -149,23 +118,17 @@ END_YEAR = st.sidebar.selectbox(
 )
 
 if START_YEAR > END_YEAR:
-
     st.sidebar.error("Start Year mesti lebih kecil atau sama dengan End Year.")
     st.stop()
 
-years = range(
-    int(START_YEAR),
-    int(END_YEAR) + 1
-)
+years = range(int(START_YEAR),int(END_YEAR) + 1)
 
-YEAR_RANGE_TEXT = (
-    f"{int(START_YEAR)}–{int(END_YEAR)}"
-)
-
+YEAR_RANGE_TEXT = (f"{int(START_YEAR)}–{int(END_YEAR)}")
 # ============================================================
 # SIDEBAR SETTINGS
 # ============================================================
 st.sidebar.header("⚙️ Analysis Settings")
+
 # ============================================================
 # WMO MISSING DATA RULE
 # ============================================================
@@ -177,10 +140,7 @@ MAX_MISSING_DAYS = st.sidebar.number_input(
     max_value=31,
     value=10,
     step=1,
-    help=(
-        "Bulan ditolak jika bilangan missing days melebihi "
-        "nilai ini. Default 10 bermaksud >=11 missing days ditolak."
-    )
+    help=("Bulan ditolak jika bilangan missing days melebihi nilai ini. Default 10 bermaksud >=11 missing days ditolak.")
 )
 
 MAX_CONSECUTIVE_MISSING = st.sidebar.number_input(
@@ -189,12 +149,8 @@ MAX_CONSECUTIVE_MISSING = st.sidebar.number_input(
     max_value=31,
     value=4,
     step=1,
-    help=(
-        "Bulan ditolak jika terdapat missing days berturut-turut "
-        "melebihi nilai ini. Default 4 bermaksud >=5 berturut-turut ditolak."
-    )
+    help=("Bulan ditolak jika terdapat missing days berturut-turut melebihi nilai ini. Default 4 bermaksud >=5 berturut-turut ditolak.")
 )
-
 # ============================================================
 # RAINFALL THRESHOLDS
 # ============================================================
@@ -222,7 +178,6 @@ EXTREME_RAINFALL = st.sidebar.number_input(
     value=250.0,
     step=10.0
 )
-
 # ============================================================
 # PLOT SETTINGS - USER BOLEH UBAH
 # ============================================================
@@ -235,7 +190,6 @@ BG_COLOR = st.sidebar.color_picker(
     "Background Graf",
     "#FFFFFF"
 )
-
 # ============================================================
 # DEFAULT BAR COLORS - MONTHLY RAINFALL
 # ============================================================
@@ -253,55 +207,35 @@ default_colors = [
     "#6A5ACD",  # Nov
     "#008080"   # Dec
 ]
-
 # ============================================================
 # SESSION STATE
-# Supaya warna yang dipilih tidak reset
 # ============================================================
 if "bar_colors" not in st.session_state:
     st.session_state.bar_colors = default_colors.copy()
 
-
 if "max_daily_color" not in st.session_state:
     st.session_state.max_daily_color = "#FF6347"
-
 
 if "wet_days_color" not in st.session_state:
     st.session_state.wet_days_color = "#3CB371"
 
-
 if "std_color" not in st.session_state:
     st.session_state.std_color = "#9370DB"
 
-
 if "hist_color" not in st.session_state:
     st.session_state.hist_color = "#4682B4"
-
 # ============================================================
 # SELECT BAR CHART
 # ============================================================
-chart_options = [
-    "Monthly Rainfall",
-]
+chart_options = ["Monthly Rainfall",]
 
-selected_chart = st.sidebar.selectbox(
-    "Select Bar Chart",
-    chart_options
-)
-
+selected_chart = st.sidebar.selectbox("Select Bar Chart",chart_options)
 # ============================================================
 # MONTHLY RAINFALL
 # ============================================================
 if selected_chart == "Monthly Rainfall":
-
-    selected_month = st.sidebar.selectbox(
-        "Select Month",
-        months
-    )
-
-    selected_index = months.index(
-        selected_month
-    )
+    selected_month = st.sidebar.selectbox("Select Month",months)
+    selected_index = months.index(selected_month)
 
     st.session_state.bar_colors[
         selected_index
@@ -309,7 +243,6 @@ if selected_chart == "Monthly Rainfall":
         f"{selected_month} Bar Colour",
         st.session_state.bar_colors[selected_index]
     )
-
 # ============================================================
 # MEAN LINE
 # ============================================================
@@ -317,7 +250,6 @@ LINE_COLOR = st.sidebar.color_picker(
     "Mean Line",
     "#000000"
 )
-
 # ============================================================
 # MINIMUM
 # ============================================================
@@ -325,7 +257,6 @@ MIN_COLOR = st.sidebar.color_picker(
     "Minimum",
     "#008000"
 )
-
 # ============================================================
 # MAXIMUM
 # ============================================================
@@ -333,12 +264,10 @@ MAX_COLOR = st.sidebar.color_picker(
     "Maximum",
     "#FF0000"
 )
-
 # ============================================================
 # CHECK AVAILABLE YEARS
 # ============================================================
 if not all_available_years:
-
     st.error("❌ Tiada sheet tahun yang sah dijumpai dalam fail Excel.")
     st.stop()
 
@@ -347,27 +276,22 @@ if not all_available_years:
 # MAXIMUM CONSECUTIVE MISSING
 # ============================================================
 def max_consecutive_missing(values):
-
     is_missing = values.isna()
-
     max_missing = 0
     current_missing = 0
 
     for missing in is_missing:
-
+        
         if missing:
-
             current_missing += 1
 
             if current_missing > max_missing:
                 max_missing = current_missing
 
         else:
-
             current_missing = 0
 
     return max_missing
-
 # ============================================================
 # FUNCTION
 # READ YEAR SHEET
@@ -375,7 +299,6 @@ def max_consecutive_missing(values):
 def read_year_sheet(uploaded_file, year):
 
     try:
-
         file_bytes = uploaded_file.getvalue()
 
         file_ext = os.path.splitext(
@@ -397,13 +320,10 @@ def read_year_sheet(uploaded_file, year):
         )
 
     except Exception as e:
-
         return None, str(e)
 
     if df is None or df.empty:
-
         return None, "Sheet kosong."
-
     # --------------------------------------------------------
     # Ambil 13 column pertama
     # --------------------------------------------------------
@@ -422,7 +342,6 @@ def read_year_sheet(uploaded_file, year):
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ]
-
     # --------------------------------------------------------
     # Convert day
     # --------------------------------------------------------
@@ -434,7 +353,6 @@ def read_year_sheet(uploaded_file, year):
     df = df[
         df["hari"].between(1, 31)
     ].copy()
-
     # --------------------------------------------------------
     # Convert rainfall
     # --------------------------------------------------------
@@ -454,8 +372,6 @@ def read_year_sheet(uploaded_file, year):
     df["Year"] = int(year)
 
     return df, None
-
-
 # ============================================================
 # FUNCTION
 # ANALYZE ONE FILE
@@ -481,16 +397,13 @@ def analyze_file(uploaded_file):
         )
 
         if df is not None:
-
             daily_results.append(df)
 
         else:
-
             read_errors.append({
                 "Year": int(year),
                 "Error": error
             })
-
     # ========================================================
     # CHECK DATA
     # ========================================================
@@ -635,9 +548,7 @@ def analyze_file(uploaded_file):
             ]
 
             valid_count = len(valid_values)
-
             missing_count = (days_expected - valid_count)
-
             max_consecutive = (max_consecutive_missing(values))
 
             monthly_valid_count.loc[year,month] = valid_count
