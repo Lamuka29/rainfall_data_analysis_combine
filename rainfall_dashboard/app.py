@@ -1068,6 +1068,9 @@ for result in successful_results:
     result["hist_values"] = hist_values
     result["category_values"] = category_values
     result["category_labels"] = category_labels
+    
+    result["original_start_year"] = original_start_year
+    result["original_end_year"] = original_end_year
 # ============================================================
 # FILE SUMMARY
 # ============================================================
