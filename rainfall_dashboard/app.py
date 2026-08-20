@@ -860,9 +860,9 @@ for result in successful_results:
     suspect_count = []
     extreme_count = []
 
-    # --------------------------------------------------------
+    # ========================================================
     # RAINFALL CATEGORY
-    # --------------------------------------------------------
+    # ========================================================
     category_labels = [
         "No Rain (0.0 mm)",
         "Light Rain (1.0–10.0 mm)",
@@ -871,13 +871,9 @@ for result in successful_results:
         "Extreme Rain (>60 mm)"
     ]
 
-    category_values = [
-        0, 0, 0, 0, 0
-    ]
-
-    # --------------------------------------------------------
+    # ========================================================
     # MONTHLY DAILY STATISTICS
-    # --------------------------------------------------------
+    # ========================================================
     for month in months:
 
         month_index = months.index(month) + 1
@@ -918,9 +914,7 @@ for result in successful_results:
             days_expected
         ) * 100
 
-        valid_data_percent.append(
-            percent
-        )
+        valid_data_percent.append(percent)
 
         # ----------------------------------------------------
         # MEDIAN
@@ -984,6 +978,21 @@ for result in successful_results:
         )
 
     # ========================================================
+    # ANALYSIS TABLE
+    # ========================================================
+    analysis_table = pd.DataFrame({
+        "Month": months,
+        "Median": median_daily,
+        "Std Dev": std_daily,
+        "Maximum": max_daily,
+        "Minimum": min_daily,
+        "Wet Days": wet_days,
+        "Valid Data (%)": valid_data_percent,
+        "Suspect": suspect_count,
+        "Extreme": extreme_count
+    })
+
+    # ========================================================
     # HISTOGRAM VALUES
     # ========================================================
     hist_values = target_data[
@@ -1008,9 +1017,7 @@ for result in successful_results:
     ]
 
     category_values = [
-        (
-            all_values == 0
-        ).sum(),
+        (all_values == 0).sum(),
 
         (
             (all_values >= 1) &
@@ -1027,9 +1034,7 @@ for result in successful_results:
             (all_values <= 60)
         ).sum(),
 
-        (
-            all_values > 60
-        ).sum()
+        (all_values > 60).sum()
     ]
 
     # ========================================================
@@ -1045,11 +1050,8 @@ for result in successful_results:
     result["extreme_count"] = extreme_count
 
     result["analysis_table"] = analysis_table
-
     result["hist_values"] = hist_values
-
     result["category_values"] = category_values
-
     result["category_labels"] = category_labels
 # ============================================================
 # FILE SUMMARY
