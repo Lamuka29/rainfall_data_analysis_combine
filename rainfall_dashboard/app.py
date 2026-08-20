@@ -2494,9 +2494,9 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
-            
+                
     # ========================================================
-    # TAB 3 - BOXPLOT
+    # TAB 3 - BOXPLOT BY MONTH
     # ========================================================
     
     with all_year_tabs[2]:
@@ -2507,8 +2507,8 @@ with main_tabs[1]:
         )
     
         st.caption(
-            "Taburan jumlah hujan bulanan bagi setiap tahun "
-            f"untuk {file_name}."
+            "Taburan jumlah hujan bagi setiap bulan "
+            f"berdasarkan semua tahun {YEAR_RANGE_TEXT}."
         )
     
         # ----------------------------------------------------
@@ -2516,30 +2516,36 @@ with main_tabs[1]:
         # ----------------------------------------------------
     
         boxplot_data = []
+    
         boxplot_labels = []
     
-        for year in yearly_monthly_total.index:
+        for month in months:
     
             values = (
-                yearly_monthly_total
-                .loc[year, months]
+                yearly_monthly_total[month]
                 .dropna()
                 .values
             )
     
-            if len(values) > 0:
+            boxplot_data.append(
+                values
+            )
     
-                boxplot_data.append(values)
-    
-                boxplot_labels.append(
-                    str(year)
-                )
+            boxplot_labels.append(
+                month
+            )
     
         # ----------------------------------------------------
-        # BOXPLOT
+        # CHECK DATA
         # ----------------------------------------------------
     
-        if len(boxplot_data) > 0:
+        valid_boxplot_data = [
+            values
+            for values in boxplot_data
+            if len(values) > 0
+        ]
+    
+        if len(valid_boxplot_data) > 0:
     
             fig, ax = plt.subplots(
                 figsize=(14, 8)
@@ -2552,6 +2558,10 @@ with main_tabs[1]:
             ax.set_facecolor(
                 BG_COLOR
             )
+    
+            # ------------------------------------------------
+            # BOXPLOT
+            # ------------------------------------------------
     
             ax.boxplot(
                 boxplot_data,
@@ -2566,13 +2576,12 @@ with main_tabs[1]:
             ax.set_xticks(
                 np.arange(
                     1,
-                    len(boxplot_labels) + 1
+                    len(months) + 1
                 )
             )
     
             ax.set_xticklabels(
-                boxplot_labels,
-                rotation=45
+                months
             )
     
             # ------------------------------------------------
@@ -2592,7 +2601,7 @@ with main_tabs[1]:
             # ------------------------------------------------
     
             ax.set_xlabel(
-                "Year",
+                "Month",
                 fontsize=12
             )
     
