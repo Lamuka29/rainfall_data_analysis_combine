@@ -705,7 +705,6 @@ def analyze_file(uploaded_file):
         "monthly_qc_status":monthly_qc_status,
         "mean_monthly_total":mean_monthly_total,
         "yearly_total":yearly_total,
-        "analysis_table": analysis_table,
         "suspect_df":suspect_df,
         "extreme_df":extreme_df,
         "read_errors":read_errors
