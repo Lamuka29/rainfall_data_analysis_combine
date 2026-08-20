@@ -2538,15 +2538,7 @@ with main_tabs[1]:
 with main_tabs[2]:
 
     st.header(
-        f"🔄 Station Comparison "
-        f"{YEAR_RANGE_TEXT}"
-    )
-
-    st.markdown(
-        f"""
-        Bandingkan jumlah dan purata hujan bulanan antara
-        **2 atau lebih stesen** bagi tempoh **{YEAR_RANGE_TEXT}**.
-        """
+        f"🔄 Station Comparison {YEAR_RANGE_TEXT}"
     )
 
     # ========================================================
@@ -2561,382 +2553,323 @@ with main_tabs[2]:
         key="comparison_stations"
     )
 
-    # ========================================================
-    # CHECK STATION SELECTION
-    # ========================================================
     if len(comparison_stations) < 2:
 
         st.warning(
-            "⚠️ Sila pilih sekurang-kurangnya 2 stesen "
-            "untuk membuat perbandingan."
+            "⚠️ Sila pilih sekurang-kurangnya 2 stesen."
         )
 
-        st.stop()
-
-    # ========================================================
-    # COLLECT DATA
-    # ========================================================
-    comparison_data = {}
-
-    for station in comparison_stations:
-
-        station_result = next(
-            result
-            for result in successful_results
-            if result["file_name"] == station
-        )
-
-        yearly_monthly_total = (
-            station_result["yearly_monthly_total"]
-            .reindex(columns=months)
-        )
-
-        # ----------------------------------------------------
-        # TOTAL HUJAN SETIAP BULAN
-        # Semua tahun dalam tempoh yang dipilih
-        # ----------------------------------------------------
-        monthly_total = (
-            yearly_monthly_total
-            .sum(
-                axis=0,
-                skipna=True
-            )
-            .reindex(months)
-        )
-
-        # ----------------------------------------------------
-        # MEAN HUJAN SETIAP BULAN
-        # Semua tahun dalam tempoh yang dipilih
-        # ----------------------------------------------------
-        monthly_mean = (
-            yearly_monthly_total
-            .mean(
-                axis=0,
-                skipna=True
-            )
-            .reindex(months)
-        )
-
-        comparison_data[station] = {
-            "total": monthly_total,
-            "mean": monthly_mean
-        }
-
-    # ========================================================
-    # COMPARISON TABS
-    # ========================================================
-    comparison_tabs = st.tabs([
-        "📊 Total Rainfall",
-        "📈 Mean Rainfall"
-    ])
-
-    # ========================================================
-    # TAB 1 - TOTAL RAINFALL
-    # ========================================================
-    with comparison_tabs[0]:
-
-        st.subheader(
-            f"Monthly Total Rainfall Comparison "
-            f"{YEAR_RANGE_TEXT}"
-        )
-
-        st.caption(
-            "Jumlah hujan bagi setiap bulan yang dikumpulkan "
-            f"daripada semua tahun {YEAR_RANGE_TEXT}."
-        )
-
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        fig.patch.set_facecolor(
-            BG_COLOR
-        )
-
-        ax.set_facecolor(
-            BG_COLOR
-        )
-
-        # ----------------------------------------------------
-        # BAR POSITION
-        # ----------------------------------------------------
-        n_stations = len(
-            comparison_stations
-        )
-
-        x = np.arange(
-            len(months)
-        )
-
-        bar_width = (
-            0.8 / n_stations
-        )
-
-        # ----------------------------------------------------
-        # DRAW BAR FOR EACH STATION
-        # ----------------------------------------------------
-        for i, station in enumerate(
-            comparison_stations
-        ):
-
-            values = (
-                comparison_data[
-                    station
-                ]["total"]
-            )
-
-            offset = (
-                i - (n_stations - 1) / 2
-            ) * bar_width
-
-            bars = ax.bar(
-                x + offset,
-                values.values,
-                width=bar_width,
-                edgecolor="black",
-                linewidth=0.8,
-                label=station
-            )
-
-            # ------------------------------------------------
-            # DATA LABEL
-            # ------------------------------------------------
-            for bar, value in zip(
-                bars,
-                values.values
-            ):
-
-                if pd.notna(value):
-
-                    ax.annotate(
-                        f"{value:.0f}",
-                        (
-                            bar.get_x()
-                            + bar.get_width() / 2,
-                            value
-                        ),
-                        xytext=(0, 5),
-                        textcoords="offset points",
-                        ha="center",
-                        va="bottom",
-                        fontsize=8
-                    )
-
-        # ----------------------------------------------------
-        # TITLE
-        # ----------------------------------------------------
-        ax.set_title(
-            f"Monthly Total Rainfall Comparison\n"
-            f"{YEAR_RANGE_TEXT}",
-            fontsize=16,
-            fontweight="bold"
-        )
-
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
-        )
-
-        ax.set_ylabel(
-            "Total Rainfall (mm)",
-            fontsize=12
-        )
-
-        ax.set_xticks(
-            x
-        )
-
-        ax.set_xticklabels(
-            months
-        )
-
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
-
-        ax.legend(
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left"
-        )
-
-        plt.tight_layout()
-
-        st.pyplot(
-            fig,
-            use_container_width=True
-        )
-
-        plt.close(fig)
+    else:
 
         # ====================================================
-        # TOTAL RAINFALL TABLE
+        # PREPARE DATA
         # ====================================================
-        st.subheader(
-            "📋 Monthly Total Rainfall"
-        )
+        comparison_data = {}
 
-        total_comparison_table = pd.DataFrame(
-            {
-                station:
-                    comparison_data[
-                        station
-                    ]["total"]
-                for station in comparison_stations
-            },
-            index=months
-        )
-
-        total_comparison_table.index.name = "Month"
-
-        st.dataframe(
-            total_comparison_table.round(2),
-            use_container_width=True
-        )
-
-    # ========================================================
-    # TAB 2 - MEAN RAINFALL
-    # ========================================================
-    with comparison_tabs[1]:
-
-        st.subheader(
-            f"Mean Monthly Rainfall Comparison "
-            f"{YEAR_RANGE_TEXT}"
-        )
-
-        st.caption(
-            "Purata jumlah hujan bagi setiap bulan "
-            f"berdasarkan semua tahun {YEAR_RANGE_TEXT}."
-        )
-
-        fig, ax = plt.subplots(
-            figsize=(14, 8)
-        )
-
-        fig.patch.set_facecolor(
-            BG_COLOR
-        )
-
-        ax.set_facecolor(
-            BG_COLOR
-        )
-
-        # ----------------------------------------------------
-        # DRAW LINE FOR EACH STATION
-        # ----------------------------------------------------
         for station in comparison_stations:
 
-            values = (
-                comparison_data[
-                    station
-                ]["mean"]
+            station_result = next(
+                result
+                for result in successful_results
+                if result["file_name"] == station
             )
 
-            ax.plot(
-                x,
-                values.values,
-                marker="o",
-                linewidth=2.5,
-                markersize=7,
-                label=station
+            yearly_data = (
+                station_result["yearly_monthly_total"]
+                .reindex(columns=months)
             )
 
             # ------------------------------------------------
-            # DATA LABEL
+            # TOTAL HUJAN SEMUA TAHUN
             # ------------------------------------------------
-            for i, value in enumerate(
-                values.values
+            monthly_total = (
+                yearly_data
+                .sum(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            # ------------------------------------------------
+            # MEAN HUJAN SEMUA TAHUN
+            # ------------------------------------------------
+            monthly_mean = (
+                yearly_data
+                .mean(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            comparison_data[station] = {
+                "total": monthly_total,
+                "mean": monthly_mean
+            }
+
+        # ====================================================
+        # COMPARISON TABS
+        # ====================================================
+        comparison_tabs = st.tabs([
+            "📊 Total Rainfall",
+            "📈 Mean Rainfall"
+        ])
+
+        # ====================================================
+        # TAB 1 - BAR TOTAL
+        # ====================================================
+        with comparison_tabs[0]:
+
+            st.subheader(
+                f"📊 Monthly Total Rainfall "
+                f"{YEAR_RANGE_TEXT}"
+            )
+
+            st.caption(
+                "Jumlah hujan bagi setiap bulan "
+                "daripada semua tahun dalam tempoh dipilih."
+            )
+
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
+
+            x_total = np.arange(
+                len(months)
+            )
+
+            n_stations = len(
+                comparison_stations
+            )
+
+            bar_width = (
+                0.8 / n_stations
+            )
+
+            for i, station in enumerate(
+                comparison_stations
             ):
 
-                if pd.notna(value):
+                values = comparison_data[
+                    station
+                ]["total"]
 
-                    ax.annotate(
-                        f"{value:.1f}",
-                        (
-                            i,
-                            value
-                        ),
-                        xytext=(0, 8),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=8
-                    )
+                offset = (
+                    i - (n_stations - 1) / 2
+                ) * bar_width
 
-        # ----------------------------------------------------
-        # TITLE
-        # ----------------------------------------------------
-        ax.set_title(
-            f"Mean Monthly Rainfall Comparison\n"
-            f"{YEAR_RANGE_TEXT}",
-            fontsize=16,
-            fontweight="bold"
-        )
+                bars = ax.bar(
+                    x_total + offset,
+                    values.values,
+                    width=bar_width,
+                    edgecolor="black",
+                    linewidth=0.8,
+                    label=station
+                )
 
-        ax.set_xlabel(
-            "Month",
-            fontsize=12
-        )
+                for bar, value in zip(
+                    bars,
+                    values.values
+                ):
 
-        ax.set_ylabel(
-            "Mean Rainfall (mm)",
-            fontsize=12
-        )
+                    if pd.notna(value):
 
-        ax.set_xticks(
-            x
-        )
+                        ax.annotate(
+                            f"{value:.0f}",
+                            (
+                                bar.get_x()
+                                + bar.get_width() / 2,
+                                value
+                            ),
+                            xytext=(0, 5),
+                            textcoords="offset points",
+                            ha="center",
+                            va="bottom",
+                            fontsize=8
+                        )
 
-        ax.set_xticklabels(
-            months
-        )
+            ax.set_title(
+                f"Monthly Total Rainfall Comparison\n"
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
 
-        ax.grid(
-            True,
-            axis="y",
-            linestyle="--",
-            alpha=0.4
-        )
+            ax.set_xlabel(
+                "Month",
+                fontsize=12
+            )
 
-        ax.legend(
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left"
-        )
+            ax.set_ylabel(
+                "Total Rainfall (mm)",
+                fontsize=12
+            )
 
-        plt.tight_layout()
+            ax.set_xticks(
+                x_total
+            )
 
-        st.pyplot(
-            fig,
-            use_container_width=True
-        )
+            ax.set_xticklabels(
+                months
+            )
 
-        plt.close(fig)
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+
+            ax.legend(
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left"
+            )
+
+            plt.tight_layout()
+
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+
+            plt.close(fig)
 
         # ====================================================
-        # MEAN RAINFALL TABLE
+        # TAB 2 - LINE MEAN
         # ====================================================
-        st.subheader(
-            "📋 Mean Monthly Rainfall"
-        )
+        with comparison_tabs[1]:
 
-        mean_comparison_table = pd.DataFrame(
-            {
-                station:
+            st.subheader(
+                f"📈 Mean Monthly Rainfall "
+                f"{YEAR_RANGE_TEXT}"
+            )
+
+            st.caption(
+                "Purata jumlah hujan bulanan "
+                "bagi semua tahun dalam tempoh dipilih."
+            )
+
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
+
+            x_mean = np.arange(
+                len(months)
+            )
+
+            for station in comparison_stations:
+
+                values = comparison_data[
+                    station
+                ]["mean"]
+
+                ax.plot(
+                    x_mean,
+                    values.values,
+                    marker="o",
+                    linewidth=2.5,
+                    markersize=7,
+                    label=station
+                )
+
+                # --------------------------------------------
+                # LABEL NILAI MEAN
+                # --------------------------------------------
+                for i, value in enumerate(
+                    values.values
+                ):
+
+                    if pd.notna(value):
+
+                        ax.annotate(
+                            f"{value:.1f}",
+                            (
+                                i,
+                                value
+                            ),
+                            xytext=(0, 8),
+                            textcoords="offset points",
+                            ha="center",
+                            fontsize=8
+                        )
+
+            ax.set_title(
+                f"Mean Monthly Rainfall Comparison\n"
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
+
+            ax.set_xlabel(
+                "Month",
+                fontsize=12
+            )
+
+            ax.set_ylabel(
+                "Mean Rainfall (mm)",
+                fontsize=12
+            )
+
+            ax.set_xticks(
+                x_mean
+            )
+
+            ax.set_xticklabels(
+                months
+            )
+
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+
+            ax.legend(
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left"
+            )
+
+            plt.tight_layout()
+
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+
+            plt.close(fig)
+
+            # -----------------------------------------------
+            # MEAN TABLE
+            # -----------------------------------------------
+            st.subheader(
+                "📋 Mean Monthly Rainfall"
+            )
+
+            mean_table = pd.DataFrame(
+                {
+                    station:
                     comparison_data[
                         station
                     ]["mean"]
-                for station in comparison_stations
-            },
-            index=months
-        )
+                    for station in comparison_stations
+                },
+                index=months
+            )
 
-        mean_comparison_table.index.name = "Month"
+            mean_table.index.name = "Month"
 
-        st.dataframe(
-            mean_comparison_table.round(2),
-            use_container_width=True
-        )
+            st.dataframe(
+                mean_table.round(2),
+                use_container_width=True
+            )
 # ============================================================
 # FOOTER
 # ============================================================
