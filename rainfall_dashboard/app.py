@@ -165,18 +165,6 @@ YEAR_RANGE_TEXT = (
 # SIDEBAR SETTINGS
 # ============================================================
 st.sidebar.header("⚙️ Analysis Settings")
-
-# ============================================================
-# ANALYSIS MODE
-# ============================================================
-analysis_mode = st.sidebar.radio(
-    "Analysis Mode",
-    [
-        "Target Year",
-        "All Years"
-    ]
-)
-
 # ============================================================
 # TARGET YEAR
 # ============================================================
@@ -1224,27 +1212,6 @@ if failed_results:
 
 if not successful_results:
     st.stop()
-
-# ============================================================
-# STATION SELECTION
-# ============================================================
-st.sidebar.header("📍 Station Selection")
-
-station_options = [
-    result["file_name"]
-    for result in successful_results
-]
-
-selected_stations = st.sidebar.multiselect(
-    "Select Station(s)",
-    station_options,
-    default=[station_options[0]],
-    help=(
-        "Pilih satu atau lebih stesen. "
-        "Jika lebih daripada satu stesen dipilih, "
-        "stesen boleh dibandingkan dalam graf yang sama."
-    )
-)
 
 # ============================================================
 # FILTER DISPLAY RESULT
