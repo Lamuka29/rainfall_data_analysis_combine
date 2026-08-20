@@ -2752,7 +2752,7 @@ with main_tabs[2]:
         # ====================================================
 
         comparison_tabs = st.tabs([
-
+        st.write("DEBUG:", comparison_stations)  
             "📊 Total Rainfall",
 
             "📈 Mean Rainfall",
