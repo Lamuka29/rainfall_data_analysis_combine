@@ -694,33 +694,20 @@ def analyze_file(uploaded_file):
     # RETURN RESULTS
     # ========================================================
     return {
-    
         "success": True,
-    
         "file_name":file_name,
-    
         "original_file_name":original_file_name,
-    
         "all_daily":all_daily,
-    
         "yearly_monthly_total":yearly_monthly_total,
-    
         "monthly_missing_count":monthly_missing_count,
-    
         "monthly_valid_count":monthly_valid_count,
-    
         "monthly_max_consecutive_missing":monthly_max_consecutive_missing,
-    
         "monthly_qc_status":monthly_qc_status,
-    
         "mean_monthly_total":mean_monthly_total,
-    
         "yearly_total":yearly_total,
-    
+        "analysis_table": analysis_table,
         "suspect_df":suspect_df,
-    
         "extreme_df":extreme_df,
-    
         "read_errors":read_errors
     }
 # ============================================================
@@ -911,6 +898,24 @@ for result in successful_results:
     result["min_daily"] = min_daily
     result["wet_days"] = wet_days
     result["valid_data_percent"] = valid_data_percent
+    result["suspect_count"] = suspect_count
+    result["extreme_count"] = extreme_count
+# ========================================================
+# ANALYSIS TABLE
+# ========================================================
+analysis_table = pd.DataFrame({
+    "Month": months,
+    "Median": median_daily,
+    "Std Dev": std_daily,
+    "Maximum": max_daily,
+    "Minimum": min_daily,
+    "Wet Days": wet_days,
+    "Valid Data (%)": valid_data_percent,
+    "Suspect": suspect_count,
+    "Extreme": extreme_count
+})
+
+result["analysis_table"] = analysis_table
 # ============================================================
 # FILE SUMMARY
 # ============================================================
