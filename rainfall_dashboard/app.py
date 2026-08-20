@@ -1068,38 +1068,13 @@ def analyze_file(uploaded_file):
 
         pie_values.extend(values.tolist())
 
-    no_rain = sum(
-        value == 0.0
-        for value in pie_values
-    )
+    no_rain = sum(value == 0.0 for value in pie_values)
+    light_rain = sum(0.1 <= value <= 10.0 for value in pie_values)
+    moderate_rain = sum(10.1 < value <= 30.0 for value in pie_values)
+    heavy_rain = sum(30.1 < value <= 60.0 for value in pie_values)
+    extreme_rain = sum(value > 60.0 for value in pie_values)
 
-    light_rain = sum(
-        0.1 <= value <= 10.0
-        for value in pie_values
-    )
-
-    moderate_rain = sum(
-        10.1 < value <= 30.0
-        for value in pie_values
-    )
-
-    heavy_rain = sum(
-        30.1 < value <= 60.0
-        for value in pie_values
-    )
-    
-    extreme_rain = sum(
-        value > 60.1
-        for value in pie_values
-    )
-
-    category_values = [
-        no_rain,
-        light_rain,
-        moderate_rain,
-        heavy_rain,
-        extreme_rain
-    ]
+    category_values = [no_rain,light_rain,moderate_rain,heavy_rain,extreme_rain]
 
     category_labels = [
         "No Rain (0.0 mm)",
@@ -1108,7 +1083,6 @@ def analyze_file(uploaded_file):
         "Heavy Rain (>30.0-60.0 mm)",
         "Extreme Rain (>60 mm)"
     ]
-
     # ========================================================
     # RETURN RESULTS
     # ========================================================
@@ -1530,7 +1504,7 @@ with main_tabs[0]:
             st.metric("Extreme Records",len(extreme_df))
     
         with qc_col3:
-            st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum
+            st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum)
 # ============================================================
 # ANALYSIS TABS
 # ============================================================
@@ -2666,7 +2640,7 @@ with main_tabs[1]:
             station_data = result["all_daily"].copy()
 
             # Mean rainfall mengikut bulan
-            monthly_mean = (station_data[months]apply(pd.to_numeric, errors="coerce").mean())
+            monthly_mean = (station_data[months].apply(pd.to_numeric, errors="coerce").mean())
 
             ax.plot(
                 x,
@@ -2727,28 +2701,28 @@ with main_tabs[1]:
 
             category_values = [
                 (rainfall_values == 0).sum(),
-                
+            
                 (
-                    (rainfall_values >= 1) &
+                    (rainfall_values >= 0.1) &
                     (rainfall_values <= 10)
                 ).sum(),
-                
+            
                 (
                     (rainfall_values > 10) &
                     (rainfall_values <= 30)
                 ).sum(),
-
+            
                 (
                     (rainfall_values > 30) &
                     (rainfall_values <= 60)
                 ).sum(),
-
+            
                 (
                     rainfall_values > 60
                 ).sum()
             ]
 
-            all_category_values.append(category_values)
+all_category_values.append(category_values)
         # ========================================================
         # PIE CHART SEBELAH-SEBELAH
         # ========================================================
