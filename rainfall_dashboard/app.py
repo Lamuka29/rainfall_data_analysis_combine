@@ -846,7 +846,10 @@ for result in successful_results:
 for result in successful_results:
 
     all_daily = result["all_daily"]
-    target_data = all_daily[all_daily["Year"] == target_year].copy()
+
+    target_data = all_daily[
+        all_daily["Year"] == target_year
+    ].copy()
 
     median_daily = []
     std_daily = []
@@ -857,40 +860,181 @@ for result in successful_results:
     suspect_count = []
     extreme_count = []
 
+    # --------------------------------------------------------
+    # RAINFALL CATEGORY
+    # --------------------------------------------------------
+    category_labels = [
+        "No Rain (0.0 mm)",
+        "Light Rain (1.0–10.0 mm)",
+        "Moderate Rain (>10.0–30.0 mm)",
+        "Heavy Rain (>30.0–60.0 mm)",
+        "Extreme Rain (>60 mm)"
+    ]
+
+    category_values = [
+        0, 0, 0, 0, 0
+    ]
+
+    # --------------------------------------------------------
+    # MONTHLY DAILY STATISTICS
+    # --------------------------------------------------------
     for month in months:
+
         month_index = months.index(month) + 1
-        days_expected = calendar.monthrange(target_year,month_index)[1]
-        raw_values = target_data[month].iloc[:days_expected].copy()
+
+        days_expected = calendar.monthrange(
+            target_year,
+            month_index
+        )[1]
+
+        raw_values = (
+            target_data[month]
+            .iloc[:days_expected]
+            .copy()
+        )
+
+        # ----------------------------------------------------
         # QC
-        qc_values = raw_values[raw_values.notna() & (raw_values >= VALID_MIN)]
-        # Wet days
-        values = qc_values[qc_values >= WET_DAY_MIN]
-        # Valid data %
+        # ----------------------------------------------------
+        qc_values = raw_values[
+            raw_values.notna() &
+            (raw_values >= VALID_MIN)
+        ]
+
+        # ----------------------------------------------------
+        # WET DAYS
+        # ----------------------------------------------------
+        values = qc_values[
+            qc_values >= WET_DAY_MIN
+        ]
+
+        # ----------------------------------------------------
+        # VALID DATA %
+        # ----------------------------------------------------
         valid_count = len(qc_values)
-        percent = (valid_count / days_expected) * 100
-        valid_data_percent.append(percent)
-        # Median
-        if len(values) > 0: median_daily.append(values.median())
-        else: median_daily.append(np.nan)
-        # Standard deviation
-        if len(values) > 1: std_daily.append(values.std())
-        else:std_daily.append(np.nan)
-        # Maximum
-        if len(values) > 0:max_daily.append(values.max())
+
+        percent = (
+            valid_count /
+            days_expected
+        ) * 100
+
+        valid_data_percent.append(
+            percent
+        )
+
+        # ----------------------------------------------------
+        # MEDIAN
+        # ----------------------------------------------------
+        if len(values) > 0:
+            median_daily.append(
+                values.median()
+            )
+        else:
+            median_daily.append(np.nan)
+
+        # ----------------------------------------------------
+        # STANDARD DEVIATION
+        # ----------------------------------------------------
+        if len(values) > 1:
+            std_daily.append(
+                values.std()
+            )
+        else:
+            std_daily.append(np.nan)
+
+        # ----------------------------------------------------
+        # MAXIMUM
+        # ----------------------------------------------------
+        if len(values) > 0:
+            max_daily.append(
+                values.max()
+            )
         else:
             max_daily.append(np.nan)
-        # Minimum
-        if len(values) > 0:min_daily.append(values.min())
+
+        # ----------------------------------------------------
+        # MINIMUM
+        # ----------------------------------------------------
+        if len(values) > 0:
+            min_daily.append(
+                values.min()
+            )
         else:
             min_daily.append(np.nan)
-        # Wet days
-        wet_days.append((qc_values >= WET_DAY_MIN).sum())
-        # Suspect
-        suspect_count.append((values > SUSPECT_RAINFALL).sum())
-        # Extreme
-        extreme_count.append((values > EXTREME_RAINFALL).sum())
 
-    # Simpan ke result
+        # ----------------------------------------------------
+        # WET DAYS
+        # ----------------------------------------------------
+        wet_days.append(
+            (qc_values >= WET_DAY_MIN).sum()
+        )
+
+        # ----------------------------------------------------
+        # SUSPECT
+        # ----------------------------------------------------
+        suspect_count.append(
+            (values > SUSPECT_RAINFALL).sum()
+        )
+
+        # ----------------------------------------------------
+        # EXTREME
+        # ----------------------------------------------------
+        extreme_count.append(
+            (values > EXTREME_RAINFALL).sum()
+        )
+
+    # ========================================================
+    # HISTOGRAM VALUES
+    # ========================================================
+    hist_values = target_data[
+        months
+    ].stack()
+
+    hist_values = hist_values[
+        hist_values.notna() &
+        (hist_values >= VALID_MIN)
+    ]
+
+    # ========================================================
+    # RAINFALL CATEGORY
+    # ========================================================
+    all_values = target_data[
+        months
+    ].stack()
+
+    all_values = all_values[
+        all_values.notna() &
+        (all_values >= VALID_MIN)
+    ]
+
+    category_values = [
+        (
+            all_values == 0
+        ).sum(),
+
+        (
+            (all_values >= 1) &
+            (all_values <= 10)
+        ).sum(),
+
+        (
+            (all_values > 10) &
+            (all_values <= 30)
+        ).sum(),
+
+        (
+            (all_values > 30) &
+            (all_values <= 60)
+        ).sum(),
+
+        (
+            all_values > 60
+        ).sum()
+    ]
+
+    # ========================================================
+    # SAVE INTO RESULT
+    # ========================================================
     result["median_daily"] = median_daily
     result["std_daily"] = std_daily
     result["max_daily"] = max_daily
@@ -899,22 +1043,14 @@ for result in successful_results:
     result["valid_data_percent"] = valid_data_percent
     result["suspect_count"] = suspect_count
     result["extreme_count"] = extreme_count
-# ========================================================
-# ANALYSIS TABLE
-# ========================================================
-analysis_table = pd.DataFrame({
-    "Month": months,
-    "Median": median_daily,
-    "Std Dev": std_daily,
-    "Maximum": max_daily,
-    "Minimum": min_daily,
-    "Wet Days": wet_days,
-    "Valid Data (%)": valid_data_percent,
-    "Suspect": suspect_count,
-    "Extreme": extreme_count
-})
 
-result["analysis_table"] = analysis_table
+    result["analysis_table"] = analysis_table
+
+    result["hist_values"] = hist_values
+
+    result["category_values"] = category_values
+
+    result["category_labels"] = category_labels
 # ============================================================
 # FILE SUMMARY
 # ============================================================
