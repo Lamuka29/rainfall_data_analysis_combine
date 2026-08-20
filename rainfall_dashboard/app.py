@@ -2679,7 +2679,7 @@ with main_tabs[1]:
 # ============================================================
 # MAIN TAB 3 - STATION COMPARISON
 # ============================================================
-with main_tabs[2]:
+#with main_tabs[2]:
 
     # code comparison 2+ station
 
