@@ -6,6 +6,7 @@ import calendar
 import io
 import streamlit as st
 import xlrd
+from matplotlib.patches import Patch
 
 # ============================================================
 # STREAMLIT CONFIGURATION
@@ -2928,164 +2929,192 @@ with main_tabs[2]:
                     use_container_width=True
                 )
 
-            # =================================================
-            # TAB 2
-            # MEAN RAINFALL - LINE
-            # =================================================
-            with comparison_tabs[1]:
-
-                st.subheader(
-                    f"📈 Mean Monthly Rainfall Comparison "
-                    f"{YEAR_RANGE_TEXT}"
-                )
-
-                st.caption(
-                    "Purata jumlah hujan setiap bulan "
-                    f"berdasarkan semua tahun "
-                    f"{YEAR_RANGE_TEXT}."
-                )
-
-                fig, ax = plt.subplots(
-                    figsize=(14, 8)
-                )
-
-                fig.patch.set_facecolor(BG_COLOR)
-                ax.set_facecolor(BG_COLOR)
-
-                x_mean = np.arange(
-                    len(months)
-                )
-
-                # --------------------------------------------
-                # LINES
-                # --------------------------------------------
-                legend_handles = []
+                # =================================================
+                # TAB 2
+                # MEAN RAINFALL - BAR
+                # =================================================
+                with comparison_tabs[1]:
                 
-                for station in comparison_data:
-                
-                    values = (
-                        comparison_data[station]["mean"]
-                        .reindex(months)
+                    st.subheader(
+                        f"📈 Mean Monthly Rainfall Comparison "
+                        f"{YEAR_RANGE_TEXT}"
                     )
                 
-                    line, = ax.plot(
-                        x_mean,
-                        values.values,
-                        marker="o",
-                        linewidth=2.5,
-                        markersize=7
+                    st.caption(
+                        "Purata jumlah hujan setiap bulan "
+                        f"berdasarkan semua tahun {YEAR_RANGE_TEXT}."
                     )
                 
-                    # ----------------------------------------
-                    # SIMPAN WARNA + NAMA STESEN
-                    # ----------------------------------------
-                    legend_handles.append(
-                        Line2D(
-                            [0],
-                            [0],
-                            color=line.get_color(),
-                            marker="o",
-                            linewidth=2.5,
-                            markersize=7,
-                            label=str(station)
-                        )
+                    fig, ax = plt.subplots(
+                        figsize=(14, 8)
                     )
                 
-                    # ----------------------------------------
-                    # VALUE LABEL
-                    # ----------------------------------------
-                    for i, value in enumerate(
-                        values.values
+                    fig.patch.set_facecolor(BG_COLOR)
+                    ax.set_facecolor(BG_COLOR)
+                
+                    # --------------------------------------------
+                    # BAR POSITION
+                    # --------------------------------------------
+                    x_mean = np.arange(
+                        len(months)
+                    )
+                
+                    n_stations = len(
+                        comparison_data
+                    )
+                
+                    bar_width = (
+                        0.8 / n_stations
+                    )
+                
+                    # --------------------------------------------
+                    # BARS
+                    # --------------------------------------------
+                    legend_handles = []
+                
+                    for i, station in enumerate(
+                        comparison_data
                     ):
                 
-                        if pd.notna(value):
+                        values = (
+                            comparison_data[
+                                station
+                            ]["mean"]
+                            .reindex(months)
+                        )
                 
-                            ax.annotate(
-                                f"{value:.1f}",
-                                (
-                                    i,
-                                    value
-                                ),
-                                xytext=(0, 8),
-                                textcoords="offset points",
-                                ha="center",
-                                fontsize=8
+                        offset = (
+                            i
+                            - (n_stations - 1) / 2
+                        ) * bar_width
+                
+                        bars = ax.bar(
+                            x_mean + offset,
+                            values.values,
+                            width=bar_width,
+                            edgecolor="black",
+                            linewidth=0.8
+                        )
+                
+                        # ----------------------------------------
+                        # MANUAL LEGEND
+                        # ----------------------------------------
+                        if len(bars) > 0:
+                
+                            legend_handles.append(
+                                Patch(
+                                    facecolor=bars[0].get_facecolor(),
+                                    edgecolor="black",
+                                    label=str(station)
+                                )
                             )
-
-                # --------------------------------------------
-                # GRAPH SETTINGS
-                # --------------------------------------------
-                ax.set_title(
-                    f"Mean Monthly Rainfall Comparison\n"
-                    f"{YEAR_RANGE_TEXT}",
-                    fontsize=16,
-                    fontweight="bold"
-                )
-
-                ax.set_xlabel(
-                    "Month",
-                    fontsize=12
-                )
-
-                ax.set_ylabel(
-                    "Mean Rainfall (mm)",
-                    fontsize=12
-                )
-
-                ax.set_xticks(x_mean)
-                ax.set_xticklabels(months)
-
-                ax.grid(
-                    True,
-                    axis="y",
-                    linestyle="--",
-                    alpha=0.4
-                )
-
-                # LEGEND
-                ax.legend(
-                    handles=legend_handles,
-                    title="Station",
-                    bbox_to_anchor=(1.02, 1),
-                    loc="upper left",
-                    fontsize=9,
-                    title_fontsize=10
-                )
-
-                plt.tight_layout()
-
-                st.pyplot(
-                    fig,
-                    use_container_width=True
-                )
-
-                plt.close(fig)
-
-                # --------------------------------------------
-                # TABLE
-                # --------------------------------------------
-                st.subheader(
-                    "📋 Mean Monthly Rainfall"
-                )
-
-                mean_table = pd.DataFrame(
-                    {
-                        station:
-                        comparison_data[station]["mean"]
-                        .reindex(months)
-
-                        for station in comparison_data
-                    },
-                    index=months
-                )
-
-                mean_table.index.name = "Month"
-
-                st.dataframe(
-                    mean_table.round(2),
-                    use_container_width=True
-                )
-
+                
+                        # ----------------------------------------
+                        # VALUE LABEL
+                        # ----------------------------------------
+                        for bar, value in zip(
+                            bars,
+                            values.values
+                        ):
+                
+                            if pd.notna(value):
+                
+                                ax.annotate(
+                                    f"{value:.1f}",
+                                    (
+                                        bar.get_x()
+                                        + bar.get_width() / 2,
+                                        value
+                                    ),
+                                    xytext=(0, 5),
+                                    textcoords="offset points",
+                                    ha="center",
+                                    va="bottom",
+                                    fontsize=8
+                                )
+                
+                    # --------------------------------------------
+                    # GRAPH SETTINGS
+                    # --------------------------------------------
+                    ax.set_title(
+                        f"Mean Monthly Rainfall Comparison\n"
+                        f"{YEAR_RANGE_TEXT}",
+                        fontsize=16,
+                        fontweight="bold"
+                    )
+                
+                    ax.set_xlabel(
+                        "Month",
+                        fontsize=12
+                    )
+                
+                    ax.set_ylabel(
+                        "Mean Rainfall (mm)",
+                        fontsize=12
+                    )
+                
+                    ax.set_xticks(
+                        x_mean
+                    )
+                
+                    ax.set_xticklabels(
+                        months
+                    )
+                
+                    ax.grid(
+                        True,
+                        axis="y",
+                        linestyle="--",
+                        alpha=0.4
+                    )
+                
+                    # --------------------------------------------
+                    # LEGEND
+                    # --------------------------------------------
+                    ax.legend(
+                        handles=legend_handles,
+                        title="Station",
+                        bbox_to_anchor=(1.02, 1),
+                        loc="upper left",
+                        fontsize=9,
+                        title_fontsize=10
+                    )
+                
+                    plt.tight_layout()
+                
+                    st.pyplot(
+                        fig,
+                        use_container_width=True
+                    )
+                
+                    plt.close(fig)
+                
+                    # --------------------------------------------
+                    # TABLE
+                    # --------------------------------------------
+                    st.subheader(
+                        "📋 Mean Monthly Rainfall"
+                    )
+                
+                    mean_table = pd.DataFrame(
+                        {
+                            station:
+                            comparison_data[
+                                station
+                            ]["mean"]
+                            .reindex(months)
+                
+                            for station in comparison_data
+                        },
+                        index=months
+                    )
+                
+                    mean_table.index.name = "Month"
+                
+                    st.dataframe(
+                        mean_table.round(2),
+                        use_container_width=True
+                    )
             # =================================================
             # TAB 3
             # ANOMALY - BAR
