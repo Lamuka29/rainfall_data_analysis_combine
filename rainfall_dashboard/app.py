@@ -1504,7 +1504,7 @@ with main_tabs[0]:
             st.metric("Extreme Records",len(extreme_df))
     
         with qc_col3:
-            st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum))
+            st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum)))
 # ============================================================
 # ANALYSIS TABS
 # ============================================================
