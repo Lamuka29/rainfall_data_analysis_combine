@@ -2819,20 +2819,6 @@ with main_tabs[2]:
                         linewidth=0.8
                     )
 
-                    # MANUAL LEGEND
-                    if len(bars) > 0:
-
-                        legend_handles.append(
-                            Patch(
-                                facecolor=(
-                                    bars[0]
-                                    .get_facecolor()
-                                ),
-                                edgecolor="black",
-                                label=str(station)
-                            )
-                        )
-
                     # VALUE LABEL
                     for bar, value in zip(
                         bars,
