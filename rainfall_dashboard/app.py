@@ -1362,7 +1362,7 @@ with main_tabs[0]:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum())))
         
         with qc_col4:
-            st.metric("Years Available", f"{years_available} years")
+            st.metric("Years Available, {all_daily['Year'].dropna().nunique()} years")
 # ===========================================================
 # main tab 1
 # ===========================================================
