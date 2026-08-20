@@ -1355,7 +1355,8 @@ with st.expander(
 # MAIN TABS
 # ============================================================
 main_tabs = st.tabs([
-    "📍 Station Analysis",
+    "📅 Target Year",
+    "📊 All Years",
     "🔄 Station Comparison"
 ])
 
@@ -1505,1274 +1506,1183 @@ with main_tabs[0]:
     
         with qc_col3:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum)))
-# ============================================================
-# ANALYSIS TABS
-# ============================================================
-    if analysis_mode == "Target Year":
-        tabs = st.tabs([
-            "📊 Bar + Line",
-            "🔥 Heatmap",
-            "📉 Anomaly",
-            "📋 Statistics",
-            "📈 Max Daily",
-            "🌧️ Wet Days",
-            "📐 Standard Deviation",
-            "📊 Histogram",
-            "🥧 Rainfall Category",
-            "📦 Boxplot",
-            "⚠️ QC"
-        ])
-        # ========================================================
-        # TAB 1 BAR + LINE
-        # ========================================================
-        with tabs[0]:
-            st.subheader(
-                f"Monthly Rainfall {target_year} vs "
-                f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}"
-            )
-    
-            x = np.arange(
-                len(months)
-            )
-    
-            fig, ax = plt.subplots(
-                figsize=(
-                    FIG_WIDTH,
-                    FIG_HEIGHT
-                )
-            )
-    
-            bg_color = BG_COLOR
-            
-            fig.patch.set_facecolor(
-                bg_color
-            )
-    
-            ax.set_facecolor(
-                bg_color
-            )
-    
-            ax.bar(
-                x,
-                rainfall_target.values,
-                width=0.60,
-                color=st.session_state.bar_colors,
-                edgecolor="black",
-                linewidth=0.8,
-                label=(
-                    f"Total Rainfall {target_year}"
-                )
-            )
-    
-            ax.plot(
-                x,
-                mean_monthly_total.values,
-                color=LINE_COLOR,
-                marker="o",
-                linewidth=2.5,
-                markersize=7,
-                label=(
-                    f"Mean Monthly Rainfall "
-                    f"{YEAR_RANGE_TEXT}"
-                )
-            )
-            # ----------------------------------------------------
-            # Mean labels
-            # ----------------------------------------------------
-            for i, value in enumerate(
-                mean_monthly_total.values
-            ):
-    
-                if pd.notna(value):
-                    ax.annotate(
-                        f"{value:.1f}",
-                        (
-                            i,
-                            value
-                        ),
-                        xytext=(0, 10),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=11,
-                        fontweight="bold"
-                    )
-            # ----------------------------------------------------
-            # Minimum
-            # ----------------------------------------------------
-            if min_target_month is not None:
-                min_index = months.index(
-                    min_target_month
-                )
-    
-                ax.scatter(
-                    min_index,
-                    min_target_value,
-                    s=50,
-                    color=MIN_COLOR,
-                    edgecolor="black",
-                    linewidth=1,
-                    zorder=5,
-                    label=(
-                        f"Minimum {target_year}: "
-                        f"{min_target_month} "
-                        f"({min_target_value:.1f} mm)"
-                    )
-                )
-            # ----------------------------------------------------
-            # Maximum
-            # ----------------------------------------------------
-            if max_target_month is not None:
-                max_index = months.index(
-                    max_target_month
-                )
-    
-                ax.scatter(
-                    max_index,
-                    max_target_value,
-                    s=50,
-                    color=MAX_COLOR,
-                    edgecolor="black",
-                    linewidth=1,
-                    zorder=5,
-                    label=(
-                        f"Maximum {target_year}: "
-                        f"{max_target_month} "
-                        f"({max_target_value:.1f} mm)"
-                    )
-                )
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Monthly Rainfall {target_year} vs "
-                f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel(
-                "Month",
-                fontsize=12
-            )
-    
-            ax.set_ylabel(
-                "Rainfall (mm)",
-                fontsize=12
-            )
-    
-            ax.set_xticks(x)
-            ax.set_xticklabels(months)
-    
-            ax.set_ylim(
-                RAINFALL_MIN,
-                RAINFALL_MAX
-            )
-    
-            ax.grid(
-                True,
-                axis="y",
-                linestyle="--",
-                alpha=0.4
-            )
-    
-            ax.legend(
-                bbox_to_anchor=(1.02, 1),
-                loc="upper left",
-                fontsize=9
-            )
-    
-            plt.tight_layout()
-    
-            st.pyplot(
-                fig,
-                use_container_width=True
-            )
-    
-            plt.close(fig)
-        # ========================================================
-        # TAB 2 HEATMAP
-            # ========================================================
-        with tabs[1]:
-            st.subheader(
-                f"Monthly Total Rainfall Heatmap "
-                f"{YEAR_RANGE_TEXT}"
-            )
-    
-            heatmap_data = (
-                yearly_monthly_total
-                .reindex(columns=months)
-            )
-    
-            fig, ax = plt.subplots(
-                figsize=(14, 8)
-            )
-    
-            bg_color = BG_COLOR
-    
-            fig.patch.set_facecolor(
-                bg_color
-            )
-    
-            ax.set_facecolor(
-                bg_color
-            )
-    
-            plot_data = heatmap_data.copy()
-    
-            valid_values = plot_data.values[
-                ~pd.isna(
-                    plot_data.values
-                )
-            ]
-    
-            if len(valid_values) > 0:
-                vmin = valid_values.min()
-                vmax = valid_values.max()
-    
-                if vmin == vmax:
-                    vmax = vmin + 1
-    
-            else:
-                vmin = 0
-                vmax = 1
-    
-            im = ax.imshow(
-                plot_data.values,
-                aspect="auto",
-                cmap="YlGnBu",
-                vmin=vmin,
-                vmax=vmax
-            )
-    
-            ax.set_xticks(range(len(months)))
-            ax.set_xticklabels(months)
-            ax.set_yticks(range(len(plot_data.index)))
-            ax.set_yticklabels(plot_data.index.astype(str))
-    
-            # Grid
-            ax.set_xticks(
-                [
-                    i - 0.5
-                    for i in range(
-                        len(months) + 1
-                    )
-                ],
-                minor=True
-            )
-    
-            ax.set_yticks(
-                [
-                    i - 0.5
-                    for i in range(
-                        len(plot_data.index) + 1
-                    )
-                ],
-                minor=True
-            )
-    
-            ax.grid(
-                which="minor",
-                color="white",
-                linestyle="-",
-                linewidth=1
-            )
-    
-            ax.tick_params(
-                which="minor",
-                bottom=False,
-                left=False
-            )
-    
-            # Values
-            for i in range(len(plot_data.index)):
-    
-                for j in range(len(months)):
-                    value = plot_data.iloc[i,j]
-    
-                    if pd.notna(value):
-                        ax.text(j,i,f"{value:.0f}",ha="center",va="center",fontsize=7)
-    
-                    else:
-                        ax.add_patch(
-                            plt.Rectangle((j - 0.5,i - 0.5),
-                                1,1,facecolor="lightgray",edgecolor="white",linewidth=1)
-                        )
-    
-                        ax.text(j,i,"N.A.",ha="center",va="center",fontsize=7)
-    
-            cbar = fig.colorbar(im,ax=ax)
-            cbar.set_label("Total Rainfall (mm)",fontsize=11)
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Monthly Total Rainfall Heatmap, "
-                f"{YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel("Month",fontsize=12)
-            ax.set_ylabel("Year",fontsize=12)
-            
-            plt.tight_layout()
-    
-            st.pyplot(fig,use_container_width=True)
-            plt.close(fig)
-        # ========================================================
-        # TAB 3
-        # ANOMALY
-        # ========================================================
-        with tabs[2]:
-    
-            st.subheader(
-                f"Rainfall Anomaly {target_year} "
-                f"Relative to Mean {YEAR_RANGE_TEXT}"
-            )
-    
-            fig, ax = plt.subplots(figsize=(14, 8))
-    
-            bg_color = BG_COLOR
-    
-            fig.patch.set_facecolor(bg_color)
-    
-            ax.set_facecolor(bg_color)
-    
-            anomaly_colors = []
-    
-            for value in anomaly_percent.values:
-                if pd.isna(value):
-                    anomaly_colors.append("lightgray")
-    
-                elif value >= 0:
-                    anomaly_colors.append("darkorange")
-    
-                else:
-                    anomaly_colors.append("steelblue")
-    
-            bars = ax.bar(x,anomaly_percent.values,width=0.60,color=anomaly_colors,edgecolor="black",linewidth=0.8)
-    
-            ax.axhline(0,color="black",linewidth=1)
-    
-            for bar, value in zip(bars,anomaly_percent.values):
-    
-                if pd.notna(value):
-                    if value >= 0:
-                        offset = 4
-                        vertical = "bottom"
-    
-                    else:
-                        offset = -12
-                        vertical = "top"
-    
-                    ax.annotate(f"{value:.1f}%",(bar.get_x()+ bar.get_width() / 2,value),
-                        xytext=(0, offset),
-                        textcoords="offset points",
-                        ha="center",
-                        va=vertical,
-                        fontsize=8
-                    )
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Rainfall Anomaly {target_year} "
-                f"Relative to Mean {YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel("Month",fontsize=12)
-            ax.set_ylabel("Anomaly (%)",fontsize=12)
-            ax.set_xticks(x)
-            ax.set_xticklabels(months)
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-    
-            plt.tight_layout()
-    
-            st.pyplot(fig,use_container_width=True)
-            plt.close(fig)
-        # ========================================================
-        # TAB 4
-        # STATISTICS
-        # ========================================================
-        with tabs[3]:
-    
-            st.subheader("📋 Rainfall Statistical Analysis")
-    
-            display_table = (analysis_table.copy())
-            numeric_columns = (display_table.columns[
-                    display_table.columns != "Month"
-                ])
-    
-            for column in numeric_columns:
-                display_table[column] = pd.to_numeric(
-                    display_table[column],
-                    errors="coerce"
-                ).round(2)
-    
-            st.dataframe(display_table,use_container_width=True,hide_index=True)
-        # ========================================================
-        # TAB 5
-        # MAX DAILY RAINFALL
-        # ========================================================
-        with tabs[4]:
-    
-            st.subheader(
-                f"Maximum Daily Rainfall by Month - "
-                f"{target_year}"
-            )
-    
-            fig, ax = plt.subplots(figsize=(14, 8))
-            bg_color = BG_COLOR
-            
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-    
-            bars = ax.bar(
-                x,
-                max_daily,
-                width=0.60,
-                color=st.session_state.max_daily_color,
-                edgecolor="black",
-                linewidth=0.8
-            )
-    
-            for bar, value in zip(bars,max_daily):
-    
-                if pd.notna(value):
-                    ax.annotate(f"{value:.1f}",
-                        (
-                            bar.get_x()
-                            + bar.get_width() / 2,
-                            value
-                        ),
-                        xytext=(0, 6),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=10,
-                        fontweight="bold"
-                    )
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Maximum Daily Rainfall by Month - "
-                f"{target_year}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel("Month",fontsize=12)
-            ax.set_ylabel("Maximum Daily Rainfall (mm)",fontsize=12)
-            ax.set_xticks(x)
-            ax.set_xticklabels(months)
-    
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-    
-            plt.tight_layout()
-    
-            st.pyplot(fig,use_container_width=True)
-    
-            plt.close(fig)
-        # ========================================================
-        # TAB 6
-        # WET DAYS
-        # ========================================================
-        with tabs[5]:
-    
-            st.subheader(
-                f"Number of Wet Days "
-                f"{target_year}"
-            )
-    
-            fig, ax = plt.subplots(figsize=(14, 8))
-            bg_color = BG_COLOR
-    
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-    
-            bars = ax.bar(x,wet_days,width=0.60,color="steelblue",edgecolor="black",linewidth=0.8)
-    
-            for bar, value in zip(bars,wet_days):
-    
-                if pd.notna(value):
-                    ax.annotate(
-                        f"{int(value)}",
-                        (
-                            bar.get_x()
-                            + bar.get_width() / 2,
-                            value
-                        ),
-                        xytext=(0, 6),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=10,
-                        fontweight="bold"
-                    )
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Number of Wet Days "
-                f"{target_year}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel("Month",fontsize=12)
-            ax.set_ylabel("Number of Wet Days",fontsize=12)
-            ax.set_xticks(x)
-            ax.set_xticklabels(months)
-    
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-    
-            plt.tight_layout()
-    
-            st.pyplot(fig,use_container_width=True)
-            plt.close(fig)
-        # ========================================================
-        # TAB 7
-        # STANDARD DEVIATION
-        # ========================================================
-        with tabs[6]:
-    
-            st.subheader(f"Daily Rainfall Standard Deviation - {target_year}")
-    
-            fig, ax = plt.subplots(figsize=(14, 8))
-            bg_color = BG_COLOR
-    
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-    
-            bars = ax.bar(x,std_daily,width=0.60,color="purple",edgecolor="black",linewidth=0.8)
-    
-            for bar, value in zip(bars,std_daily):
-    
-                if pd.notna(value):
-                    ax.annotate(
-                        f"{value:.1f}",
-                        (
-                            bar.get_x()
-                            + bar.get_width() / 2,
-                            value
-                        ),
-                        xytext=(0, 6),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=10,
-                        fontweight="bold"
-                    )
-    
-            ax.set_title(
-                f"{file_name}\n"
-                f"Daily Rainfall Standard Deviation - "
-                f"{target_year}",
-                fontsize=16,
-                fontweight="bold"
-            )
-    
-            ax.set_xlabel("Month",fontsize=12)
-            ax.set_ylabel("Standard Deviation (mm)",fontsize=12)
-            ax.set_xticks(x)
-            ax.set_xticklabels(months)
-    
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-    
-            plt.tight_layout()
-    
-            st.pyplot(fig,use_container_width=True)
-    
-            plt.close(fig)
-        # ========================================================
-        # TAB 8
-        # HISTOGRAM
-        # ========================================================
-        with tabs[7]:
-    
-            st.subheader(f"Distribution of Daily Rainfall - {target_year}")
-    
-            if len(hist_values) > 0:
-                fig, ax = plt.subplots(figsize=(14, 8))
-                bg_color = BG_COLOR
-    
-                fig.patch.set_facecolor(bg_color)
-                ax.set_facecolor(bg_color)
-    
-                ax.hist(
-                    hist_values,
-                    bins=15,
-                    color="green",
-                    edgecolor="black",
-                    linewidth=0.8
-                )
-    
-                ax.set_title(
-                    f"{file_name}\n"
-                    f"Distribution of Daily Rainfall - "
-                    f"{target_year}",
-                    fontsize=16,
-                    fontweight="bold"
-                )
-    
-                ax.set_xlabel("Daily Rainfall (mm)",fontsize=12)
-                ax.set_ylabel("Number of Days",fontsize=12)
-                ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-    
-                plt.tight_layout()
-    
-                st.pyplot(fig,use_container_width=True)
-    
-                plt.close(fig)
-    
-            else:
-                st.warning(f"Tiada data hujan ≥ 0.1 mm untuk histogram.")
-        # ========================================================
-        # TAB 9
-        # PIE CHART
-        # ========================================================
-        with tabs[8]:
-    
-            st.subheader(f"Percentage of Days by Rainfall Category - {target_year}")
-    
-            if sum(category_values) > 0:
-                fig, ax = plt.subplots(figsize=(10, 8))
-                bg_color = BG_COLOR
-    
-                fig.patch.set_facecolor(bg_color)
-                ax.set_facecolor(bg_color)
-    
-                wedges, texts, autotexts = ax.pie(
-                    category_values,
-                    labels=category_labels,
-                    autopct="%1.1f%%",
-                    startangle=90,
-                    counterclock=False,
-                    wedgeprops={
-                        "edgecolor": "black",
-                        "linewidth": 0.8
-                    }
-                )
-    
-                for autotext in autotexts:
-                    autotext.set_fontsize(11)
-                    autotext.set_fontweight("bold")
-    
-                ax.set_title(
-                    f"{file_name}\n"
-                    f"Percentage of Days by Rainfall "
-                    f"Category - {target_year}",
-                    fontsize=16,
-                    fontweight="bold"
-                )
-    
-                plt.tight_layout()
-    
-                st.pyplot(fig,use_container_width=True)
-    
-                plt.close(fig)
-    
-                total_days = sum(category_values)
-    
-                category_table = pd.DataFrame({
-    
-                    "Rainfall Category":category_labels,
-                    "Number of Days":category_values,
-                    "Percentage (%)":
-                        [(count /total_days) * 100 for count in category_values]
-                })
-    
-                category_table["Percentage (%)"] = category_table["Percentage (%)"].round(2)
-    
-                st.dataframe(category_table,use_container_width=True,hide_index=True)
-    
-            else:
-                st.warning("Tiada data sah untuk pie chart.")
-        # ========================================================
-        # TAB 10
-        # BOXPLOT
-        # ========================================================
-        with tabs[9]:
-        
-            st.subheader(f"Daily Rainfall Distribution by Month - {target_year}")
-            # ----------------------------------------------------
-            # Collect daily rainfall ≥ 0.1 mm for each month
-            # ----------------------------------------------------
-            boxplot_data = []
-            boxplot_labels = []
-        
-            for month in months:
-                month_index = (months.index(month) + 1)
-        
-                days_expected = calendar.monthrange(target_year,month_index)[1]
-        
-                raw_values = target_data[
-                    month
-                ].iloc[:days_expected].copy()
-        
-                values = raw_values[
-                    raw_values.notna() &
-                    (raw_values >= WET_DAY_MIN)
-                ]
-        
-                boxplot_data.append(values.tolist())
-                boxplot_labels.append(month)
-            # ----------------------------------------------------
-            # Check whether data exists
-            # ----------------------------------------------------
-            if any(len(values) > 0 for values in boxplot_data):
-        
-                fig, ax = plt.subplots(figsize=(14, 8))
-                bg_color = BG_COLOR
-        
-                fig.patch.set_facecolor(bg_color)
-                ax.set_facecolor(bg_color)
-                # ------------------------------------------------
-                # Boxplot
-                # ------------------------------------------------
-                bp = ax.boxplot(
-                    boxplot_data,
-                    tick_labels=boxplot_labels,
-                    patch_artist=True,
-                    showmeans=True,
-                    meanline=False,
-                    showfliers=True
-                )
-                # ------------------------------------------------
-                # Box colour
-                # ------------------------------------------------
-                for box in bp["boxes"]:
-        
-                    box.set(facecolor="#87CEEB",edgecolor="black",linewidth=1)
-                # ------------------------------------------------
-                # Median
-                # ------------------------------------------------
-                for median in bp["medians"]:
-        
-                    median.set(color="red",linewidth=2)
-                # ------------------------------------------------
-                # Mean
-                # ------------------------------------------------
-                for mean in bp["means"]:
-        
-                    mean.set(marker="o",markerfacecolor="black",markeredgecolor="black",markersize=5)
-                # ------------------------------------------------
-                # Whisker
-                # ------------------------------------------------
-                for whisker in bp["whiskers"]:
-        
-                    whisker.set(color="black",linewidth=1)
-                # ------------------------------------------------
-                # Caps
-                # ------------------------------------------------
-                for cap in bp["caps"]:
-        
-                    cap.set(color="black",linewidth=1)
-                # ------------------------------------------------
-                # Outliers
-                # ------------------------------------------------
-                for flier in bp["fliers"]:
-        
-                    flier.set(
-                        marker="o",
-                        markerfacecolor="orange",
-                        markeredgecolor="black",
-                        markersize=5,
-                        alpha=0.7
-                    )
-                # ------------------------------------------------
-                # Title
-                # ------------------------------------------------
-                ax.set_title(
-                    f"{file_name}\n"
-                    f"Daily Rainfall Distribution by Month - {target_year}",
-                    fontsize=16,
-                    fontweight="bold"
-                )
-        
-                ax.set_xlabel("Month",fontsize=12)
-                ax.set_ylabel("Daily Rainfall (mm)",fontsize=12)
-                ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-        
-                plt.tight_layout()
-        
-                st.pyplot(fig,use_container_width=True)
-        
-                plt.close(fig)
-        # ========================================================
-        # TAB 11
-        # QUALITY CONTROL
-        # ========================================================
-        with tabs[10]:
-    
-            st.subheader("⚠️ Quality Control")
-    
-            st.markdown(
-                f"""
-                **QC Rules**
-                - `0.0 mm` = data sah
-                - `≥ 0.1 mm` = wet day
-                - `> {SUSPECT_RAINFALL:.0f} mm` = suspect
-                - `> {EXTREME_RAINFALL:.0f} mm` = extreme
-                - Negative rainfall/ N.A. = invalid / dibuang
-                - Missing days `> {MAX_MISSING_DAYS}` = bulan ditolak
-                - Missing berturut-turut `> {MAX_CONSECUTIVE_MISSING}` = bulan ditolak
-                """
-            )
-    
-            qc_tabs = st.tabs([
-                "⚠️ Suspect",
-                "🚨 Extreme",
-                "📅 Missing Count",
-                "🔢 Valid Count",
-                "🔁 Consecutive Missing",
-                "📋 QC Status"
-            ])
-            # ----------------------------------------------------
-            # SUSPECT
-            # ----------------------------------------------------
-            with qc_tabs[0]:
-                st.write(
-                    f"Jumlah suspect rainfall > {SUSPECT_RAINFALL:.0f} mm: **{len(suspect_df)}**")
-    
-                if len(suspect_df) > 0:
-                    st.dataframe(suspect_df,use_container_width=True,hide_index=True)
-    
-                else:
-                    st.success("Tiada rainfall suspect dikesan.")
-            # ----------------------------------------------------
-            # EXTREME
-            # ----------------------------------------------------
-            with qc_tabs[1]:
-    
-                st.write(
-                    f"Jumlah extreme rainfall > {EXTREME_RAINFALL:.0f} mm: **{len(extreme_df)}**")
-    
-                if len(extreme_df) > 0:
-                    st.dataframe(extreme_df,use_container_width=True,hide_index=True)
-    
-                else:
-                    st.success("Tiada rainfall extreme dikesan.")
-            # ----------------------------------------------------
-            # MISSING
-            # ----------------------------------------------------
-            with qc_tabs[2]:
-                st.dataframe(monthly_missing_count,use_container_width=True)
-            # ----------------------------------------------------
-            # VALID
-            # ----------------------------------------------------
-            with qc_tabs[3]:
-                st.dataframe(monthly_valid_count,use_container_width=True)
-            # ----------------------------------------------------
-            # CONSECUTIVE
-            # ----------------------------------------------------
-            with qc_tabs[4]:
-                st.dataframe(monthly_max_consecutive_missing,use_container_width=True)
-            # ----------------------------------------------------
-            # QC STATUS
-            # ----------------------------------------------------
-            with qc_tabs[5]:
-                st.dataframe(monthly_qc_status,use_container_width=True)
-
-    else:
-        all_year_tabs = st.tabs([
-            "📊 Yearly Rainfall",
-            "🔥 Heatmap",
-            "📋 Yearly Statistics",
-        ])
-
-        with all_year_tabs[0]:
-        
-            st.subheader(f"Annual Total Rainfall vs Mean Annual Rainfall {YEAR_RANGE_TEXT}")
-            # ========================================================
-            # YEARLY TOTAL
-            # ========================================================
-            yearly_total = (yearly_monthly_total.sum(axis=1, skipna=True))
-            # ========================================================
-            # MEAN ANNUAL RAINFALL
-            # ========================================================
-            mean_annual_rainfall = yearly_total.mean()
-            x = np.arange(len(yearly_total))
-        
-            fig, ax = plt.subplots(figsize=(14, 8))
-            fig.patch.set_facecolor(BG_COLOR)
-            ax.set_facecolor(BG_COLOR)
-            # ========================================================
-            # BAR
-            # ========================================================
-            bars = ax.bar(
-                x,
-                yearly_total.values,
-                width=0.60,
-                color="steelblue",
-                edgecolor="black",
-                linewidth=0.8,
-                label="Annual Total Rainfall"
-            )
-            # ========================================================
-            # BAR LABEL
-            # ========================================================
-            for bar, value in zip(bars,yearly_total.values):
-        
-                if pd.notna(value):
-                    ax.annotate(
-                        f"{value:.1f}",
-                        (
-                            bar.get_x()
-                            + bar.get_width() / 2,
-                            value
-                        ),
-                        xytext=(0, 6),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=9,
-                        fontweight="bold"
-                    )
-            # ========================================================
-            # MEAN LINE
-            # ========================================================
-            ax.axhline(
-                mean_annual_rainfall,
-                color=LINE_COLOR,
-                linewidth=2.5,
-                linestyle="--",
-                label=(f"Mean Annual Rainfall ({mean_annual_rainfall:.1f} mm)")
-            )
-            # ========================================================
-            # TITLE
-            # ========================================================
-            ax.set_title(
-                f"{file_name}\n"
-                f"Annual Total Rainfall vs Mean Annual Rainfall {YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-        
-            ax.set_xlabel("Year",fontsize=12)
-            ax.set_ylabel("Total Rainfall (mm)",fontsize=12)
-            
-            ax.set_xticks(x)
-            ax.set_xticklabels(yearly_total.index.astype(str))
-        
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-        
-            ax.legend(
-                title="Station / Rainfall Type",
-                bbox_to_anchor=(1.02, 1),
-                loc="upper left",
-                fontsize=10,
-                title_fontsize=11
-            )
-        
-            plt.tight_layout()
-        
-            st.pyplot(fig,use_container_width=True)
-        
-            plt.close(fig)
-        #-------------------------------------------
-        # Heatmap
-        #-------------------------------------------
-         
-        with all_year_tabs[1]:
-        
-            st.subheader(f"Monthly Total Rainfall Heatmap {YEAR_RANGE_TEXT}")
-        
-            heatmap_data = (yearly_monthly_total.reindex(columns=months))
-        
-            fig, ax = plt.subplots(figsize=(14, 8))
-            fig.patch.set_facecolor(BG_COLOR)
-            ax.set_facecolor(BG_COLOR)
-        
-            plot_data = heatmap_data.copy()
-        
-            valid_values = plot_data.values[~pd.isna(plot_data.values)]
-        
-            if len(valid_values) > 0:
-                vmin = valid_values.min()
-                vmax = valid_values.max()
-        
-                if vmin == vmax:
-                    vmax = vmin + 1
-        
-            else:
-                vmin = 0
-                vmax = 1
-        
-            im = ax.imshow(
-                plot_data.values,
-                aspect="auto",
-                cmap="YlGnBu",
-                vmin=vmin,
-                vmax=vmax
-            )
-        
-            ax.set_xticks(range(len(months)))
-            ax.set_xticklabels(months)
-        
-            ax.set_yticks(range(len(plot_data.index)))
-            ax.set_yticklabels(plot_data.index.astype(str))
-        
-            for i in range(len(plot_data.index)):
-                for j in range(len(months)):
-                    value = plot_data.iloc[i, j]
-        
-                    if pd.notna(value):
-                        ax.text(j,i,f"{value:.0f}",ha="center",va="center",fontsize=7)
-        
-                    else:
-                        ax.text(j,i,"N.A.",ha="center",va="center",fontsize=7)
-        
-            cbar = fig.colorbar(im,ax=ax)
-            cbar.set_label("Total Rainfall (mm)")
-        
-            ax.set_title(
-                f"{file_name}\n"
-                f"Monthly Total Rainfall Heatmap {YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-        
-            ax.set_xlabel("Month")
-            ax.set_ylabel("Year")
-        
-            plt.tight_layout()
-        
-            st.pyplot(fig,use_container_width=True)
-        
-            plt.close(fig)
-        # ---------------------------------------
-        # yearly statistics
-        # ---------------------------------------
-        with all_year_tabs[2]:
-        
-            st.subheader(f"Yearly Rainfall Statistics {YEAR_RANGE_TEXT}")
-        
-            yearly_statistics = (yearly_monthly_total.reindex(columns=months).copy())
-            yearly_statistics["Annual Total (mm)"] = (yearly_statistics.sum(axis=1,skipna=True))
-            yearly_statistics = (yearly_statistics.reset_index().rename(columns={"index": "Year"}))
-        
-            st.dataframe(yearly_statistics.round(2),use_container_width=True,hide_index=True)
-# ============================================================
-# MAIN TAB 2 - STATION COMPARISON
-# ============================================================
-
-with main_tabs[1]:
-
-    st.header("📊 Station Rainfall Comparison")
-
-    if len(display_results) < 2:
-        st.info("Sila pilih sekurang-kurangnya 2 stesen untuk membuat perbandingan.")
-
-    else:
-        # ========================================================
-        # STATION COLOURS
-        # ========================================================
-        station_colors = [
-            "orange",
-            "red",
-            "green",
-            "blue",
-            "purple",
-            "brown",
-            "pink",
-            "gray"
-        ]
-        # ========================================================
-        # 1. TOTAL RAINFALL BY MONTH - ALL YEARS
-        #    BAR CHART
-        # ========================================================
-        fig, ax = plt.subplots(
-            figsize=(FIG_WIDTH, FIG_HEIGHT)
+# ===========================================================
+# main tab 1
+# ===========================================================
+with main_tabs[0]:
+    tabs = st.tabs([
+        "📊 Bar + Line",
+        "🔥 Heatmap",
+        "📉 Anomaly",
+        "📋 Statistics",
+        "📈 Max Daily",
+        "🌧️ Wet Days",
+        "📐 Standard Deviation",
+        "📊 Histogram",
+        "🥧 Rainfall Category",
+        "📦 Boxplot",
+        "⚠️ QC"
+    ])
+    # ========================================================
+    # TAB 1 BAR + LINE
+    # ========================================================
+    with tabs[0]:
+        st.subheader(
+            f"Monthly Rainfall {target_year} vs "
+            f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}"
         )
 
-        fig.patch.set_facecolor(BG_COLOR)
-        ax.set_facecolor(BG_COLOR)
+        x = np.arange(
+            len(months)
+        )
 
-        x = np.arange(len(months))
-
-        n_stations = len(display_results)
-
-        bar_width = 0.8 / n_stations
-
-        for i, result in enumerate(display_results):
-            station_name = result["file_name"]
-            station_data = result["all_daily"].copy()
-
-            # Total rainfall semua tahun mengikut bulan
-            monthly_total = (station_data[months].apply(pd.to_numeric, errors="coerce").sum())
-
-            offset = (i - (n_stations - 1) / 2) * bar_width
-
-            ax.bar(
-                x + offset,
-                monthly_total.reindex(months).values,
-                width=bar_width,
-                color=station_colors[
-                    i % len(station_colors)
-                ],
-                label=station_name
+        fig, ax = plt.subplots(
+            figsize=(
+                FIG_WIDTH,
+                FIG_HEIGHT
             )
+        )
 
-        ax.set_title("Total Rainfall by Month - All Years",fontsize=16,fontweight="bold")
+        bg_color = BG_COLOR
+        
+        fig.patch.set_facecolor(
+            bg_color
+        )
 
-        ax.set_xlabel("Month")
-        ax.set_ylabel("Total Rainfall (mm)")
+        ax.set_facecolor(
+            bg_color
+        )
 
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-
-        ax.legend(title="Station",bbox_to_anchor=(1.02, 1),loc="upper left")
-
-        plt.tight_layout()
-
-        st.pyplot(fig,use_container_width=True)
-
-        plt.close(fig)
-        # ========================================================
-        # 2. MEAN RAINFALL BY MONTH - ALL YEARS
-        #    LINE CHART
-        # ========================================================
-
-        fig, ax = plt.subplots(figsize=(FIG_WIDTH, FIG_HEIGHT))
-
-        fig.patch.set_facecolor(BG_COLOR)
-        ax.set_facecolor(BG_COLOR)
-
-        for i, result in enumerate(display_results):
-            station_name = result["file_name"]
-            station_data = result["all_daily"].copy()
-
-            # Mean rainfall mengikut bulan
-            monthly_mean = (station_data[months].apply(pd.to_numeric, errors="coerce").mean())
-
-            ax.plot(
-                x,
-                monthly_mean.reindex(months).values,
-                marker="o",
-                linewidth=2.5,
-                markersize=6,
-                color=station_colors[
-                    i % len(station_colors)
-                ],
-                label=station_name
+        ax.bar(
+            x,
+            rainfall_target.values,
+            width=0.60,
+            color=st.session_state.bar_colors,
+            edgecolor="black",
+            linewidth=0.8,
+            label=(
+                f"Total Rainfall {target_year}"
             )
+        )
 
-        ax.set_title("Mean Rainfall by Month - All Years",fontsize=16,fontweight="bold")
-
-        ax.set_xlabel("Month")
-        ax.set_ylabel("Mean Rainfall (mm)")
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(months)
-
-        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-
-        ax.legend(title="Station",bbox_to_anchor=(1.02, 1),loc="upper left")
-
-        plt.tight_layout()
-
-        st.pyplot(fig,use_container_width=True)
-
-        plt.close(fig)
-        # ========================================================
-        # 3. PERCENTAGE OF DAYS BY RAINFALL CATEGORY
-        #    ALL YEARS - ALL STATIONS
-        # ========================================================
-        st.subheader("🥧 Percentage of Days by Rainfall Category - All Years")
-
-        category_labels = [
-            "No Rain (0.0 mm)",
-            "Light Rain (1.0–10.0 mm)",
-            "Moderate Rain (>10.0–30.0 mm)",
-            "Heavy Rain (>30.0-60.0 mm)",
-            "Extreme Rain (>60 mm)"
-        ]
-
-        all_category_values = []
-        # ========================================================
-        # KIRA CATEGORY UNTUK SETIAP STESEN
-        # ========================================================
-        for result in display_results:
-            station_data = result["all_daily"].copy()
-
-            # Ambil semua nilai hujan bulanan
-            rainfall_values = (station_data[months]
-                .apply(pd.to_numeric, errors="coerce")
-                .stack()
-                .dropna()
+        ax.plot(
+            x,
+            mean_monthly_total.values,
+            color=LINE_COLOR,
+            marker="o",
+            linewidth=2.5,
+            markersize=7,
+            label=(
+                f"Mean Monthly Rainfall "
+                f"{YEAR_RANGE_TEXT}"
             )
+        )
+        # ----------------------------------------------------
+        # Mean labels
+        # ----------------------------------------------------
+        for i, value in enumerate(
+            mean_monthly_total.values
+        ):
 
-            category_values = [
-                (rainfall_values == 0).sum(),
-            
-                (
-                    (rainfall_values >= 0.1) &
-                    (rainfall_values <= 10)
-                ).sum(),
-            
-                (
-                    (rainfall_values > 10) &
-                    (rainfall_values <= 30)
-                ).sum(),
-            
-                (
-                    (rainfall_values > 30) &
-                    (rainfall_values <= 60)
-                ).sum(),
-            
-                (
-                    rainfall_values > 60
-                ).sum()
-            ]
-
-        all_category_values.append(category_values)
-        # ========================================================
-        # PIE CHART SEBELAH-SEBELAH
-        # ========================================================
-        n_stations = len(display_results)
-
-        fig, axes = plt.subplots(1,n_stations,figsize=(6 * n_stations, 6))
-
-        # Kalau hanya satu axis
-        if n_stations == 1:
-            axes = [axes]
-
-        fig.patch.set_facecolor(BG_COLOR)
-
-        for i, result in enumerate(display_results):
-            station_name = result["file_name"]
-            category_values = all_category_values[i]
-           
-            ax = axes[i]
-            ax.set_facecolor(BG_COLOR)
-
-            if sum(category_values) > 0:
-                wedges, texts, autotexts = ax.pie(
-                    category_values,
-                    labels=category_labels,
-                    autopct="%1.1f%%",
-                    startangle=90,
-                    counterclock=False,
-                    wedgeprops={
-                        "edgecolor": "black",
-                        "linewidth": 0.8
-                    }
+            if pd.notna(value):
+                ax.annotate(
+                    f"{value:.1f}",
+                    (
+                        i,
+                        value
+                    ),
+                    xytext=(0, 10),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=11,
+                    fontweight="bold"
                 )
+        # ----------------------------------------------------
+        # Minimum
+        # ----------------------------------------------------
+        if min_target_month is not None:
+            min_index = months.index(
+                min_target_month
+            )
 
-                for autotext in autotexts:
-                    autotext.set_fontsize(9)
-                    autotext.set_fontweight("bold")
+            ax.scatter(
+                min_index,
+                min_target_value,
+                s=50,
+                color=MIN_COLOR,
+                edgecolor="black",
+                linewidth=1,
+                zorder=5,
+                label=(
+                    f"Minimum {target_year}: "
+                    f"{min_target_month} "
+                    f"({min_target_value:.1f} mm)"
+                )
+            )
+        # ----------------------------------------------------
+        # Maximum
+        # ----------------------------------------------------
+        if max_target_month is not None:
+            max_index = months.index(
+                max_target_month
+            )
 
-            ax.set_title(station_name,fontsize=14,fontweight="bold")
+            ax.scatter(
+                max_index,
+                max_target_value,
+                s=50,
+                color=MAX_COLOR,
+                edgecolor="black",
+                linewidth=1,
+                zorder=5,
+                label=(
+                    f"Maximum {target_year}: "
+                    f"{max_target_month} "
+                    f"({max_target_value:.1f} mm)"
+                )
+            )
 
-        fig.suptitle(
-            "Percentage of Days by Rainfall Category - All Years",
-            fontsize=17,
+        ax.set_title(
+            f"{file_name}\n"
+            f"Monthly Rainfall {target_year} vs "
+            f"Mean Monthly Rainfall {YEAR_RANGE_TEXT}",
+            fontsize=16,
             fontweight="bold"
         )
 
-        plt.tight_layout(rect=[0, 0, 1, 0.94])
+        ax.set_xlabel(
+            "Month",
+            fontsize=12
+        )
+
+        ax.set_ylabel(
+            "Rainfall (mm)",
+            fontsize=12
+        )
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+
+        ax.set_ylim(
+            RAINFALL_MIN,
+            RAINFALL_MAX
+        )
+
+        ax.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
+        )
+
+        ax.legend(
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+            fontsize=9
+        )
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+
+        plt.close(fig)
+    # ========================================================
+    # TAB 2 HEATMAP
+        # ========================================================
+    with tabs[1]:
+        st.subheader(
+            f"Monthly Total Rainfall Heatmap "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        heatmap_data = (
+            yearly_monthly_total
+            .reindex(columns=months)
+        )
+
+        fig, ax = plt.subplots(
+            figsize=(14, 8)
+        )
+
+        bg_color = BG_COLOR
+
+        fig.patch.set_facecolor(
+            bg_color
+        )
+
+        ax.set_facecolor(
+            bg_color
+        )
+
+        plot_data = heatmap_data.copy()
+
+        valid_values = plot_data.values[
+            ~pd.isna(
+                plot_data.values
+            )
+        ]
+
+        if len(valid_values) > 0:
+            vmin = valid_values.min()
+            vmax = valid_values.max()
+
+            if vmin == vmax:
+                vmax = vmin + 1
+
+        else:
+            vmin = 0
+            vmax = 1
+
+        im = ax.imshow(
+            plot_data.values,
+            aspect="auto",
+            cmap="YlGnBu",
+            vmin=vmin,
+            vmax=vmax
+        )
+
+        ax.set_xticks(range(len(months)))
+        ax.set_xticklabels(months)
+        ax.set_yticks(range(len(plot_data.index)))
+        ax.set_yticklabels(plot_data.index.astype(str))
+
+        # Grid
+        ax.set_xticks(
+            [
+                i - 0.5
+                for i in range(
+                    len(months) + 1
+                )
+            ],
+            minor=True
+        )
+
+        ax.set_yticks(
+            [
+                i - 0.5
+                for i in range(
+                    len(plot_data.index) + 1
+                )
+            ],
+            minor=True
+        )
+
+        ax.grid(
+            which="minor",
+            color="white",
+            linestyle="-",
+            linewidth=1
+        )
+
+        ax.tick_params(
+            which="minor",
+            bottom=False,
+            left=False
+        )
+
+        # Values
+        for i in range(len(plot_data.index)):
+
+            for j in range(len(months)):
+                value = plot_data.iloc[i,j]
+
+                if pd.notna(value):
+                    ax.text(j,i,f"{value:.0f}",ha="center",va="center",fontsize=7)
+
+                else:
+                    ax.add_patch(
+                        plt.Rectangle((j - 0.5,i - 0.5),
+                            1,1,facecolor="lightgray",edgecolor="white",linewidth=1)
+                    )
+
+                    ax.text(j,i,"N.A.",ha="center",va="center",fontsize=7)
+
+        cbar = fig.colorbar(im,ax=ax)
+        cbar.set_label("Total Rainfall (mm)",fontsize=11)
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Monthly Total Rainfall Heatmap, "
+            f"{YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month",fontsize=12)
+        ax.set_ylabel("Year",fontsize=12)
+        
+        plt.tight_layout()
+
+        st.pyplot(fig,use_container_width=True)
+        plt.close(fig)
+    # ========================================================
+    # TAB 3
+    # ANOMALY
+    # ========================================================
+    with tabs[2]:
+
+        st.subheader(
+            f"Rainfall Anomaly {target_year} "
+            f"Relative to Mean {YEAR_RANGE_TEXT}"
+        )
+
+        fig, ax = plt.subplots(figsize=(14, 8))
+
+        bg_color = BG_COLOR
+
+        fig.patch.set_facecolor(bg_color)
+
+        ax.set_facecolor(bg_color)
+
+        anomaly_colors = []
+
+        for value in anomaly_percent.values:
+            if pd.isna(value):
+                anomaly_colors.append("lightgray")
+
+            elif value >= 0:
+                anomaly_colors.append("darkorange")
+
+            else:
+                anomaly_colors.append("steelblue")
+
+        bars = ax.bar(x,anomaly_percent.values,width=0.60,color=anomaly_colors,edgecolor="black",linewidth=0.8)
+
+        ax.axhline(0,color="black",linewidth=1)
+
+        for bar, value in zip(bars,anomaly_percent.values):
+
+            if pd.notna(value):
+                if value >= 0:
+                    offset = 4
+                    vertical = "bottom"
+
+                else:
+                    offset = -12
+                    vertical = "top"
+
+                ax.annotate(f"{value:.1f}%",(bar.get_x()+ bar.get_width() / 2,value),
+                    xytext=(0, offset),
+                    textcoords="offset points",
+                    ha="center",
+                    va=vertical,
+                    fontsize=8
+                )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Rainfall Anomaly {target_year} "
+            f"Relative to Mean {YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month",fontsize=12)
+        ax.set_ylabel("Anomaly (%)",fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+
+        plt.tight_layout()
+
+        st.pyplot(fig,use_container_width=True)
+        plt.close(fig)
+    # ========================================================
+    # TAB 4
+    # STATISTICS
+    # ========================================================
+    with tabs[3]:
+
+        st.subheader("📋 Rainfall Statistical Analysis")
+
+        display_table = (analysis_table.copy())
+        numeric_columns = (display_table.columns[
+                display_table.columns != "Month"
+            ])
+
+        for column in numeric_columns:
+            display_table[column] = pd.to_numeric(
+                display_table[column],
+                errors="coerce"
+            ).round(2)
+
+        st.dataframe(display_table,use_container_width=True,hide_index=True)
+    # ========================================================
+    # TAB 5
+    # MAX DAILY RAINFALL
+    # ========================================================
+    with tabs[4]:
+
+        st.subheader(
+            f"Maximum Daily Rainfall by Month - "
+            f"{target_year}"
+        )
+
+        fig, ax = plt.subplots(figsize=(14, 8))
+        bg_color = BG_COLOR
+        
+        fig.patch.set_facecolor(bg_color)
+        ax.set_facecolor(bg_color)
+
+        bars = ax.bar(
+            x,
+            max_daily,
+            width=0.60,
+            color=st.session_state.max_daily_color,
+            edgecolor="black",
+            linewidth=0.8
+        )
+
+        for bar, value in zip(bars,max_daily):
+
+            if pd.notna(value):
+                ax.annotate(f"{value:.1f}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 6),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=10,
+                    fontweight="bold"
+                )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Maximum Daily Rainfall by Month - "
+            f"{target_year}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month",fontsize=12)
+        ax.set_ylabel("Maximum Daily Rainfall (mm)",fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+
+        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+
+        plt.tight_layout()
 
         st.pyplot(fig,use_container_width=True)
 
         plt.close(fig)
+    # ========================================================
+    # TAB 6
+    # WET DAYS
+    # ========================================================
+    with tabs[5]:
+
+        st.subheader(
+            f"Number of Wet Days "
+            f"{target_year}"
+        )
+
+        fig, ax = plt.subplots(figsize=(14, 8))
+        bg_color = BG_COLOR
+
+        fig.patch.set_facecolor(bg_color)
+        ax.set_facecolor(bg_color)
+
+        bars = ax.bar(x,wet_days,width=0.60,color="steelblue",edgecolor="black",linewidth=0.8)
+
+        for bar, value in zip(bars,wet_days):
+
+            if pd.notna(value):
+                ax.annotate(
+                    f"{int(value)}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 6),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=10,
+                    fontweight="bold"
+                )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Number of Wet Days "
+            f"{target_year}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month",fontsize=12)
+        ax.set_ylabel("Number of Wet Days",fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+
+        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+
+        plt.tight_layout()
+
+        st.pyplot(fig,use_container_width=True)
+        plt.close(fig)
+    # ========================================================
+    # TAB 7
+    # STANDARD DEVIATION
+    # ========================================================
+    with tabs[6]:
+
+        st.subheader(f"Daily Rainfall Standard Deviation - {target_year}")
+
+        fig, ax = plt.subplots(figsize=(14, 8))
+        bg_color = BG_COLOR
+
+        fig.patch.set_facecolor(bg_color)
+        ax.set_facecolor(bg_color)
+
+        bars = ax.bar(x,std_daily,width=0.60,color="purple",edgecolor="black",linewidth=0.8)
+
+        for bar, value in zip(bars,std_daily):
+
+            if pd.notna(value):
+                ax.annotate(
+                    f"{value:.1f}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 6),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=10,
+                    fontweight="bold"
+                )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Daily Rainfall Standard Deviation - "
+            f"{target_year}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month",fontsize=12)
+        ax.set_ylabel("Standard Deviation (mm)",fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(months)
+
+        ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+
+        plt.tight_layout()
+
+        st.pyplot(fig,use_container_width=True)
+
+        plt.close(fig)
+    # ========================================================
+    # TAB 8
+    # HISTOGRAM
+    # ========================================================
+    with tabs[7]:
+
+        st.subheader(f"Distribution of Daily Rainfall - {target_year}")
+
+        if len(hist_values) > 0:
+            fig, ax = plt.subplots(figsize=(14, 8))
+            bg_color = BG_COLOR
+
+            fig.patch.set_facecolor(bg_color)
+            ax.set_facecolor(bg_color)
+
+            ax.hist(
+                hist_values,
+                bins=15,
+                color="green",
+                edgecolor="black",
+                linewidth=0.8
+            )
+
+            ax.set_title(
+                f"{file_name}\n"
+                f"Distribution of Daily Rainfall - "
+                f"{target_year}",
+                fontsize=16,
+                fontweight="bold"
+            )
+
+            ax.set_xlabel("Daily Rainfall (mm)",fontsize=12)
+            ax.set_ylabel("Number of Days",fontsize=12)
+            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+
+            plt.tight_layout()
+
+            st.pyplot(fig,use_container_width=True)
+
+            plt.close(fig)
+
+        else:
+            st.warning(f"Tiada data hujan ≥ 0.1 mm untuk histogram.")
+    # ========================================================
+    # TAB 9
+    # PIE CHART
+    # ========================================================
+    with tabs[8]:
+
+        st.subheader(f"Percentage of Days by Rainfall Category - {target_year}")
+
+        if sum(category_values) > 0:
+            fig, ax = plt.subplots(figsize=(10, 8))
+            bg_color = BG_COLOR
+
+            fig.patch.set_facecolor(bg_color)
+            ax.set_facecolor(bg_color)
+
+            wedges, texts, autotexts = ax.pie(
+                category_values,
+                labels=category_labels,
+                autopct="%1.1f%%",
+                startangle=90,
+                counterclock=False,
+                wedgeprops={
+                    "edgecolor": "black",
+                    "linewidth": 0.8
+                }
+            )
+
+            for autotext in autotexts:
+                autotext.set_fontsize(11)
+                autotext.set_fontweight("bold")
+
+            ax.set_title(
+                f"{file_name}\n"
+                f"Percentage of Days by Rainfall "
+                f"Category - {target_year}",
+                fontsize=16,
+                fontweight="bold"
+            )
+
+            plt.tight_layout()
+
+            st.pyplot(fig,use_container_width=True)
+
+            plt.close(fig)
+
+            total_days = sum(category_values)
+
+            category_table = pd.DataFrame({
+
+                "Rainfall Category":category_labels,
+                "Number of Days":category_values,
+                "Percentage (%)":
+                    [(count /total_days) * 100 for count in category_values]
+            })
+
+            category_table["Percentage (%)"] = category_table["Percentage (%)"].round(2)
+
+            st.dataframe(category_table,use_container_width=True,hide_index=True)
+
+        else:
+            st.warning("Tiada data sah untuk pie chart.")
+    # ========================================================
+    # TAB 10
+    # BOXPLOT
+    # ========================================================
+    with tabs[9]:
+    
+        st.subheader(f"Daily Rainfall Distribution by Month - {target_year}")
+        # ----------------------------------------------------
+        # Collect daily rainfall ≥ 0.1 mm for each month
+        # ----------------------------------------------------
+        boxplot_data = []
+        boxplot_labels = []
+    
+        for month in months:
+            month_index = (months.index(month) + 1)
+    
+            days_expected = calendar.monthrange(target_year,month_index)[1]
+    
+            raw_values = target_data[
+                month
+            ].iloc[:days_expected].copy()
+    
+            values = raw_values[
+                raw_values.notna() &
+                (raw_values >= WET_DAY_MIN)
+            ]
+    
+            boxplot_data.append(values.tolist())
+            boxplot_labels.append(month)
+        # ----------------------------------------------------
+        # Check whether data exists
+        # ----------------------------------------------------
+        if any(len(values) > 0 for values in boxplot_data):
+    
+            fig, ax = plt.subplots(figsize=(14, 8))
+            bg_color = BG_COLOR
+    
+            fig.patch.set_facecolor(bg_color)
+            ax.set_facecolor(bg_color)
+            # ------------------------------------------------
+            # Boxplot
+            # ------------------------------------------------
+            bp = ax.boxplot(
+                boxplot_data,
+                tick_labels=boxplot_labels,
+                patch_artist=True,
+                showmeans=True,
+                meanline=False,
+                showfliers=True
+            )
+            # ------------------------------------------------
+            # Box colour
+            # ------------------------------------------------
+            for box in bp["boxes"]:
+    
+                box.set(facecolor="#87CEEB",edgecolor="black",linewidth=1)
+            # ------------------------------------------------
+            # Median
+            # ------------------------------------------------
+            for median in bp["medians"]:
+    
+                median.set(color="red",linewidth=2)
+            # ------------------------------------------------
+            # Mean
+            # ------------------------------------------------
+            for mean in bp["means"]:
+    
+                mean.set(marker="o",markerfacecolor="black",markeredgecolor="black",markersize=5)
+            # ------------------------------------------------
+            # Whisker
+            # ------------------------------------------------
+            for whisker in bp["whiskers"]:
+    
+                whisker.set(color="black",linewidth=1)
+            # ------------------------------------------------
+            # Caps
+            # ------------------------------------------------
+            for cap in bp["caps"]:
+    
+                cap.set(color="black",linewidth=1)
+            # ------------------------------------------------
+            # Outliers
+            # ------------------------------------------------
+            for flier in bp["fliers"]:
+    
+                flier.set(
+                    marker="o",
+                    markerfacecolor="orange",
+                    markeredgecolor="black",
+                    markersize=5,
+                    alpha=0.7
+                )
+            # ------------------------------------------------
+            # Title
+            # ------------------------------------------------
+            ax.set_title(
+                f"{file_name}\n"
+                f"Daily Rainfall Distribution by Month - {target_year}",
+                fontsize=16,
+                fontweight="bold"
+            )
+    
+            ax.set_xlabel("Month",fontsize=12)
+            ax.set_ylabel("Daily Rainfall (mm)",fontsize=12)
+            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
+    
+            plt.tight_layout()
+    
+            st.pyplot(fig,use_container_width=True)
+    
+            plt.close(fig)
+    # ========================================================
+    # TAB 11
+    # QUALITY CONTROL
+    # ========================================================
+    with tabs[10]:
+
+        st.subheader("⚠️ Quality Control")
+
+        st.markdown(
+            f"""
+            **QC Rules**
+            - `0.0 mm` = data sah
+            - `≥ 0.1 mm` = wet day
+            - `> {SUSPECT_RAINFALL:.0f} mm` = suspect
+            - `> {EXTREME_RAINFALL:.0f} mm` = extreme
+            - Negative rainfall/ N.A. = invalid / dibuang
+            - Missing days `> {MAX_MISSING_DAYS}` = bulan ditolak
+            - Missing berturut-turut `> {MAX_CONSECUTIVE_MISSING}` = bulan ditolak
+            """
+        )
+
+        qc_tabs = st.tabs([
+            "⚠️ Suspect",
+            "🚨 Extreme",
+            "📅 Missing Count",
+            "🔢 Valid Count",
+            "🔁 Consecutive Missing",
+            "📋 QC Status"
+        ])
+        # ----------------------------------------------------
+        # SUSPECT
+        # ----------------------------------------------------
+        with qc_tabs[0]:
+            st.write(
+                f"Jumlah suspect rainfall > {SUSPECT_RAINFALL:.0f} mm: **{len(suspect_df)}**")
+
+            if len(suspect_df) > 0:
+                st.dataframe(suspect_df,use_container_width=True,hide_index=True)
+
+            else:
+                st.success("Tiada rainfall suspect dikesan.")
+        # ----------------------------------------------------
+        # EXTREME
+        # ----------------------------------------------------
+        with qc_tabs[1]:
+
+            st.write(
+                f"Jumlah extreme rainfall > {EXTREME_RAINFALL:.0f} mm: **{len(extreme_df)}**")
+
+            if len(extreme_df) > 0:
+                st.dataframe(extreme_df,use_container_width=True,hide_index=True)
+
+            else:
+                st.success("Tiada rainfall extreme dikesan.")
+        # ----------------------------------------------------
+        # MISSING
+        # ----------------------------------------------------
+        with qc_tabs[2]:
+            st.dataframe(monthly_missing_count,use_container_width=True)
+        # ----------------------------------------------------
+        # VALID
+        # ----------------------------------------------------
+        with qc_tabs[3]:
+            st.dataframe(monthly_valid_count,use_container_width=True)
+        # ----------------------------------------------------
+        # CONSECUTIVE
+        # ----------------------------------------------------
+        with qc_tabs[4]:
+            st.dataframe(monthly_max_consecutive_missing,use_container_width=True)
+        # ----------------------------------------------------
+        # QC STATUS
+        # ----------------------------------------------------
+        with qc_tabs[5]:
+            st.dataframe(monthly_qc_status,use_container_width=True)
+
+# ============================================================
+# MAIN TAB 2 - ALL YEARS
+# ============================================================
+with main_tabs[1]:
+
+    st.header(f"📊 All Years Rainfall Analysis {YEAR_RANGE_TEXT}")
+    # --------------------------------------------------------
+    # SELECT STATION
+    # --------------------------------------------------------
+    all_year_station = st.selectbox("Select Station",station_options,key="all_year_station")
+
+    yearly_result = next(result for result in successful_results if result["file_name"] == all_year_station)
+
+    file_name = yearly_result["file_name"]
+
+    yearly_monthly_total = (yearly_result["yearly_monthly_total"].reindex(columns=months))
+    # --------------------------------------------------------
+    # ALL YEARS TABS
+    # --------------------------------------------------------
+    all_year_tabs = st.tabs([
+        "📊 Yearly Rainfall",
+        "🔥 Heatmap",
+        "📋 Yearly Statistics"
+    ])
+    # ========================================================
+    # TAB 1 - YEARLY RAINFALL
+    # ========================================================
+
+    with all_year_tabs[0]:
+
+        st.subheader(
+            f"Annual Total Rainfall vs Mean Annual Rainfall "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        yearly_total = (
+            yearly_monthly_total.sum(
+                axis=1,
+                skipna=True
+            )
+        )
+
+        mean_annual_rainfall = yearly_total.mean()
+
+        x_year = np.arange(
+            len(yearly_total)
+        )
+
+        fig, ax = plt.subplots(
+            figsize=(14, 8)
+        )
+
+        fig.patch.set_facecolor(BG_COLOR)
+        ax.set_facecolor(BG_COLOR)
+
+        bars = ax.bar(
+            x_year,
+            yearly_total.values,
+            width=0.60,
+            color="steelblue",
+            edgecolor="black",
+            linewidth=0.8,
+            label="Annual Total Rainfall"
+        )
+
+        for bar, value in zip(
+            bars,
+            yearly_total.values
+        ):
+
+            if pd.notna(value):
+
+                ax.annotate(
+                    f"{value:.1f}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 6),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=9,
+                    fontweight="bold"
+                )
+
+        ax.axhline(
+            mean_annual_rainfall,
+            color=LINE_COLOR,
+            linewidth=2.5,
+            linestyle="--",
+            label=(
+                f"Mean Annual Rainfall "
+                f"({mean_annual_rainfall:.1f} mm)"
+            )
+        )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Annual Total Rainfall vs Mean Annual Rainfall "
+            f"{YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel(
+            "Year",
+            fontsize=12
+        )
+
+        ax.set_ylabel(
+            "Total Rainfall (mm)",
+            fontsize=12
+        )
+
+        ax.set_xticks(x_year)
+
+        ax.set_xticklabels(
+            yearly_total.index.astype(str)
+        )
+
+        ax.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
+        )
+
+        ax.legend(
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left"
+        )
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+
+        plt.close(fig)
+
+    # ========================================================
+    # TAB 2 - HEATMAP
+    # ========================================================
+
+    with all_year_tabs[1]:
+
+        st.subheader(
+            f"Monthly Total Rainfall Heatmap "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        heatmap_data = (
+            yearly_monthly_total
+            .reindex(columns=months)
+        )
+
+        fig, ax = plt.subplots(
+            figsize=(14, 8)
+        )
+
+        fig.patch.set_facecolor(BG_COLOR)
+        ax.set_facecolor(BG_COLOR)
+
+        plot_data = heatmap_data.copy()
+
+        valid_values = plot_data.values[
+            ~pd.isna(plot_data.values)
+        ]
+
+        if len(valid_values) > 0:
+
+            vmin = valid_values.min()
+            vmax = valid_values.max()
+
+            if vmin == vmax:
+                vmax = vmin + 1
+
+        else:
+
+            vmin = 0
+            vmax = 1
+
+        im = ax.imshow(
+            plot_data.values,
+            aspect="auto",
+            cmap="YlGnBu",
+            vmin=vmin,
+            vmax=vmax
+        )
+
+        ax.set_xticks(
+            range(len(months))
+        )
+
+        ax.set_xticklabels(months)
+
+        ax.set_yticks(
+            range(len(plot_data.index))
+        )
+
+        ax.set_yticklabels(
+            plot_data.index.astype(str)
+        )
+
+        for i in range(
+            len(plot_data.index)
+        ):
+
+            for j in range(
+                len(months)
+            ):
+
+                value = plot_data.iloc[i, j]
+
+                if pd.notna(value):
+
+                    ax.text(
+                        j,
+                        i,
+                        f"{value:.0f}",
+                        ha="center",
+                        va="center",
+                        fontsize=7
+                    )
+
+                else:
+
+                    ax.text(
+                        j,
+                        i,
+                        "N.A.",
+                        ha="center",
+                        va="center",
+                        fontsize=7
+                    )
+
+        cbar = fig.colorbar(
+            im,
+            ax=ax
+        )
+
+        cbar.set_label(
+            "Total Rainfall (mm)"
+        )
+
+        ax.set_title(
+            f"{file_name}\n"
+            f"Monthly Total Rainfall Heatmap "
+            f"{YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        ax.set_xlabel("Month")
+        ax.set_ylabel("Year")
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+
+        plt.close(fig)
+
+    # ========================================================
+    # TAB 3 - YEARLY STATISTICS
+    # ========================================================
+
+    with all_year_tabs[2]:
+
+        st.subheader(
+            f"Yearly Rainfall Statistics "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        yearly_statistics = (
+            yearly_monthly_total
+            .reindex(columns=months)
+            .copy()
+        )
+
+        yearly_statistics[
+            "Annual Total (mm)"
+        ] = yearly_statistics.sum(
+            axis=1,
+            skipna=True
+        )
+
+        yearly_statistics = (
+            yearly_statistics
+            .reset_index()
+            .rename(
+                columns={
+                    "index": "Year"
+                }
+            )
+        )
+
+        st.dataframe(
+            yearly_statistics.round(2),
+            use_container_width=True,
+            hide_index=True
+        )
+# ============================================================
+# MAIN TAB 3 - STATION COMPARISON
+# ============================================================
+with main_tabs[2]:
+
+    # code comparison 2+ station
+
 # ============================================================
 # FOOTER
 # ============================================================
