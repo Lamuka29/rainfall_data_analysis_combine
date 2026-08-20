@@ -2961,29 +2961,47 @@ with main_tabs[2]:
                 # --------------------------------------------
                 # LINES
                 # --------------------------------------------
+                legend_handles = []
+                
                 for station in comparison_data:
-
+                
                     values = (
                         comparison_data[station]["mean"]
                         .reindex(months)
                     )
-
-                    ax.plot(
+                
+                    line, = ax.plot(
                         x_mean,
                         values.values,
                         marker="o",
                         linewidth=2.5,
-                        markersize=7,
-                        label=str(station)
+                        markersize=7
                     )
-
+                
+                    # ----------------------------------------
+                    # SIMPAN WARNA + NAMA STESEN
+                    # ----------------------------------------
+                    legend_handles.append(
+                        Line2D(
+                            [0],
+                            [0],
+                            color=line.get_color(),
+                            marker="o",
+                            linewidth=2.5,
+                            markersize=7,
+                            label=str(station)
+                        )
+                    )
+                
+                    # ----------------------------------------
                     # VALUE LABEL
+                    # ----------------------------------------
                     for i, value in enumerate(
                         values.values
                     ):
-
+                
                         if pd.notna(value):
-
+                
                             ax.annotate(
                                 f"{value:.1f}",
                                 (
@@ -3028,9 +3046,12 @@ with main_tabs[2]:
 
                 # LEGEND
                 ax.legend(
+                    handles=legend_handles,
                     title="Station",
                     bbox_to_anchor=(1.02, 1),
-                    loc="upper left"
+                    loc="upper left",
+                    fontsize=9,
+                    title_fontsize=10
                 )
 
                 plt.tight_layout()
@@ -3055,8 +3076,7 @@ with main_tabs[2]:
                         comparison_data[station]["mean"]
                         .reindex(months)
 
-                        for station
-                        in comparison_data
+                        for station in comparison_data
                     },
                     index=months
                 )
