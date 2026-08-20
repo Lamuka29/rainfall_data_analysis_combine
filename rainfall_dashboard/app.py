@@ -1078,7 +1078,8 @@ if not successful_results:
 # STATION SELECTION
 # ============================================================
 station_options = [result["file_name"] for result in successful_results]
-selected_stations = st.sidebar.multiselect("📍 Select Station",station_options,default=station_options)
+selected_stations = st.sidebar.multiselect("📍 Select Station",station_options)
+display_results = [result for result in successful_results if result["file_name"] == selected_station]
 # ============================================================
 # FILTER DISPLAY RESULT
 # ============================================================
