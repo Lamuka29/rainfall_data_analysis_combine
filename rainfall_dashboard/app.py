@@ -1106,10 +1106,10 @@ if not display_results:
 display_results = [
     result
     for result in successful_results
-    if result["file_name"] in selected_stations
+    if result["file_name"] in selected_station
 ]
 
-if not selected_stations:
+if not selected_station:
     st.warning("Sila pilih sekurang-kurangnya satu stesen.")
     st.stop()
 # ============================================================
