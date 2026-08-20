@@ -2494,7 +2494,7 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
-        
+            
     # ========================================================
     # TAB 3 - BOXPLOT
     # ========================================================
@@ -2516,7 +2516,6 @@ with main_tabs[1]:
         # ----------------------------------------------------
     
         boxplot_data = []
-    
         boxplot_labels = []
     
         for year in yearly_monthly_total.index:
@@ -2537,7 +2536,7 @@ with main_tabs[1]:
                 )
     
         # ----------------------------------------------------
-        # CREATE BOXPLOT
+        # BOXPLOT
         # ----------------------------------------------------
     
         if len(boxplot_data) > 0:
@@ -2546,18 +2545,38 @@ with main_tabs[1]:
                 figsize=(14, 8)
             )
     
-            fig.patch.set_facecolor(BG_COLOR)
-            ax.set_facecolor(BG_COLOR)
+            fig.patch.set_facecolor(
+                BG_COLOR
+            )
     
-            bp = ax.boxplot(
+            ax.set_facecolor(
+                BG_COLOR
+            )
+    
+            ax.boxplot(
                 boxplot_data,
-                labels=boxplot_labels,
                 patch_artist=True,
                 showmeans=True
             )
     
             # ------------------------------------------------
-            # GRAPH SETTINGS
+            # X AXIS
+            # ------------------------------------------------
+    
+            ax.set_xticks(
+                np.arange(
+                    1,
+                    len(boxplot_labels) + 1
+                )
+            )
+    
+            ax.set_xticklabels(
+                boxplot_labels,
+                rotation=45
+            )
+    
+            # ------------------------------------------------
+            # TITLE
             # ------------------------------------------------
     
             ax.set_title(
@@ -2567,6 +2586,10 @@ with main_tabs[1]:
                 fontsize=16,
                 fontweight="bold"
             )
+    
+            # ------------------------------------------------
+            # LABELS
+            # ------------------------------------------------
     
             ax.set_xlabel(
                 "Year",
@@ -2578,15 +2601,15 @@ with main_tabs[1]:
                 fontsize=12
             )
     
+            # ------------------------------------------------
+            # GRID
+            # ------------------------------------------------
+    
             ax.grid(
                 True,
                 axis="y",
                 linestyle="--",
                 alpha=0.4
-            )
-    
-            plt.xticks(
-                rotation=45
             )
     
             plt.tight_layout()
@@ -2601,7 +2624,8 @@ with main_tabs[1]:
         else:
     
             st.warning(
-                "Tiada data yang mencukupi untuk menghasilkan boxplot."
+                "Tiada data yang mencukupi "
+                "untuk menghasilkan boxplot."
             )
     # ========================================================
     # TAB 4 - RAINFALL CATEGORY
