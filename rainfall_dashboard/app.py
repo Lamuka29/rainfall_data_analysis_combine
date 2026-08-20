@@ -2248,6 +2248,8 @@ with main_tabs[1]:
     all_year_tabs = st.tabs([
         "📊 Yearly Rainfall",
         "🔥 Heatmap",
+        "📦 Boxplot",
+        "🥧 Rainfall Category",
         "📋 Yearly Statistics"
     ])
     # ========================================================
@@ -2492,12 +2494,303 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
-
+        
     # ========================================================
-    # TAB 3 - YEARLY STATISTICS
+    # TAB 3 - BOXPLOT
     # ========================================================
-
+    
     with all_year_tabs[2]:
+    
+        st.subheader(
+            f"📦 Monthly Rainfall Distribution "
+            f"{YEAR_RANGE_TEXT}"
+        )
+    
+        st.caption(
+            "Taburan jumlah hujan bulanan bagi setiap tahun "
+            f"untuk {file_name}."
+        )
+    
+        # ----------------------------------------------------
+        # PREPARE DATA
+        # ----------------------------------------------------
+    
+        boxplot_data = []
+    
+        boxplot_labels = []
+    
+        for year in yearly_monthly_total.index:
+    
+            values = (
+                yearly_monthly_total
+                .loc[year, months]
+                .dropna()
+                .values
+            )
+    
+            if len(values) > 0:
+    
+                boxplot_data.append(values)
+    
+                boxplot_labels.append(
+                    str(year)
+                )
+    
+        # ----------------------------------------------------
+        # CREATE BOXPLOT
+        # ----------------------------------------------------
+    
+        if len(boxplot_data) > 0:
+    
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+    
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
+    
+            bp = ax.boxplot(
+                boxplot_data,
+                labels=boxplot_labels,
+                patch_artist=True,
+                showmeans=True
+            )
+    
+            # ------------------------------------------------
+            # GRAPH SETTINGS
+            # ------------------------------------------------
+    
+            ax.set_title(
+                f"{file_name}\n"
+                f"Monthly Rainfall Distribution "
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
+    
+            ax.set_xlabel(
+                "Year",
+                fontsize=12
+            )
+    
+            ax.set_ylabel(
+                "Monthly Total Rainfall (mm)",
+                fontsize=12
+            )
+    
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+    
+            plt.xticks(
+                rotation=45
+            )
+    
+            plt.tight_layout()
+    
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+    
+            plt.close(fig)
+    
+        else:
+    
+            st.warning(
+                "Tiada data yang mencukupi untuk menghasilkan boxplot."
+            )
+    # ========================================================
+    # TAB 4 - RAINFALL CATEGORY
+    # ========================================================
+    
+    with all_year_tabs[3]:
+    
+        st.subheader(
+            f"🥧 Rainfall Category Distribution "
+            f"{YEAR_RANGE_TEXT}"
+        )
+    
+        st.caption(
+            "Taburan kategori hujan berdasarkan semua "
+            f"data harian dalam {file_name} "
+            f"bagi tempoh {YEAR_RANGE_TEXT}."
+        )
+    
+        # ----------------------------------------------------
+        # GET ALL DAILY VALUES
+        # ----------------------------------------------------
+    
+        all_daily_values = (
+            yearly_result["all_daily"]
+            [months]
+            .stack()
+        )
+    
+        all_daily_values = all_daily_values[
+            all_daily_values.notna()
+            &
+            (all_daily_values >= VALID_MIN)
+        ]
+    
+        # ----------------------------------------------------
+        # CATEGORY LABELS
+        # ----------------------------------------------------
+    
+        category_labels = [
+            "No Rain (0.0 mm)",
+            "Light Rain (1.0–10.0 mm)",
+            "Moderate Rain (>10.0–30.0 mm)",
+            "Heavy Rain (>30.0–60.0 mm)",
+            "Extreme Rain (>60 mm)"
+        ]
+    
+        # ----------------------------------------------------
+        # CATEGORY VALUES
+        # ----------------------------------------------------
+    
+        category_values = [
+    
+            (
+                all_daily_values == 0
+            ).sum(),
+    
+            (
+                (all_daily_values >= 1)
+                &
+                (all_daily_values <= 10)
+            ).sum(),
+    
+            (
+                (all_daily_values > 10)
+                &
+                (all_daily_values <= 30)
+            ).sum(),
+    
+            (
+                (all_daily_values > 30)
+                &
+                (all_daily_values <= 60)
+            ).sum(),
+    
+            (
+                all_daily_values > 60
+            ).sum()
+        ]
+    
+        total_days = sum(
+            category_values
+        )
+    
+        # ----------------------------------------------------
+        # PIE CHART
+        # ----------------------------------------------------
+    
+        if total_days > 0:
+    
+            fig, ax = plt.subplots(
+                figsize=(9, 7)
+            )
+    
+            fig.patch.set_facecolor(
+                BG_COLOR
+            )
+    
+            ax.set_facecolor(
+                BG_COLOR
+            )
+    
+            wedges, texts, autotexts = ax.pie(
+                category_values,
+                labels=category_labels,
+                autopct="%1.1f%%",
+                startangle=90,
+                counterclock=False,
+                wedgeprops={
+                    "edgecolor": "black",
+                    "linewidth": 0.8
+                }
+            )
+    
+            for autotext in autotexts:
+    
+                autotext.set_fontsize(
+                    9
+                )
+    
+                autotext.set_fontweight(
+                    "bold"
+                )
+    
+            ax.set_title(
+                f"{file_name}\n"
+                f"Rainfall Category Distribution "
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
+    
+            plt.tight_layout()
+    
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+    
+            plt.close(fig)
+    
+            # ------------------------------------------------
+            # CATEGORY TABLE
+            # ------------------------------------------------
+    
+            st.subheader(
+                "📋 Rainfall Category Statistics"
+            )
+    
+            category_table = pd.DataFrame({
+    
+                "Rainfall Category":
+                    category_labels,
+    
+                "Number of Days":
+                    category_values,
+    
+                "Percentage (%)":
+                    [
+                        (
+                            value
+                            / total_days
+                        ) * 100
+                        for value in category_values
+                    ]
+            })
+    
+            category_table[
+                "Percentage (%)"
+            ] = category_table[
+                "Percentage (%)"
+            ].round(2)
+    
+            st.dataframe(
+                category_table,
+                use_container_width=True,
+                hide_index=True
+            )
+    
+        else:
+    
+            st.warning(
+                "Tiada data hujan sah untuk menghasilkan pie chart."
+            )
+        
+    # ========================================================
+    # TAB 5 - YEARLY STATISTICS
+    # ========================================================
+
+    with all_year_tabs[4]:
 
         st.subheader(
             f"Yearly Rainfall Statistics "
