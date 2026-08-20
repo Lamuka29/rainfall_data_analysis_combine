@@ -510,6 +510,17 @@ def analyze_file(uploaded_file):
         ignore_index=True
     )
     # ========================================================
+    # ORIGINAL DATA PERIOD
+    # ========================================================
+    original_years = (
+        all_daily["Year"]
+        .dropna()
+        .astype(int)
+    )
+    
+    original_start_year = original_years.min()
+    original_end_year = original_years.max()
+    # ========================================================
     # QUALITY CONTROL
     # ========================================================
     for month in months:
@@ -841,6 +852,9 @@ for result in successful_results:
     result["min_mean_value"] = min_mean_value
     result["max_mean_month"] = max_mean_month
     result["max_mean_value"] = max_mean_value
+    
+    result["original_start_year"] = original_start_year
+    result["original_end_year"] = original_end_year
 # ============================================================
 # DAILY STATISTICS FOR TARGET YEAR
 # ============================================================
@@ -1095,18 +1109,6 @@ selected_station = st.sidebar.selectbox(
 display_results = [
     result
     for result in successful_results
-    if result["file_name"] == selected_station
-]
-
-if not display_results:
-    st.warning("Tiada stesen dipilih.")
-    st.stop()
-# ============================================================
-# FILTER DISPLAY RESULT
-# ============================================================
-display_results = [
-    result
-    for result in successful_results
     if result["file_name"] in selected_station
 ]
 
@@ -1256,6 +1258,7 @@ with main_tabs[0]:
         category_values = result["category_values"]
         category_labels = result["category_labels"]
         read_errors = result["read_errors"]
+        
         # ========================================================
         # FILE HEADER
         # ========================================================
@@ -1371,27 +1374,8 @@ with main_tabs[0]:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum())))
         
         with qc_col4:
-        
-            file_years = (
-                all_daily["Year"]
-                .dropna()
-                .astype(int)
-            )
-        
-            if len(file_years) > 0:
-        
-                data_period = (
-                    f"{file_years.min()}–{file_years.max()}"
-                )
-        
-            else:
-        
-                data_period = "N.A."
-        
-            st.metric(
-                "Data Period",
-                data_period
-            )
+            st.metric("Data Period",
+                      f"{result['original_start_year']}–{result['original_end_year']}")
 # ===========================================================
 # main tab 1
 # ===========================================================
