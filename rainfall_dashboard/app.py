@@ -1372,25 +1372,25 @@ with main_tabs[0]:
         
         with qc_col4:
         
-            years = (
+            file_years = (
                 all_daily["Year"]
                 .dropna()
                 .astype(int)
             )
         
-            if len(years) > 0:
+            if len(file_years) > 0:
         
-                year_range = (
-                    f"{years.min()}–{years.max()}"
+                data_period = (
+                    f"{file_years.min()}–{file_years.max()}"
                 )
         
             else:
         
-                year_range = "N.A."
+                data_period = "N.A."
         
             st.metric(
                 "Data Period",
-                year_range
+                data_period
             )
 # ===========================================================
 # main tab 1
