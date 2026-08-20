@@ -6,6 +6,7 @@ import calendar
 import io
 import streamlit as st
 import xlrd
+from matplotlib.patches import Patch
 
 # ============================================================
 # STREAMLIT CONFIGURATION
@@ -2799,101 +2800,25 @@ with main_tabs[2]:
             # BAR SETIAP STESEN
             # ------------------------------------------------
             for i, station in enumerate(comparison_stations):
-            
-                values = comparison_data[station]["total"].reindex(months)
-            
-                offset = (
-                    i - (n_stations - 1) / 2
-                ) * bar_width
-            
-                bars = ax.bar(
-                    x + offset,
-                    values.values,
-                    width=bar_width,
-                    edgecolor="black",
-                    linewidth=0.8,
-                    label=station
+                
+                # ========================================================
+                # MANUAL LEGEND
+                # ========================================================
+                legend_handles = [
+                    Patch(
+                        facecolor=bars[i].get_facecolor(),
+                        edgecolor="black",
+                        label=str(station)
+                    )
+                    for i, station in enumerate(comparison_stations)
+                ]
+                
+                ax.legend(
+                    handles=legend_handles,
+                    title="Station",
+                    bbox_to_anchor=(1.02, 1),
+                    loc="upper left"
                 )
-            
-                for bar, value in zip(
-                    bars,
-                    values.values
-                ):
-            
-                    if pd.notna(value):
-            
-                        ax.annotate(
-                            f"{value:.0f}",
-                            (
-                                bar.get_x()
-                                + bar.get_width() / 2,
-                                value
-                            ),
-                            xytext=(0, 5),
-                            textcoords="offset points",
-                            ha="center",
-                            va="bottom",
-                            fontsize=8
-                        )
-            
-            
-            handles, labels = ax.get_legend_handles_labels()
-            
-            ax.legend(
-                handles,
-                labels,
-                title="Station",
-                loc="upper left",
-                bbox_to_anchor=(1.02, 1),
-                fontsize=9,
-                title_fontsize=10
-            )
-            # ------------------------------------------------
-            # GRAPH SETTINGS
-            # ------------------------------------------------
-
-            ax.set_title(
-                f"Monthly Total Rainfall Comparison\n"
-                f"{YEAR_RANGE_TEXT}",
-                fontsize=16,
-                fontweight="bold"
-            )
-
-            ax.set_xlabel(
-                "Month",
-                fontsize=12
-            )
-
-            ax.set_ylabel(
-                "Total Rainfall (mm)",
-                fontsize=12
-            )
-
-            ax.set_xticks(x)
-
-            ax.set_xticklabels(
-                months
-            )
-
-            ax.grid(
-                True,
-                axis="y",
-                linestyle="--",
-                alpha=0.4
-            )
-
-            # ------------------------------------------------
-            # LEGEND
-            # ------------------------------------------------
-
-            ax.legend(
-                title="Station",
-                loc="upper left",
-                bbox_to_anchor=(1.02, 1),
-                fontsize=9,
-                title_fontsize=10
-            )
-
             plt.tight_layout()
 
             st.pyplot(
