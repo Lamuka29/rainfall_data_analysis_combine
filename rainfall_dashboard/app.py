@@ -2531,13 +2531,300 @@ with main_tabs[1]:
             use_container_width=True,
             hide_index=True
         )
+
 # ============================================================
 # MAIN TAB 3 - STATION COMPARISON
 # ============================================================
-#with main_tabs[2]:
+with main_tabs[2]:
 
-    # code comparison 2+ station
+    st.header(
+        f"🔄 Station Comparison "
+        f"{YEAR_RANGE_TEXT}"
+    )
 
+    # --------------------------------------------------------
+    # SELECT STATIONS
+    # --------------------------------------------------------
+    compare_stations = st.multiselect(
+        "📍 Select Stations to Compare",
+        station_options,
+        default=selected_stations,
+        key="compare_stations"
+    )
+
+    if len(compare_stations) < 2:
+
+        st.info(
+            "Sila pilih sekurang-kurangnya 2 stesen "
+            "untuk membuat perbandingan."
+        )
+
+    else:
+
+        # ====================================================
+        # GRAPH
+        # ====================================================
+        st.subheader(
+            f"Monthly Rainfall Comparison "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        x = np.arange(len(months))
+
+        fig, ax1 = plt.subplots(
+            figsize=(16, 9)
+        )
+
+        fig.patch.set_facecolor(BG_COLOR)
+        ax1.set_facecolor(BG_COLOR)
+
+        # ----------------------------------------------------
+        # SECONDARY Y-AXIS
+        # ----------------------------------------------------
+        ax2 = ax1.twinx()
+
+        # ----------------------------------------------------
+        # BAR WIDTH
+        # ----------------------------------------------------
+        bar_width = (
+            0.75 /
+            len(compare_stations)
+        )
+
+        # ----------------------------------------------------
+        # COLOURS
+        # ----------------------------------------------------
+        station_colors = [
+            "#4682B4",
+            "#FF7F0E",
+            "#2CA02C",
+            "#9467BD",
+            "#D62728",
+            "#17BECF",
+            "#8C564B",
+            "#E377C2"
+        ]
+
+        # ====================================================
+        # LOOP STATIONS
+        # ====================================================
+        for i, station in enumerate(
+            compare_stations
+        ):
+
+            result = next(
+                result
+                for result in successful_results
+                if result["file_name"] == station
+            )
+
+            yearly_monthly_total = (
+                result["yearly_monthly_total"]
+                .reindex(columns=months)
+            )
+
+            # ------------------------------------------------
+            # TOTAL HUJAN SEMUA TAHUN
+            # ------------------------------------------------
+            total_monthly = (
+                yearly_monthly_total
+                .sum(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            # ------------------------------------------------
+            # MEAN HUJAN SEMUA TAHUN
+            # ------------------------------------------------
+            mean_monthly = (
+                yearly_monthly_total
+                .mean(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            station_color = station_colors[
+                i % len(station_colors)
+            ]
+
+            # =================================================
+            # BAR - TOTAL
+            # =================================================
+            bar_position = (
+                x
+                - (
+                    len(compare_stations) - 1
+                ) * bar_width / 2
+                + i * bar_width
+            )
+
+            ax1.bar(
+                bar_position,
+                total_monthly.values,
+                width=bar_width,
+                color=station_color,
+                alpha=0.70,
+                edgecolor="black",
+                linewidth=0.7,
+                label=(
+                    f"{station} - "
+                    f"Total"
+                )
+            )
+
+            # =================================================
+            # LINE - MEAN
+            # =================================================
+            ax2.plot(
+                x,
+                mean_monthly.values,
+                color=station_color,
+                marker="o",
+                linewidth=2.5,
+                markersize=6,
+                label=(
+                    f"{station} - "
+                    f"Mean"
+                )
+            )
+
+        # ====================================================
+        # TITLE
+        # ====================================================
+        ax1.set_title(
+            f"Station Comparison\n"
+            f"Monthly Total Rainfall vs "
+            f"Mean Monthly Rainfall "
+            f"{YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+
+        # ====================================================
+        # X AXIS
+        # ====================================================
+        ax1.set_xlabel(
+            "Month",
+            fontsize=12
+        )
+
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(months)
+
+        # ====================================================
+        # LEFT Y AXIS - TOTAL
+        # ====================================================
+        ax1.set_ylabel(
+            f"Total Rainfall "
+            f"{YEAR_RANGE_TEXT} (mm)",
+            fontsize=12
+        )
+
+        # ====================================================
+        # RIGHT Y AXIS - MEAN
+        # ====================================================
+        ax2.set_ylabel(
+            f"Mean Monthly Rainfall "
+            f"{YEAR_RANGE_TEXT} (mm)",
+            fontsize=12
+        )
+
+        # ====================================================
+        # GRID
+        # ====================================================
+        ax1.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
+        )
+
+        # ====================================================
+        # LEGEND
+        # ====================================================
+        handles1, labels1 = ax1.get_legend_handles_labels()
+
+        handles2, labels2 = ax2.get_legend_handles_labels()
+
+        ax1.legend(
+            handles1 + handles2,
+            labels1 + labels2,
+            bbox_to_anchor=(1.18, 1),
+            loc="upper left",
+            fontsize=9
+        )
+
+        plt.tight_layout()
+
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+
+        plt.close(fig)
+
+        # ====================================================
+        # COMPARISON TABLE
+        # ====================================================
+        st.subheader(
+            f"📋 Monthly Station Comparison "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        comparison_table = pd.DataFrame({
+            "Month": months
+        })
+
+        for station in compare_stations:
+
+            result = next(
+                result
+                for result in successful_results
+                if result["file_name"] == station
+            )
+
+            yearly_monthly_total = (
+                result["yearly_monthly_total"]
+                .reindex(columns=months)
+            )
+
+            # Total
+            total_monthly = (
+                yearly_monthly_total
+                .sum(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            # Mean
+            mean_monthly = (
+                yearly_monthly_total
+                .mean(
+                    axis=0,
+                    skipna=True
+                )
+                .reindex(months)
+            )
+
+            comparison_table[
+                f"{station} - Total"
+            ] = total_monthly.values
+
+            comparison_table[
+                f"{station} - Mean"
+            ] = mean_monthly.values
+
+        st.dataframe(
+            comparison_table.round(2),
+            use_container_width=True,
+            hide_index=True
+        )
 # ============================================================
 # FOOTER
 # ============================================================
