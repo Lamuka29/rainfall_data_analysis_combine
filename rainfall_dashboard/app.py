@@ -2806,19 +2806,9 @@ with main_tabs[2]:
             # ------------------------------------------------
             # BAR SETIAP STESEN
             # ------------------------------------------------
-            
-            legend_handles = []
-            legend_labels = []
-            
             for i, station in enumerate(comparison_stations):
             
-                if station not in comparison_data:
-                    continue
-            
-                values = (
-                    comparison_data[station]["total"]
-                    .reindex(months)
-                )
+                values = comparison_data[station]["total"].reindex(months)
             
                 offset = (
                     i - (n_stations - 1) / 2
@@ -2830,29 +2820,37 @@ with main_tabs[2]:
                     width=bar_width,
                     edgecolor="black",
                     linewidth=0.8,
-                    label=str(station)
+                    label=station
                 )
             
-                # SIMPAN UNTUK LEGEND
-                legend_handles.append(bars)
-                legend_labels.append(str(station))
+                for bar, value in zip(
+                    bars,
+                    values.values
+                ):
+            
+                    if pd.notna(value):
+            
+                        ax.annotate(
+                            f"{value:.0f}",
+                            (
+                                bar.get_x()
+                                + bar.get_width() / 2,
+                                value
+                            ),
+                            xytext=(0, 5),
+                            textcoords="offset points",
+                            ha="center",
+                            va="bottom",
+                            fontsize=8
+                        )
             
             
-            # ------------------------------------------------
             # LEGEND
-            # ------------------------------------------------
-            
-            if legend_handles:
-            
-                ax.legend(
-                    legend_handles,
-                    legend_labels,
-                    title="Station",
-                    loc="upper left",
-                    bbox_to_anchor=(1.02, 1),
-                    fontsize=9,
-                    title_fontsize=10
-                )
+            ax.legend(
+                loc="upper left",
+                bbox_to_anchor=(1.02, 1),
+                title="Station"
+            )
             # ------------------------------------------------
             # GRAPH SETTINGS
             # ------------------------------------------------
