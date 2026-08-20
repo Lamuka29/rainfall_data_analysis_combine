@@ -2548,7 +2548,7 @@ with main_tabs[2]:
     compare_stations = st.multiselect(
         "📍 Select Stations to Compare",
         station_options,
-        default=selected_stations,
+        default=selected_station,
         key="compare_stations"
     )
 
