@@ -839,21 +839,21 @@ for result in successful_results:
         min_mean_value = None
         max_mean_month = None
         max_mean_value = None
-        # ========================================================
-        # SAVE INTO RESULT
-        # ========================================================
-        result["rainfall_target"] = rainfall_target
-        result["anomaly_percent"] = anomaly_percent
-    
-        result["min_target_month"] = min_target_month
-        result["min_target_value"] = min_target_value
-        result["max_target_month"] = max_target_month
-        result["max_target_value"] = max_target_value
-    
-        result["min_mean_month"] = min_mean_month
-        result["min_mean_value"] = min_mean_value
-        result["max_mean_month"] = max_mean_month
-        result["max_mean_value"] = max_mean_value
+    # ========================================================
+    # SAVE INTO RESULT
+    # ========================================================
+    result["rainfall_target"] = rainfall_target
+    result["anomaly_percent"] = anomaly_percent
+
+    result["min_target_month"] = min_target_month
+    result["min_target_value"] = min_target_value
+    result["max_target_month"] = max_target_month
+    result["max_target_value"] = max_target_value
+
+    result["min_mean_month"] = min_mean_month
+    result["min_mean_value"] = min_mean_value
+    result["max_mean_month"] = max_mean_month
+    result["max_mean_value"] = max_mean_value
 # ============================================================
 # DAILY STATISTICS FOR TARGET YEAR
 # ============================================================
