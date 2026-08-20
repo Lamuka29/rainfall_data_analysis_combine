@@ -510,17 +510,6 @@ def analyze_file(uploaded_file):
         ignore_index=True
     )
     # ========================================================
-    # ORIGINAL DATA PERIOD
-    # ========================================================
-    original_years = (
-        all_daily["Year"]
-        .dropna()
-        .astype(int)
-    )
-    
-    original_start_year = original_years.min()
-    original_end_year = original_years.max()
-    # ========================================================
     # QUALITY CONTROL
     # ========================================================
     for month in months:
@@ -852,9 +841,6 @@ for result in successful_results:
     result["min_mean_value"] = min_mean_value
     result["max_mean_month"] = max_mean_month
     result["max_mean_value"] = max_mean_value
-    
-    result["original_start_year"] = original_start_year
-    result["original_end_year"] = original_end_year
 # ============================================================
 # DAILY STATISTICS FOR TARGET YEAR
 # ============================================================
@@ -1068,9 +1054,6 @@ for result in successful_results:
     result["hist_values"] = hist_values
     result["category_values"] = category_values
     result["category_labels"] = category_labels
-    
-    result["original_start_year"] = original_start_year
-    result["original_end_year"] = original_end_year
 # ============================================================
 # FILE SUMMARY
 # ============================================================
@@ -1375,10 +1358,6 @@ with main_tabs[0]:
     
         with qc_col3:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum())))
-        
-        with qc_col4:
-            st.metric("Data Period",
-                      f"{result['original_start_year']}–{result['original_end_year']}")
 # ===========================================================
 # main tab 1
 # ===========================================================
