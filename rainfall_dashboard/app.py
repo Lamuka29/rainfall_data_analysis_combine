@@ -468,8 +468,7 @@ def analyze_file(uploaded_file):
     original_file_name = uploaded_file.name
 
     daily_results = []
-    read_errors = []
-
+    read_errors = []    
     # ========================================================
     # READ ALL YEARS
     # ========================================================
@@ -502,7 +501,6 @@ def analyze_file(uploaded_file):
             "original_file_name": original_file_name,
             "error": "Tiada sheet tahun berjaya dibaca."
         }
-
     # ========================================================
     # COMBINE DATA
     # ========================================================
@@ -510,7 +508,6 @@ def analyze_file(uploaded_file):
         daily_results,
         ignore_index=True
     )
-
     # ========================================================
     # QUALITY CONTROL
     # ========================================================
@@ -520,7 +517,6 @@ def analyze_file(uploaded_file):
             all_daily[month] < VALID_MIN,
             month
         ] = np.nan
-
     # ========================================================
     # SUSPECT & EXTREME
     # ========================================================
@@ -528,19 +524,16 @@ def analyze_file(uploaded_file):
     extreme_records = []
 
     for _, row in all_daily.iterrows():
-
         year = int(row["Year"])
         day = int(row["hari"])
 
         for month in months:
-
             value = row[month]
 
             if pd.isna(value):
                 continue
 
             if value > EXTREME_RAINFALL:
-
                 extreme_records.append({
                     "Year": year,
                     "Day": day,
@@ -550,7 +543,6 @@ def analyze_file(uploaded_file):
                 })
 
             elif value > SUSPECT_RAINFALL:
-
                 suspect_records.append({
                     "Year": year,
                     "Day": day,
@@ -580,7 +572,6 @@ def analyze_file(uploaded_file):
             "Status"
         ]
     )
-
     # ========================================================
     # YEARLY MONTHLY TOTAL
     # ========================================================
@@ -617,21 +608,14 @@ def analyze_file(uploaded_file):
         columns=months,
         dtype=object
     )
-
     # ========================================================
     # LOOP YEAR & MONTH
     # ========================================================
     for year in available_years:
-
-        year_data = all_daily[
-            all_daily["Year"] == year
-        ]
+        year_data = all_daily[all_daily["Year"] == year]
 
         for month in months:
-
-            month_index = (
-                months.index(month) + 1
-            )
+            month_index = (months.index(month) + 1)
 
             days_expected = calendar.monthrange(
                 int(year),
@@ -649,34 +633,15 @@ def analyze_file(uploaded_file):
                 (values >= VALID_MIN)
             ]
 
-            valid_count = len(
-                valid_values
-            )
+            valid_count = len(valid_values)
 
-            missing_count = (
-                days_expected -
-                valid_count
-            )
+            missing_count = (days_expected - valid_count)
 
-            max_consecutive = (
-                max_consecutive_missing(values)
-            )
+            max_consecutive = (max_consecutive_missing(values))
 
-            monthly_valid_count.loc[
-                year,
-                month
-            ] = valid_count
-
-            monthly_missing_count.loc[
-                year,
-                month
-            ] = missing_count
-
-            monthly_max_consecutive_missing.loc[
-                year,
-                month
-            ] = max_consecutive
-
+            monthly_valid_count.loc[year,month] = valid_count
+            monthly_missing_count.loc[year,month] = missing_count
+            monthly_max_consecutive_missing.loc[year,month] = max_consecutive
             # ------------------------------------------------
             # ACCEPT / REJECT
             # Default:
@@ -689,74 +654,21 @@ def analyze_file(uploaded_file):
                 max_consecutive <= MAX_CONSECUTIVE_MISSING
             ):
 
-                yearly_monthly_total.loc[
-                    year,
-                    month
-                ] = valid_values.sum()
-
-                monthly_qc_status.loc[
-                    year,
-                    month
-                ] = "ACCEPT"
+                yearly_monthly_total.loc[year,month] = valid_values.sum()
+                monthly_qc_status.loc[year,month] = "ACCEPT"
 
             else:
-
-                yearly_monthly_total.loc[
-                    year,
-                    month
-                ] = np.nan
+                yearly_monthly_total.loc[year,month] = np.nan
 
                 if missing_count > MAX_MISSING_DAYS:
+                    monthly_qc_status.loc[year,month] = (f"REJECT: >{MAX_MISSING_DAYS} MISSING")
 
-                    monthly_qc_status.loc[
-                        year,
-                        month
-                    ] = (
-                        f"REJECT: >{MAX_MISSING_DAYS} "
-                        f"MISSING"
-                    )
-
-                elif (
-                    max_consecutive >
-                    MAX_CONSECUTIVE_MISSING
-                ):
-
-                    monthly_qc_status.loc[
-                        year,
-                        month
+                elif (max_consecutive >MAX_CONSECUTIVE_MISSING):
+                    monthly_qc_status.loc[year,month
                     ] = (f"REJECT: {MAX_CONSECUTIVE_MISSING} CONSECUTIVE MISSING")
 
                 else:
-
-                    monthly_qc_status.loc[
-                        year,
-                        month
-                    ] = "REJECT"
-
-    # ========================================================
-    # TARGET YEAR CHECK
-    # ========================================================
-    if target_year not in yearly_monthly_total.index:
-
-        return {
-            "success": False,
-            "file_name": file_name,
-            "original_file_name": original_file_name,
-            "error": (
-                f"Data tahun {target_year} tidak dijumpai."
-            ),
-            "available_years": available_years
-        }
-
-    # ========================================================
-    # TARGET YEAR MONTHLY TOTAL
-    # ========================================================
-    rainfall_target = (
-        yearly_monthly_total
-        .loc[target_year]
-        .reindex(months)
-    )
-
+                    monthly_qc_status.loc[year,month] = "REJECT"
     # ========================================================
     # CLIMATOLOGICAL MONTHLY MEAN
     # ========================================================
@@ -768,361 +680,49 @@ def analyze_file(uploaded_file):
         )
         .reindex(months)
     )
-
     # ========================================================
-    # ANOMALY
+    # YEARLY TOTAL
     # ========================================================
-    anomaly_percent = (
-        (rainfall_target - mean_monthly_total)/mean_monthly_total) * 100
-
-    anomaly_percent[mean_monthly_total == 0] = np.nan
-
-    # ========================================================
-    # TARGET YEAR MINIMUM / MAXIMUM
-    # ========================================================
-    valid_target = rainfall_target.dropna()
-
-    if len(valid_target) > 0:
-
-        min_target_month = valid_target.idxmin()
-        min_target_value = valid_target.min()
-
-        max_target_month = valid_target.idxmax()
-        max_target_value = valid_target.max()
-
-    else:
-
-        min_target_month = None
-        min_target_value = None
-
-        max_target_month = None
-        max_target_value = None
-
-    # ========================================================
-    # MEAN MINIMUM / MAXIMUM
-    # ========================================================
-    valid_mean = mean_monthly_total.dropna()
-
-    if len(valid_mean) > 0:
-
-        min_mean_month = valid_mean.idxmin()
-        min_mean_value = valid_mean.min()
-
-        max_mean_month = valid_mean.idxmax()
-        max_mean_value = valid_mean.max()
-
-    else:
-
-        min_mean_month = None
-        min_mean_value = None
-
-        max_mean_month = None
-        max_mean_value = None
-
-    # ========================================================
-    # DAILY STATISTICS
-    # ========================================================
-    median_daily = []
-    std_daily = []
-    max_daily = []
-    min_daily = []
-    wet_days = []
-    valid_data_percent = []
-    suspect_count = []
-    extreme_count = []
-
-    target_data = all_daily[
-        all_daily["Year"] == target_year
-    ].copy()
-
-    for month in months:
-
-        month_index = (months.index(month) + 1)
-
-        days_expected = calendar.monthrange(
-            target_year,
-            month_index
-        )[1]
-
-        raw_values = target_data[
-            month
-        ].iloc[:days_expected].copy()
-
-        # ----------------------------------------------------
-        # QC VALUES
-        # ----------------------------------------------------
-        qc_values = raw_values[
-            raw_values.notna() &
-            (raw_values >= VALID_MIN)
-        ]
-
-        # ----------------------------------------------------
-        # WET DAY VALUES
-        # ----------------------------------------------------
-        values = qc_values[qc_values >= WET_DAY_MIN]
-
-        # ----------------------------------------------------
-        # VALID DATA %
-        # ----------------------------------------------------
-        valid_count = len(qc_values)
-
-        percent = (valid_count / days_expected) * 100
-
-        valid_data_percent.append(percent)
-
-        # ----------------------------------------------------
-        # MEDIAN
-        # ----------------------------------------------------
-        if len(values) > 0:
-            median_daily.append(
-                values.median()
-            )
-        else:
-            median_daily.append(np.nan)
-
-        # ----------------------------------------------------
-        # STANDARD DEVIATION
-        # ----------------------------------------------------
-        if len(values) > 1:
-            std_daily.append(
-                values.std()
-            )
-        else:
-            std_daily.append(np.nan)
-
-        # ----------------------------------------------------
-        # MAX
-        # ----------------------------------------------------
-        if len(values) > 0:
-            max_daily.append(
-                values.max()
-            )
-        else:
-            max_daily.append(np.nan)
-
-        # ----------------------------------------------------
-        # MIN
-        # ----------------------------------------------------
-        if len(values) > 0:
-            min_daily.append(
-                values.min()
-            )
-        else:
-            min_daily.append(np.nan)
-
-        # ----------------------------------------------------
-        # WET DAYS
-        # ----------------------------------------------------
-        wet_days.append(
-            (
-                qc_values >= WET_DAY_MIN
-            ).sum()
+    yearly_total = (
+        yearly_monthly_total
+        .sum(
+            axis=1,
+            min_count=1
         )
-
-        # ----------------------------------------------------
-        # SUSPECT DAYS
-        # ----------------------------------------------------
-        suspect_count.append(
-            (
-                values >
-                SUSPECT_RAINFALL
-            ).sum()
-        )
-
-        # ----------------------------------------------------
-        # EXTREME DAYS
-        # ----------------------------------------------------
-        extreme_count.append(
-            (
-                values >
-                EXTREME_RAINFALL
-            ).sum()
-        )
-
-    # ========================================================
-    # ANALYSIS TABLE
-    # ========================================================
-    analysis_table = pd.DataFrame({
-
-        "Month":
-            months,
-
-        f"Total {target_year} (mm)":
-            rainfall_target.values,
-
-        f"Mean {YEAR_RANGE_TEXT} (mm)":
-            mean_monthly_total.values,
-
-        f"Anomaly {target_year} (%)":
-            anomaly_percent.values,
-
-        "Median Daily (>=0.1 mm)":
-            median_daily,
-
-        "SD Daily (>=0.1 mm)":
-            std_daily,
-
-        "Maximum Daily (>=0.1 mm)":
-            max_daily,
-
-        "Minimum Daily (>=0.1 mm)":
-            min_daily,
-
-        "Wet Days (>=0.1 mm)":
-            wet_days,
-
-        "Suspect Days (>150 mm)":
-            suspect_count,
-
-        "Extreme Days (>250 mm)":
-            extreme_count,
-
-        "Valid Data (>=0.0 mm) (%)":
-            valid_data_percent
-    })
-
-    # ========================================================
-    # HISTOGRAM DATA
-    # ========================================================
-    hist_values = []
-
-    for month in months:
-
-        month_index = (months.index(month) + 1)
-
-        days_expected = calendar.monthrange(
-            target_year,
-            month_index
-        )[1]
-
-        raw_values = target_data[
-            month
-        ].iloc[:days_expected].copy()
-
-        values = raw_values[
-            raw_values.notna() &
-            (raw_values >= VALID_MIN)
-        ]
-
-        values = values[values >= WET_DAY_MIN]
-
-        hist_values.extend(values.tolist())
-
-    # ========================================================
-    # PIE DATA
-    # ========================================================
-    pie_values = []
-
-    for month in months:
-
-        month_index = (months.index(month) + 1)
-
-        days_expected = calendar.monthrange(
-            target_year,
-            month_index
-        )[1]
-
-        raw_values = target_data[
-            month
-        ].iloc[:days_expected].copy()
-
-        values = raw_values[
-            raw_values.notna() &
-            (raw_values >= VALID_MIN)
-        ]
-
-        pie_values.extend(values.tolist())
-
-    no_rain = sum(value == 0.0 for value in pie_values)
-    light_rain = sum(0.1 <= value <= 10.0 for value in pie_values)
-    moderate_rain = sum(10.1 < value <= 30.0 for value in pie_values)
-    heavy_rain = sum(30.1 < value <= 60.0 for value in pie_values)
-    extreme_rain = sum(value > 60.0 for value in pie_values)
-
-    category_values = [no_rain,light_rain,moderate_rain,heavy_rain,extreme_rain]
-
-    category_labels = [
-        "No Rain (0.0 mm)",
-        "Light Rain (1.0–10.0 mm)",
-        "Moderate Rain (>10.0–30.0 mm)",
-        "Heavy Rain (>30.0-60.0 mm)",
-        "Extreme Rain (>60 mm)"
-    ]
+    )
     # ========================================================
     # RETURN RESULTS
     # ========================================================
     return {
-
+    
         "success": True,
-        "file_name": file_name,
-        "original_file_name":
-            original_file_name,
-        "all_daily":
-            all_daily,
-        "yearly_monthly_total":
-            yearly_monthly_total,
-        "monthly_missing_count":
-            monthly_missing_count,
-        "monthly_valid_count":
-            monthly_valid_count,
-        "monthly_max_consecutive_missing":
-            monthly_max_consecutive_missing,
-        "monthly_qc_status":
-            monthly_qc_status,
-        "rainfall_target":
-            rainfall_target,
-        "mean_monthly_total":
-            mean_monthly_total,
-        "anomaly_percent":
-            anomaly_percent,
-        "min_target_month":
-            min_target_month,
-        "min_target_value":
-            min_target_value,
-        "max_target_month":
-            max_target_month,
-        "max_target_value":
-            max_target_value,
-        "min_mean_month":
-            min_mean_month,
-        "min_mean_value":
-            min_mean_value,
-        "max_mean_month":
-            max_mean_month,
-        "max_mean_value":
-            max_mean_value,
-        "median_daily":
-            median_daily,
-        "std_daily":
-            std_daily,
-        "max_daily":
-            max_daily,
-        "min_daily":
-            min_daily,
-        "wet_days":
-            wet_days,
-        "valid_data_percent":
-            valid_data_percent,
-        "suspect_count":
-            suspect_count,
-        "extreme_count":
-            extreme_count,
-        "analysis_table":
-            analysis_table,
-        "suspect_df":
-            suspect_df,
-        "extreme_df":
-            extreme_df,
-        "hist_values":
-            hist_values,
-        "category_values":
-            category_values,
-        "category_labels":
-            category_labels,
-        "read_errors":
-            read_errors
+    
+        "file_name":file_name,
+    
+        "original_file_name":original_file_name,
+    
+        "all_daily":all_daily,
+    
+        "yearly_monthly_total":yearly_monthly_total,
+    
+        "monthly_missing_count":monthly_missing_count,
+    
+        "monthly_valid_count":monthly_valid_count,
+    
+        "monthly_max_consecutive_missing":monthly_max_consecutive_missing,
+    
+        "monthly_qc_status":monthly_qc_status,
+    
+        "mean_monthly_total":mean_monthly_total,
+    
+        "yearly_total":yearly_total,
+    
+        "suspect_df":suspect_df,
+    
+        "extreme_df":extreme_df,
+    
+        "read_errors":read_errors
     }
-
 # ============================================================
 # PROCESS ALL UPLOADED FILES
 # ============================================================
@@ -1186,6 +786,132 @@ target_year = st.sidebar.selectbox(
 
 target_year = int(target_year)
 # ============================================================
+# TARGET YEAR ANALYSIS
+# ============================================================
+for result in successful_results:
+    all_daily = result["all_daily"]
+    yearly_monthly_total = (result["yearly_monthly_total"])
+    mean_monthly_total = (result["mean_monthly_total"])
+    # --------------------------------------------------------
+    # TARGET YEAR MONTHLY TOTAL
+    # --------------------------------------------------------
+    if target_year in yearly_monthly_total.index:
+        rainfall_target = (yearly_monthly_total.loc[target_year].reindex(months))
+
+    else:
+        rainfall_target = pd.Series(np.nan,index=months)
+    # --------------------------------------------------------
+    # ANOMALY
+    # --------------------------------------------------------
+    anomaly_percent = ((rainfall_target - mean_monthly_total)/ mean_monthly_total) * 100
+    anomaly_percent[mean_monthly_total == 0] = np.nan
+    # --------------------------------------------------------
+    # MIN / MAX TARGET YEAR
+    # --------------------------------------------------------
+    valid_target = rainfall_target.dropna()
+
+    if len(valid_target) > 0:
+        min_target_month = valid_target.idxmin()
+        min_target_value = valid_target.min()
+
+        max_target_month = valid_target.idxmax()
+        max_target_value = valid_target.max()
+
+    else:
+        min_target_month = None
+        min_target_value = None
+        max_target_month = None
+        max_target_value = None
+    # --------------------------------------------------------
+    # MIN / MAX MEAN
+    # --------------------------------------------------------
+    valid_mean = mean_monthly_total.dropna()
+
+    if len(valid_mean) > 0:
+        min_mean_month = valid_mean.idxmin()
+        min_mean_value = valid_mean.min()
+
+        max_mean_month = valid_mean.idxmax()
+        max_mean_value = valid_mean.max()
+
+    else:
+        min_mean_month = None
+        min_mean_value = None
+        max_mean_month = None
+        max_mean_value = None
+        # ========================================================
+        # SAVE INTO RESULT
+        # ========================================================
+        result["rainfall_target"] = rainfall_target
+        result["anomaly_percent"] = anomaly_percent
+    
+        result["min_target_month"] = min_target_month
+        result["min_target_value"] = min_target_value
+        result["max_target_month"] = max_target_month
+        result["max_target_value"] = max_target_value
+    
+        result["min_mean_month"] = min_mean_month
+        result["min_mean_value"] = min_mean_value
+        result["max_mean_month"] = max_mean_month
+        result["max_mean_value"] = max_mean_value
+# ============================================================
+# DAILY STATISTICS FOR TARGET YEAR
+# ============================================================
+for result in successful_results:
+
+    all_daily = result["all_daily"]
+    target_data = all_daily[all_daily["Year"] == target_year].copy()
+
+    median_daily = []
+    std_daily = []
+    max_daily = []
+    min_daily = []
+    wet_days = []
+    valid_data_percent = []
+    suspect_count = []
+    extreme_count = []
+
+    for month in months:
+        month_index = months.index(month) + 1
+        days_expected = calendar.monthrange(target_year,month_index)[1]
+        raw_values = target_data[month].iloc[:days_expected].copy()
+        # QC
+        qc_values = raw_values[raw_values.notna() & (raw_values >= VALID_MIN)]
+        # Wet days
+        values = qc_values[qc_values >= WET_DAY_MIN]
+        # Valid data %
+        valid_count = len(qc_values)
+        percent = (valid_count / days_expected) * 100
+        valid_data_percent.append(percent)
+        # Median
+        if len(values) > 0: median_daily.append(values.median())
+        else: median_daily.append(np.nan)
+        # Standard deviation
+        if len(values) > 1: std_daily.append(values.std())
+        else:std_daily.append(np.nan)
+        # Maximum
+        if len(values) > 0:max_daily.append(values.max())
+        else:
+            max_daily.append(np.nan)
+        # Minimum
+        if len(values) > 0:min_daily.append(values.min())
+        else:
+            min_daily.append(np.nan)
+        # Wet days
+        wet_days.append((qc_values >= WET_DAY_MIN).sum())
+        # Suspect
+        suspect_count.append((values > SUSPECT_RAINFALL).sum())
+        # Extreme
+        extreme_count.append((values > EXTREME_RAINFALL).sum())
+
+    # Simpan ke result
+    result["median_daily"] = median_daily
+    result["std_daily"] = std_daily
+    result["max_daily"] = max_daily
+    result["min_daily"] = min_daily
+    result["wet_days"] = wet_days
+    result["valid_data_percent"] = valid_data_percent
+# ============================================================
 # FILE SUMMARY
 # ============================================================
 st.success(
@@ -1204,13 +930,13 @@ if failed_results:
             f"{result.get('error', 'Unknown error')}"
         )
 
-
 if not successful_results:
     st.stop()
 # ============================================================
 # STATION SELECTION
 # ============================================================
 station_options = [result["file_name"] for result in successful_results]
+selected_stations = st.sidebar.multiselect("📍 Select Station",station_options,default=station_options)
 # ============================================================
 # FILTER DISPLAY RESULT
 # ============================================================
