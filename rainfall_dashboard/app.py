@@ -3327,35 +3327,6 @@ with main_tabs[2]:
                 )
 
                 # --------------------------------------------
-                # CATEGORY TABLE
-                # --------------------------------------------
-                category_comparison_table = pd.DataFrame(
-                    {
-                        station:
-                        comparison_data[station]["category"]
-
-                        for station
-                        in comparison_data
-                    },
-                    index=category_labels
-                )
-
-                category_comparison_table.index.name = (
-                    "Rainfall Category"
-                )
-
-                st.subheader(
-                    "📋 Rainfall Category Comparison Table"
-                )
-
-                st.dataframe(
-                    category_comparison_table,
-                    use_container_width=True
-                )
-
-                st.divider()
-
-                # --------------------------------------------
                 # PIE CHART FOR EACH STATION
                 # --------------------------------------------
                 category_columns = st.columns(
@@ -3433,6 +3404,35 @@ with main_tabs[2]:
                             st.warning(
                                 "Tiada data hujan sah."
                             )
+                            
+                # --------------------------------------------
+                # CATEGORY TABLE
+                # --------------------------------------------
+                category_comparison_table = pd.DataFrame(
+                    {
+                        station:
+                        comparison_data[station]["category"]
+
+                        for station
+                        in comparison_data
+                    },
+                    index=category_labels
+                )
+
+                category_comparison_table.index.name = (
+                    "Rainfall Category"
+                )
+
+                st.subheader(
+                    "📋 Rainfall Category Comparison Table"
+                )
+
+                st.dataframe(
+                    category_comparison_table,
+                    use_container_width=True
+                )
+
+                st.divider()            
 
 # ============================================================
 # FOOTER
