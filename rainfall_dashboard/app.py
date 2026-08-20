@@ -227,7 +227,7 @@ if "hist_color" not in st.session_state:
 # ============================================================
 # SELECT BAR CHART
 # ============================================================
-chart_options = ["Monthly Rainfall",]
+chart_options = ["Bar + Line",]
 
 selected_chart = st.sidebar.selectbox("Select Bar Chart",chart_options)
 # ============================================================
