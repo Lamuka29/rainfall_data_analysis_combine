@@ -166,10 +166,6 @@ YEAR_RANGE_TEXT = (
 # ============================================================
 st.sidebar.header("⚙️ Analysis Settings")
 # ============================================================
-# ANALYSIS MODE
-# ============================================================
-analysis_mode = st.sidebar.radio("Analysis Mode",["Target Year","All Years"])
-# ============================================================
 # TARGET YEAR
 # ============================================================
 target_year_options = [
@@ -183,15 +179,7 @@ if not target_year_options:
     st.sidebar.error("Tiada tahun dalam range yang dipilih.")
     st.stop()
 
-target_year = st.sidebar.selectbox(
-    "Target Year",
-    target_year_options,
-    index=len(target_year_options) - 1,
-    disabled=(analysis_mode == "All Years")
-)
-
 target_year = int(target_year)
-
 # ============================================================
 # WMO MISSING DATA RULE
 # ============================================================
@@ -1216,19 +1204,10 @@ if failed_results:
 
 if not successful_results:
     st.stop()
-
 # ============================================================
 # STATION SELECTION
 # ============================================================
-st.sidebar.header("📍 Station Selection")
-
 station_options = [result["file_name"] for result in successful_results]
-
-selected_stations = st.sidebar.multiselect(
-    "Select Station(s)",
-    station_options,
-    default=[station_options[0]],
-    help=("Pilih satu atau lebih stesen. Jika lebih daripada satu stesen dipilih, stesen boleh dibandingkan dalam graf yang sama"))
 # ============================================================
 # FILTER DISPLAY RESULT
 # ============================================================
@@ -1241,7 +1220,6 @@ display_results = [
 if not selected_stations:
     st.warning("Sila pilih sekurang-kurangnya satu stesen.")
     st.stop()
-
 # ============================================================
 # GLOBAL AUTO Y-AXIS
 # ============================================================
