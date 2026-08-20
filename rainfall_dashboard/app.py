@@ -1348,7 +1348,7 @@ with main_tabs[0]:
         # ========================================================
         # QC SUMMARY
         # ========================================================
-        qc_col1, qc_col2, qc_col3, qc_col4 = st.columns(4)
+        qc_col1, qc_col2, qc_col3 = st.columns(3)
     
         with qc_col1:
             st.metric("Suspect Records",len(suspect_df))
