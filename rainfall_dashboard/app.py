@@ -166,25 +166,6 @@ YEAR_RANGE_TEXT = (
 # ============================================================
 st.sidebar.header("⚙️ Analysis Settings")
 # ============================================================
-# TARGET YEAR
-# ============================================================
-available_years = sorted(
-    set(
-        year
-        for result in successful_results
-        for year in result["all_daily"]["Year"].dropna().unique()
-    )
-)
-
-target_year = st.sidebar.selectbox(
-    "📅 Target Year",
-    available_years,
-    index=len(available_years) - 1,
-    key="target_year"
-)
-
-target_year = int(target_year)
-# ============================================================
 # WMO MISSING DATA RULE
 # ============================================================
 st.sidebar.subheader("WMO Missing Data Rule")
@@ -1185,7 +1166,25 @@ failed_results = [
     for result in results
     if not result.get("success", False)
 ]
+# ============================================================
+# TARGET YEAR
+# ============================================================
+available_years = sorted(
+    set(
+        year
+        for result in successful_results
+        for year in result["all_daily"]["Year"].dropna().unique()
+    )
+)
 
+target_year = st.sidebar.selectbox(
+    "📅 Target Year",
+    available_years,
+    index=len(available_years) - 1,
+    key="target_year"
+)
+
+target_year = int(target_year)
 # ============================================================
 # FILE SUMMARY
 # ============================================================
