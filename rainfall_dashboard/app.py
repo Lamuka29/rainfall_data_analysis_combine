@@ -2795,37 +2795,83 @@ with main_tabs[2]:
             bar_width = (
                 0.8 / n_stations
             )
-
+            
             # ------------------------------------------------
             # BAR SETIAP STESEN
             # ------------------------------------------------
+            legend_handles = []
+            
             for i, station in enumerate(comparison_stations):
-                
-                # ========================================================
-                # MANUAL LEGEND
-                # ========================================================
-                legend_handles = [
-                    Patch(
-                        facecolor=bars[i].get_facecolor(),
-                        edgecolor="black",
-                        label=str(station)
-                    )
-                    for i, station in enumerate(comparison_stations)
-                ]
-                
-                ax.legend(
-                    handles=legend_handles,
-                    title="Station",
-                    bbox_to_anchor=(1.02, 1),
-                    loc="upper left"
+            
+                values = (
+                    comparison_data[station]["total"]
+                    .reindex(months)
                 )
+            
+                offset = (
+                    i - (n_stations - 1) / 2
+                ) * bar_width
+            
+                bars = ax.bar(
+                    x_total + offset,
+                    values.values,
+                    width=bar_width,
+                    edgecolor="black",
+                    linewidth=0.8
+                )
+            
+                # ------------------------------------------------
+                # SIMPAN WARNA + NAMA STESEN UNTUK LEGEND
+                # ------------------------------------------------
+                if len(bars) > 0:
+            
+                    legend_handles.append(
+                        Patch(
+                            facecolor=bars[0].get_facecolor(),
+                            edgecolor="black",
+                            label=str(station)
+                        )
+                    )
+            
+                # ------------------------------------------------
+                # VALUE LABEL ATAS BAR
+                # ------------------------------------------------
+                for bar, value in zip(bars, values.values):
+            
+                    if pd.notna(value):
+            
+                        ax.annotate(
+                            f"{value:.0f}",
+                            (
+                                bar.get_x()
+                                + bar.get_width() / 2,
+                                value
+                            ),
+                            xytext=(0, 5),
+                            textcoords="offset points",
+                            ha="center",
+                            va="bottom",
+                            fontsize=8
+                        )
+            
+            
+            # ------------------------------------------------
+            # LEGEND - LETAK SELEPAS SEMUA STESEN SIAP
+            # ------------------------------------------------
+            ax.legend(
+                handles=legend_handles,
+                title="Station",
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left"
+            )
+            
             plt.tight_layout()
-
+            
             st.pyplot(
                 fig,
                 use_container_width=True
             )
-
+            
             plt.close(fig)
 
             # ------------------------------------------------
