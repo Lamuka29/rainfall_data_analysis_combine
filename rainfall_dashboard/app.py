@@ -1350,7 +1350,7 @@ with main_tabs[0]:
         # ========================================================
         # QC SUMMARY
         # ========================================================
-        qc_col1, qc_col2, qc_col3 = st.columns(3)
+        qc_col1, qc_col2, qc_col3, qc_col4 = st.columns(4)
     
         with qc_col1:
             st.metric("Suspect Records",len(suspect_df))
@@ -1360,6 +1360,9 @@ with main_tabs[0]:
     
         with qc_col3:
             st.metric("Valid Daily Records",int((all_daily[months].notna().sum().sum())))
+        
+        with qc_col4:
+            st.metric("Years Available", f"{years_available} years")
 # ===========================================================
 # main tab 1
 # ===========================================================
