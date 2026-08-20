@@ -168,16 +168,20 @@ st.sidebar.header("⚙️ Analysis Settings")
 # ============================================================
 # TARGET YEAR
 # ============================================================
-target_year_options = [
-    year
-    for year in all_available_years
-    if START_YEAR <= year <= END_YEAR
-]
+available_years = sorted(
+    set(
+        year
+        for result in successful_results
+        for year in result["all_daily"]["Year"].dropna().unique()
+    )
+)
 
-if not target_year_options:
-
-    st.sidebar.error("Tiada tahun dalam range yang dipilih.")
-    st.stop()
+target_year = st.sidebar.selectbox(
+    "📅 Target Year",
+    available_years,
+    index=len(available_years) - 1,
+    key="target_year"
+)
 
 target_year = int(target_year)
 # ============================================================
