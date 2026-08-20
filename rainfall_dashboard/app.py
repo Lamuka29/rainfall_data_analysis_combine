@@ -1108,9 +1108,9 @@ with st.expander(
 # MAIN TABS
 # ============================================================
 main_tabs = st.tabs([
-    "📅 Target Year",
-    "📊 All Years",
-    "🔄 Station Comparison"
+    "📅 Target Year (Selected Station)",
+    "📊 All Years (Selected Station)",
+    "🔄 Station Comparison (All years data)"
 ])
 
 with main_tabs[0]:
