@@ -2535,7 +2535,6 @@ with main_tabs[1]:
 # ============================================================
 # Main TAB 3 - STATION COMPARISON
 # ============================================================
-
 with main_tabs[2]:
 
     st.header(
@@ -2750,22 +2749,16 @@ with main_tabs[2]:
         # ====================================================
         # COMPARISON TABS
         # ====================================================
-
         comparison_tabs = st.tabs([
             "📊 Total Rainfall",
-
             "📈 Mean Rainfall",
-
             "📉 Anomaly",
-
             "🥧 Rainfall Category"
         ])
-
         # ====================================================
         # TAB 1
         # TOTAL RAINFALL - BAR
         # ====================================================
-
         with comparison_tabs[0]:
 
             st.subheader(
@@ -2844,11 +2837,16 @@ with main_tabs[2]:
                         )
             
             
-            # LEGEND
+            handles, labels = ax.get_legend_handles_labels()
+            
             ax.legend(
+                handles,
+                labels,
+                title="Station",
                 loc="upper left",
                 bbox_to_anchor=(1.02, 1),
-                title="Station"
+                fontsize=9,
+                title_fontsize=10
             )
             # ------------------------------------------------
             # GRAPH SETTINGS
@@ -3043,8 +3041,11 @@ with main_tabs[2]:
             # ------------------------------------------------
             # LEGEND
             # ------------------------------------------------
-
+            handles, labels = ax.get_legend_handles_labels()
+            
             ax.legend(
+                handles,
+                labels,
                 title="Station",
                 loc="upper left",
                 bbox_to_anchor=(1.02, 1),
@@ -3199,7 +3200,11 @@ with main_tabs[2]:
                 alpha=0.4
             )
 
+            handles, labels = ax.get_legend_handles_labels()
+            
             ax.legend(
+                handles,
+                labels,
                 title="Station",
                 loc="upper left",
                 bbox_to_anchor=(1.02, 1),
