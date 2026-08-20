@@ -2232,10 +2232,12 @@ with main_tabs[1]:
     # --------------------------------------------------------
     # SELECT STATION
     # --------------------------------------------------------
-    all_year_station = st.selectbox("Select Station",station_options,key="all_year_station")
-
-    yearly_result = next(result for result in successful_results if result["file_name"] == all_year_station)
-
+    yearly_result = next(
+        result
+        for result in successful_results
+        if result["file_name"] == selected_station
+    )
+    
     file_name = yearly_result["file_name"]
 
     yearly_monthly_total = (yearly_result["yearly_monthly_total"].reindex(columns=months))
