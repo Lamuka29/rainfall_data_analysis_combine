@@ -1077,9 +1077,29 @@ if not successful_results:
 # ============================================================
 # STATION SELECTION
 # ============================================================
-station_options = [result["file_name"] for result in successful_results]
-selected_stations = st.sidebar.multiselect("📍 Select Station",station_options)
-display_results = [result for result in successful_results if result["file_name"] == selected_station]
+station_options = [
+    result["file_name"]
+    for result in successful_results
+]
+
+selected_station = st.sidebar.selectbox(
+    "📍 Select Station",
+    station_options,
+    key="main_station"
+)
+
+# ============================================================
+# FILTER DISPLAY RESULT
+# ============================================================
+display_results = [
+    result
+    for result in successful_results
+    if result["file_name"] == selected_station
+]
+
+if not display_results:
+    st.warning("Tiada stesen dipilih.")
+    st.stop()
 # ============================================================
 # FILTER DISPLAY RESULT
 # ============================================================
