@@ -2617,22 +2617,6 @@ with main_tabs[2]:
             # ------------------------------------------------
             # ANOMALY
             # ------------------------------------------------
-            # Untuk comparison:
-            #
-            # Total semua tahun dibandingkan
-            # dengan mean × bilangan tahun sah
-            #
-            # Tetapi anomaly bulanan yang lebih bermakna
-            # ialah berdasarkan setiap tahun dahulu,
-            # kemudian dikira purata anomaly.
-            #
-            # Di sini kita gunakan:
-            #
-            # (monthly_mean - overall_mean) / overall_mean
-            #
-            # untuk menunjukkan bulan relatif kepada
-            # purata 12 bulan stesen.
-            # ------------------------------------------------
             overall_mean = (
                 monthly_mean
                 .mean(
@@ -2790,7 +2774,7 @@ with main_tabs[2]:
                 values = (
                     comparison_data[
                         station
-                    ]["total"]
+                    ]["total"].reindex(months)
                 )
 
                 offset = (
@@ -2804,7 +2788,7 @@ with main_tabs[2]:
                     width=bar_width,
                     edgecolor="black",
                     linewidth=0.8,
-                    label=station
+                    label=str(station)
                 )
 
                 for bar, value in zip(
@@ -2813,7 +2797,6 @@ with main_tabs[2]:
                 ):
 
                     if pd.notna(value):
-
                         ax.annotate(
                             f"{value:.0f}",
                             (
@@ -2860,11 +2843,19 @@ with main_tabs[2]:
                 alpha=0.4
             )
 
-            ax.legend(
-                bbox_to_anchor=(1.02, 1),
-                loc="upper left"
-            )
+            handles, labels = ax.get_legend_handles_labels()
+            if handles:
 
+                ax.legend(
+                    handles,
+                    labels,
+                    title="Station",
+                    bbox_to_anchor=(1.02, 1),
+                    loc="upper left",
+                    fontsize=9,
+                    title_fontsize=10
+                )
+                
             plt.tight_layout()
 
             st.pyplot(
