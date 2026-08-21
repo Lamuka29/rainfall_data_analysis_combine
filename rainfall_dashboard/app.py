@@ -1464,7 +1464,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_monthly_rainfall_{selected_station}_{target_year}"
         )
         
         plt.close(fig)
@@ -1613,7 +1613,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_heatmap_{selected_station}_{target_year}"
         )
         
         plt.close(fig)
@@ -1705,7 +1705,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_anomaly_{selected_station}_{target_year}"
         )
         
         plt.close(fig)
@@ -1729,6 +1729,20 @@ with main_tabs[0]:
             ).round(2)
 
         st.dataframe(display_table,use_container_width=True,hide_index=True)
+        csv = (
+            analysis_table
+            .round(2)
+            .to_csv()
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=f"{selected_station}_analysis_{target_year}.csv",
+            mime="text/csv",
+            key=f"download_statistics_{selected_station}_{target_year}"
+        )
     # ========================================================
     # TAB 5
     # MAX DAILY RAINFALL
@@ -1806,7 +1820,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_Max_rainfall_{selected_station}_{target_year}"
         )
 
         plt.close(fig)
@@ -1881,7 +1895,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_Wet_days_{selected_station}_{target_year}"
         )
         
         plt.close(fig)
@@ -1953,7 +1967,7 @@ with main_tabs[0]:
             data=img_buffer.getvalue(),
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
-            key=f"download_target_plot_{selected_station}_{target_year}"
+            key=f"download_standard_deviation_{selected_station}_{target_year}"
         )
 
         plt.close(fig)
@@ -2012,7 +2026,7 @@ with main_tabs[0]:
                 data=img_buffer.getvalue(),
                 file_name=f"{selected_station}_target_year_{target_year}.png",
                 mime="image/png",
-                key=f"download_target_plot_{selected_station}_{target_year}"
+                key=f"download_rainfall_distribution_{selected_station}_{target_year}"
             )
             
             plt.close(fig)
@@ -2078,7 +2092,7 @@ with main_tabs[0]:
                 data=img_buffer.getvalue(),
                 file_name=f"{selected_station}_target_year_{target_year}.png",
                 mime="image/png",
-                key=f"download_target_plot_{selected_station}_{target_year}"
+                key=f"download_rainfall_category_{selected_station}_{target_year}"
             )
             
             plt.close(fig)
@@ -2096,7 +2110,21 @@ with main_tabs[0]:
             category_table["Percentage (%)"] = category_table["Percentage (%)"].round(2)
 
             st.dataframe(category_table,use_container_width=True,hide_index=True)
-
+            csv = (
+                analysis_table
+                .round(2)
+                .to_csv()
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                mime="text/csv",
+                key=f"download_rainfall_category_table_{selected_station}_{target_year}"
+            )
+        
         else:
             st.warning("Tiada data sah untuk pie chart.")
     # ========================================================
@@ -2225,7 +2253,7 @@ with main_tabs[0]:
                 data=img_buffer.getvalue(),
                 file_name=f"{selected_station}_target_year_{target_year}.png",
                 mime="image/png",
-                key=f"download_target_plot_{selected_station}_{target_year}"
+                key=f"download_boxplot_{selected_station}_{target_year}"
             )
             
             plt.close(fig)
@@ -2267,7 +2295,20 @@ with main_tabs[0]:
 
             if len(suspect_df) > 0:
                 st.dataframe(suspect_df,use_container_width=True,hide_index=True)
-
+                csv = (
+                    analysis_table
+                    .round(2)
+                    .to_csv()
+                    .encode("utf-8")
+                )
+                
+                st.download_button(
+                    "📥 Download Table CSV",
+                    data=csv,
+                    file_name=f"{selected_station}_analysis_{target_year}.csv",
+                    mime="text/csv",
+                    key=f"download_suspect_table_{selected_station}_{target_year}"
+                )
             else:
                 st.success("Tiada rainfall suspect dikesan.")
         # ----------------------------------------------------
@@ -2280,7 +2321,20 @@ with main_tabs[0]:
 
             if len(extreme_df) > 0:
                 st.dataframe(extreme_df,use_container_width=True,hide_index=True)
-
+                csv = (
+                    analysis_table
+                    .round(2)
+                    .to_csv()
+                    .encode("utf-8")
+                )
+                
+                st.download_button(
+                    "📥 Download Table CSV",
+                    data=csv,
+                    file_name=f"{selected_station}_analysis_{target_year}.csv",
+                    mime="text/csv",
+                    key=f"download_extreme_table_{selected_station}_{target_year}"
+                )
             else:
                 st.success("Tiada rainfall extreme dikesan.")
         # ----------------------------------------------------
@@ -2288,22 +2342,77 @@ with main_tabs[0]:
         # ----------------------------------------------------
         with qc_tabs[2]:
             st.dataframe(monthly_missing_count,use_container_width=True)
+            csv = (
+                analysis_table
+                .round(2)
+                .to_csv()
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                mime="text/csv",
+                key=f"download_missing_data_table_{selected_station}_{target_year}"
+            )
         # ----------------------------------------------------
         # VALID
         # ----------------------------------------------------
         with qc_tabs[3]:
             st.dataframe(monthly_valid_count,use_container_width=True)
+            csv = (
+                analysis_table
+                .round(2)
+                .to_csv()
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                mime="text/csv",
+                key=f"download_valid_data_table_{selected_station}_{target_year}"
+            )
         # ----------------------------------------------------
         # CONSECUTIVE
         # ----------------------------------------------------
         with qc_tabs[4]:
             st.dataframe(monthly_max_consecutive_missing,use_container_width=True)
+            csv = (
+                analysis_table
+                .round(2)
+                .to_csv()
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                mime="text/csv",
+                key=f"download_consecutive_table_{selected_station}_{target_year}"
+            )
         # ----------------------------------------------------
         # QC STATUS
         # ----------------------------------------------------
         with qc_tabs[5]:
             st.dataframe(monthly_qc_status,use_container_width=True)
-
+            csv = (
+                analysis_table
+                .round(2)
+                .to_csv()
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                mime="text/csv",
+                key=f"download_qc_status_table_{selected_station}_{target_year}"
+            )
 # ============================================================
 # MAIN TAB 2 - ALL YEARS
 # ============================================================
