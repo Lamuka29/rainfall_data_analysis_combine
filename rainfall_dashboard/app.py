@@ -1446,11 +1446,27 @@ with main_tabs[0]:
 
         plt.tight_layout()
 
-        st.pyplot(
-            fig,
-            use_container_width=True
-        )
+        st.pyplot(fig,use_container_width=True)
 
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+        
         plt.close(fig)
     # ========================================================
     # TAB 2 HEATMAP
@@ -1580,6 +1596,26 @@ with main_tabs[0]:
         plt.tight_layout()
 
         st.pyplot(fig,use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+        
         plt.close(fig)
     # ========================================================
     # TAB 3
@@ -1652,6 +1688,26 @@ with main_tabs[0]:
         plt.tight_layout()
 
         st.pyplot(fig,use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+        
         plt.close(fig)
     # ========================================================
     # TAB 4
@@ -1734,6 +1790,25 @@ with main_tabs[0]:
 
         st.pyplot(fig,use_container_width=True)
 
+        img_buffer = io.BytesIO()
+
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+
         plt.close(fig)
     # ========================================================
     # TAB 6
@@ -1789,6 +1864,26 @@ with main_tabs[0]:
         plt.tight_layout()
 
         st.pyplot(fig,use_container_width=True)
+
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+        
         plt.close(fig)
     # ========================================================
     # TAB 7
@@ -1842,6 +1937,25 @@ with main_tabs[0]:
 
         st.pyplot(fig,use_container_width=True)
 
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Plot PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{selected_station}_target_year_{target_year}.png",
+            mime="image/png",
+            key=f"download_target_plot_{selected_station}_{target_year}"
+        )
+
         plt.close(fig)
     # ========================================================
     # TAB 8
@@ -1882,6 +1996,25 @@ with main_tabs[0]:
 
             st.pyplot(fig,use_container_width=True)
 
+            img_buffer = io.BytesIO()
+            
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+            
+            img_buffer.seek(0)
+            
+            st.download_button(
+                "📥 Download Plot PNG",
+                data=img_buffer.getvalue(),
+                file_name=f"{selected_station}_target_year_{target_year}.png",
+                mime="image/png",
+                key=f"download_target_plot_{selected_station}_{target_year}"
+            )
+            
             plt.close(fig)
 
         else:
@@ -1929,6 +2062,25 @@ with main_tabs[0]:
 
             st.pyplot(fig,use_container_width=True)
 
+            img_buffer = io.BytesIO()
+            
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+            
+            img_buffer.seek(0)
+            
+            st.download_button(
+                "📥 Download Plot PNG",
+                data=img_buffer.getvalue(),
+                file_name=f"{selected_station}_target_year_{target_year}.png",
+                mime="image/png",
+                key=f"download_target_plot_{selected_station}_{target_year}"
+            )
+            
             plt.close(fig)
 
             total_days = sum(category_values)
@@ -2056,7 +2208,26 @@ with main_tabs[0]:
             plt.tight_layout()
     
             st.pyplot(fig,use_container_width=True)
-    
+
+            img_buffer = io.BytesIO()
+            
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+            
+            img_buffer.seek(0)
+            
+            st.download_button(
+                "📥 Download Plot PNG",
+                data=img_buffer.getvalue(),
+                file_name=f"{selected_station}_target_year_{target_year}.png",
+                mime="image/png",
+                key=f"download_target_plot_{selected_station}_{target_year}"
+            )
+            
             plt.close(fig)
     # ========================================================
     # TAB 11
