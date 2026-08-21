@@ -2557,6 +2557,25 @@ with main_tabs[1]:
             use_container_width=True
         )
 
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Yearly Rainfall Plot",
+            data=img_buffer.getvalue(),
+            file_name=f"{file_name}_yearly_rainfall_{YEAR_RANGE_TEXT}.png",
+            mime="image/png",
+            key=f"download_yearly_plot_{file_name}"
+        )
+
         plt.close(fig)
 
     # ========================================================
@@ -2680,6 +2699,24 @@ with main_tabs[1]:
         st.pyplot(
             fig,
             use_container_width=True
+        )
+        img_buffer = io.BytesIO()
+        
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+        
+        img_buffer.seek(0)
+        
+        st.download_button(
+            "📥 Download Heatmap PNG",
+            data=img_buffer.getvalue(),
+            file_name=f"{file_name}_heatmap_{YEAR_RANGE_TEXT}.png",
+            mime="image/png",
+            key=f"download_heatmap_{file_name}"
         )
 
         plt.close(fig)
@@ -2816,7 +2853,25 @@ with main_tabs[1]:
                 fig,
                 use_container_width=True
             )
-    
+            img_buffer = io.BytesIO()
+            
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+            
+            img_buffer.seek(0)
+            
+            st.download_button(
+                "📥 Download Heatmap PNG",
+                data=img_buffer.getvalue(),
+                file_name=f"{file_name}_heatmap_{YEAR_RANGE_TEXT}.png",
+                mime="image/png",
+                key=f"download_yearly_boxplot_{file_name}"
+            )
+            
             plt.close(fig)
     
         else:
@@ -2961,7 +3016,25 @@ with main_tabs[1]:
                 fig,
                 use_container_width=True
             )
-    
+            img_buffer = io.BytesIO()
+            
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+            
+            img_buffer.seek(0)
+            
+            st.download_button(
+                "📥 Download Heatmap PNG",
+                data=img_buffer.getvalue(),
+                file_name=f"{file_name}_heatmap_{YEAR_RANGE_TEXT}.png",
+                mime="image/png",
+                key=f"download_yearly_rainfall_category_{file_name}"
+            )
+
             plt.close(fig)
     
             # ------------------------------------------------
@@ -3046,6 +3119,22 @@ with main_tabs[1]:
             yearly_statistics.round(2),
             use_container_width=True,
             hide_index=True
+        )
+        csv = (
+            yearly_statistics
+            .round(2)
+            .to_csv(
+                index=False
+            )
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Yearly Statistics CSV",
+            data=csv,
+            file_name=f"{file_name}_yearly_statistics_{YEAR_RANGE_TEXT}.csv",
+            mime="text/csv",
+            key=f"download_yearly_statistics_{file_name}"
         )
 # ============================================================
 # MAIN TAB 3
@@ -3415,7 +3504,24 @@ with main_tabs[2]:
                     fig,
                     use_container_width=True
                 )
-
+                img_buffer = io.BytesIO()
+                
+                fig.savefig(
+                    img_buffer,
+                    format="png",
+                    dpi=300,
+                    bbox_inches="tight"
+                )
+                
+                img_buffer.seek(0)
+                
+                st.download_button(
+                    "📥 Download Total Rainfall Plot",
+                    data=img_buffer.getvalue(),
+                    file_name=f"station_comparison_total_{YEAR_RANGE_TEXT}.png",
+                    mime="image/png",
+                    key="download_comparison_total_plot"
+                )
                 plt.close(fig)
 
                 # --------------------------------------------
@@ -3443,7 +3549,20 @@ with main_tabs[2]:
                     total_table.round(2),
                     use_container_width=True
                 )
-
+                csv = (
+                    total_table
+                    .round(2)
+                    .to_csv()
+                    .encode("utf-8")
+                )
+                
+                st.download_button(
+                    "📥 Download Total Rainfall Table CSV",
+                    data=csv,
+                    file_name=f"station_comparison_total_{YEAR_RANGE_TEXT}.csv",
+                    mime="text/csv",
+                    key="download_comparison_total_table"
+                )
                 # =================================================
                 # TAB 2
                 # MEAN RAINFALL - BAR
@@ -3601,9 +3720,25 @@ with main_tabs[2]:
                         fig,
                         use_container_width=True
                     )
-                
+                    img_buffer = io.BytesIO()
+                    
+                    fig.savefig(
+                        img_buffer,
+                        format="png",
+                        dpi=300,
+                        bbox_inches="tight"
+                    )
+                    
+                    img_buffer.seek(0)
+                    
+                    st.download_button(
+                        "📥 Download Mean Rainfall Plot",
+                        data=img_buffer.getvalue(),
+                        file_name=f"station_comparison_mean_{YEAR_RANGE_TEXT}.png",
+                        mime="image/png",
+                        key="download_comparison_mean_plot"
+                    )
                     plt.close(fig)
-                
                     # --------------------------------------------
                     # TABLE
                     # --------------------------------------------
@@ -3629,6 +3764,20 @@ with main_tabs[2]:
                     st.dataframe(
                         mean_table.round(2),
                         use_container_width=True
+                    )
+                    csv = (
+                        mean_table
+                        .round(2)
+                        .to_csv()
+                        .encode("utf-8")
+                    )
+                    
+                    st.download_button(
+                        "📥 Download Mean Rainfall Table CSV",
+                        data=csv,
+                        file_name=f"station_comparison_mean_{YEAR_RANGE_TEXT}.csv",
+                        mime="text/csv",
+                        key="download_comparison_mean_table"
                     )
             # =================================================
             # TAB 3
@@ -3795,7 +3944,24 @@ with main_tabs[2]:
                     fig,
                     use_container_width=True
                 )
-
+                img_buffer = io.BytesIO()
+                
+                fig.savefig(
+                    img_buffer,
+                    format="png",
+                    dpi=300,
+                    bbox_inches="tight"
+                )
+                
+                img_buffer.seek(0)
+                
+                st.download_button(
+                    "📥 Download Anomaly Plot",
+                    data=img_buffer.getvalue(),
+                    file_name=f"station_comparison_anomaly_{YEAR_RANGE_TEXT}.png",
+                    mime="image/png",
+                    key="download_comparison_anomaly_plot"
+                )
                 plt.close(fig)
 
                 # --------------------------------------------
@@ -3823,7 +3989,20 @@ with main_tabs[2]:
                     anomaly_table.round(2),
                     use_container_width=True
                 )
-
+                csv = (
+                    anomaly_table
+                    .round(2)
+                    .to_csv()
+                    .encode("utf-8")
+                )
+                
+                st.download_button(
+                    "📥 Download Anomaly Table CSV",
+                    data=csv,
+                    file_name=f"station_comparison_anomaly_{YEAR_RANGE_TEXT}.csv",
+                    mime="text/csv",
+                    key="download_comparison_anomaly_table"
+                )
             # =================================================
             # TAB 4
             # RAINFALL CATEGORY - PIE
@@ -3911,7 +4090,24 @@ with main_tabs[2]:
                                 fig,
                                 use_container_width=True
                             )
-
+                            img_buffer = io.BytesIO()
+                            
+                            fig.savefig(
+                                img_buffer,
+                                format="png",
+                                dpi=300,
+                                bbox_inches="tight"
+                            )
+                            
+                            img_buffer.seek(0)
+                            
+                            st.download_button(
+                                f"📥 Download {station} Pie Chart",
+                                data=img_buffer.getvalue(),
+                                file_name=f"{station}_rainfall_category_{YEAR_RANGE_TEXT}.png",
+                                mime="image/png",
+                                key=f"download_category_plot_{station}"
+                            )
                             plt.close(fig)
 
                         else:
@@ -3946,7 +4142,19 @@ with main_tabs[2]:
                     category_comparison_table,
                     use_container_width=True
                 )
-
+                csv = (
+                    category_comparison_table
+                    .to_csv()
+                    .encode("utf-8")
+                )
+                
+                st.download_button(
+                    "📥 Download Category Comparison Table CSV",
+                    data=csv,
+                    file_name=f"station_comparison_category_{YEAR_RANGE_TEXT}.csv",
+                    mime="text/csv",
+                    key="download_category_comparison_table"
+                )
                 st.divider()            
 
 # ============================================================
