@@ -2175,6 +2175,40 @@ with main_tabs[0]:
                 showfliers=True
             )
             # ------------------------------------------------
+            # INDIVIDUAL DATA POINTS
+            # ------------------------------------------------
+            for i, values in enumerate(boxplot_data, start=1):
+            
+                if len(values) > 0:
+            
+                    jitter = np.random.uniform(
+                        -0.08,
+                        0.08,
+                        size=len(values)
+                    )
+            
+                    ax.scatter(
+                        i + jitter,
+                        values,
+                        s=25,
+                        color="black",
+                        alpha=0.55,
+                        edgecolors="white",
+                        linewidth=0.5,
+                        zorder=3
+                    )
+            
+            # ------------------------------------------------
+            # Box colour
+            # ------------------------------------------------
+            for box in bp["boxes"]:
+            
+                box.set(
+                    facecolor="#87CEEB",
+                    edgecolor="black",
+                    linewidth=1
+                )
+            # ------------------------------------------------
             # Box colour
             # ------------------------------------------------
             for box in bp["boxes"]:
@@ -2792,7 +2826,35 @@ with main_tabs[1]:
                 patch_artist=True,
                 showmeans=True
             )
-    
+            # ------------------------------------------------
+            # INDIVIDUAL DATA POINTS
+            # ------------------------------------------------
+            
+            for i, values in enumerate(boxplot_data, start=1):
+            
+                if len(values) > 0:
+            
+                    # Jitter supaya titik tidak bertindih
+                    jitter = np.random.normal(
+                        i,
+                        0.04,
+                        size=len(values)
+                    )
+            
+                    ax.scatter(
+                        jitter,
+                        values,
+                        alpha=0.7,
+                        s=35,
+                        color="black",
+                        edgecolors="white",
+                        linewidth=0.5,
+                        zorder=3,
+                        label="Individual Data"
+                        if i == 1
+                        else None
+                    )
+            
             # ------------------------------------------------
             # X AXIS
             # ------------------------------------------------
