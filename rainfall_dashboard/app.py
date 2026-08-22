@@ -2436,6 +2436,7 @@ with main_tabs[1]:
         "🔥 Heatmap",
         "📦 Boxplot",
         "🥧 Rainfall Category",
+        "📉 Anomaly",
         "📋 Yearly Statistics"
     ])
     # ========================================================
@@ -3071,12 +3072,355 @@ with main_tabs[1]:
             st.warning(
                 "Tiada data hujan sah untuk menghasilkan pie chart."
             )
-        
     # ========================================================
-    # TAB 5 - YEARLY STATISTICS
+    # TAB 5 - YEARLY ANOMALY
+    # ========================================================
+    
+    with all_year_tabs[4]:
+    
+        st.subheader(
+            f"📉 Annual Rainfall Anomaly "
+            f"{YEAR_RANGE_TEXT}"
+        )
+    
+        st.caption(
+            "Anomali jumlah hujan tahunan berbanding "
+            f"purata jumlah hujan tahunan bagi {YEAR_RANGE_TEXT}."
+        )
+    
+        # ----------------------------------------------------
+        # ANNUAL TOTAL
+        # ----------------------------------------------------
+    
+        yearly_total = (
+            yearly_monthly_total
+            .sum(
+                axis=1,
+                skipna=True
+            )
+        )
+    
+        # ----------------------------------------------------
+        # MEAN ANNUAL RAINFALL
+        # ----------------------------------------------------
+    
+        mean_annual_rainfall = (
+            yearly_total.mean(
+                skipna=True
+            )
+        )
+    
+        # ----------------------------------------------------
+        # ANOMALY %
+        # ----------------------------------------------------
+    
+        if (
+            pd.notna(mean_annual_rainfall)
+            and
+            mean_annual_rainfall != 0
+        ):
+    
+            yearly_anomaly = (
+                (
+                    yearly_total
+                    -
+                    mean_annual_rainfall
+                )
+                /
+                mean_annual_rainfall
+            ) * 100
+    
+        else:
+    
+            yearly_anomaly = pd.Series(
+                np.nan,
+                index=yearly_total.index
+            )
+    
+        # ----------------------------------------------------
+        # X AXIS
+        # ----------------------------------------------------
+    
+        x_year = np.arange(
+            len(yearly_anomaly)
+        )
+    
+        # ----------------------------------------------------
+        # FIGURE
+        # ----------------------------------------------------
+    
+        fig, ax = plt.subplots(
+            figsize=(14, 8)
+        )
+    
+        fig.patch.set_facecolor(
+            BG_COLOR
+        )
+    
+        ax.set_facecolor(
+            BG_COLOR
+        )
+    
+        # ----------------------------------------------------
+        # BAR COLOUR
+        # Positive = Above Mean
+        # Negative = Below Mean
+        # ----------------------------------------------------
+    
+        anomaly_colors = [
+            "steelblue" if value >= 0
+            else "orange"
+            if pd.notna(value)
+            else "lightgray"
+            for value in yearly_anomaly.values
+        ]
+    
+        bars = ax.bar(
+            x_year,
+            yearly_anomaly.values,
+            width=0.60,
+            color=anomaly_colors,
+            edgecolor="black",
+            linewidth=0.8
+        )
+    
+        # ----------------------------------------------------
+        # ZERO LINE
+        # ----------------------------------------------------
+    
+        ax.axhline(
+            0,
+            color="black",
+            linewidth=1
+        )
+    
+        # ----------------------------------------------------
+        # ANOMALY LABEL
+        # ----------------------------------------------------
+    
+        for bar, value in zip(
+            bars,
+            yearly_anomaly.values
+        ):
+    
+            if pd.notna(value):
+    
+                if value >= 0:
+    
+                    offset = 5
+                    vertical = "bottom"
+    
+                else:
+    
+                    offset = -8
+                    vertical = "top"
+    
+                ax.annotate(
+                    f"{value:.1f}%",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(
+                        0,
+                        offset
+                    ),
+                    textcoords="offset points",
+                    ha="center",
+                    va=vertical,
+                    fontsize=9,
+                    fontweight="bold"
+                )
+    
+        # ----------------------------------------------------
+        # TITLE
+        # ----------------------------------------------------
+    
+        ax.set_title(
+            f"{file_name}\n"
+            f"Annual Rainfall Anomaly "
+            f"{YEAR_RANGE_TEXT}",
+            fontsize=16,
+            fontweight="bold"
+        )
+    
+        # ----------------------------------------------------
+        # AXIS LABEL
+        # ----------------------------------------------------
+    
+        ax.set_xlabel(
+            "Year",
+            fontsize=12
+        )
+    
+        ax.set_ylabel(
+            "Rainfall Anomaly (%)",
+            fontsize=12
+        )
+    
+        # ----------------------------------------------------
+        # X TICKS
+        # ----------------------------------------------------
+    
+        ax.set_xticks(
+            x_year
+        )
+    
+        ax.set_xticklabels(
+            yearly_anomaly.index.astype(str)
+        )
+    
+        # ----------------------------------------------------
+        # GRID
+        # ----------------------------------------------------
+    
+        ax.grid(
+            True,
+            axis="y",
+            linestyle="--",
+            alpha=0.4
+        )
+    
+        # ----------------------------------------------------
+        # LEGEND
+        # ----------------------------------------------------
+    
+        from matplotlib.patches import Patch
+    
+        legend_elements = [
+            Patch(
+                facecolor="steelblue",
+                edgecolor="black",
+                label="Above Mean"
+            ),
+    
+            Patch(
+                facecolor="orange",
+                edgecolor="black",
+                label="Below Mean"
+            )
+        ]
+    
+        ax.legend(
+            handles=legend_elements,
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left"
+        )
+    
+        plt.tight_layout()
+    
+        st.pyplot(
+            fig,
+            use_container_width=True
+        )
+    
+        # ----------------------------------------------------
+        # DOWNLOAD PLOT
+        # ----------------------------------------------------
+    
+        img_buffer = io.BytesIO()
+    
+        fig.savefig(
+            img_buffer,
+            format="png",
+            dpi=300,
+            bbox_inches="tight"
+        )
+    
+        img_buffer.seek(0)
+    
+        st.download_button(
+            "📥 Download Anomaly Plot",
+            data=img_buffer.getvalue(),
+            file_name=(
+                f"{file_name}_"
+                f"annual_anomaly_{YEAR_RANGE_TEXT}.png"
+            ),
+            mime="image/png",
+            key=(
+                f"download_annual_anomaly_"
+                f"{file_name}"
+            )
+        )
+    
+        plt.close(fig)
+    
+        # ----------------------------------------------------
+        # ANOMALY TABLE
+        # ----------------------------------------------------
+    
+        anomaly_table = pd.DataFrame({
+    
+            "Year":
+                yearly_total.index,
+    
+            "Annual Total (mm)":
+                yearly_total.values,
+    
+            "Mean Annual Rainfall (mm)":
+                mean_annual_rainfall,
+    
+            "Anomaly (%)":
+                yearly_anomaly.values
+        })
+    
+        anomaly_table[
+            "Annual Total (mm)"
+        ] = anomaly_table[
+            "Annual Total (mm)"
+        ].round(2)
+    
+        anomaly_table[
+            "Mean Annual Rainfall (mm)"
+        ] = anomaly_table[
+            "Mean Annual Rainfall (mm)"
+        ].round(2)
+    
+        anomaly_table[
+            "Anomaly (%)"
+        ] = anomaly_table[
+            "Anomaly (%)"
+        ].round(2)
+    
+        st.subheader(
+            "📋 Annual Rainfall Anomaly Statistics"
+        )
+    
+        st.dataframe(
+            anomaly_table,
+            use_container_width=True,
+            hide_index=True
+        )
+    
+        # ----------------------------------------------------
+        # DOWNLOAD TABLE
+        # ----------------------------------------------------
+    
+        csv = (
+            anomaly_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+    
+        st.download_button(
+            "📥 Download Anomaly Table CSV",
+            data=csv,
+            file_name=(
+                f"{file_name}_"
+                f"annual_anomaly_{YEAR_RANGE_TEXT}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_annual_anomaly_table_"
+                f"{file_name}"
+            )
+        )
+    # ========================================================
+    # TAB 6 - YEARLY STATISTICS
     # ========================================================
 
-    with all_year_tabs[4]:
+    with all_year_tabs[5]:
 
         st.subheader(
             f"Yearly Rainfall Statistics "
