@@ -3169,7 +3169,7 @@ with main_tabs[1]:
     
         anomaly_colors = [
             "steelblue" if value >= 0
-            else "orange"
+            else "darkorange"
             if pd.notna(value)
             else "lightgray"
             for value in yearly_anomaly.values
