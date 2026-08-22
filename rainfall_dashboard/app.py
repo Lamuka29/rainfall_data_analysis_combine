@@ -776,11 +776,10 @@ for result in successful_results:
     # RAINFALL CATEGORY
     # ========================================================
     category_labels = [
-        "No Rain (0.0 mm)",
         "Light Rain (1.0–10.0 mm)",
         "Moderate Rain (>10.0–30.0 mm)",
         "Heavy Rain (>30.0–60.0 mm)",
-        "Extreme Rain (>60 mm)"
+        "Very Heavy Rain (>60 mm)"
     ]
 
     # ========================================================
@@ -929,8 +928,6 @@ for result in successful_results:
     ]
 
     category_values = [
-        (all_values == 0).sum(),
-
         (
             (all_values >= 1) &
             (all_values <= 10)
@@ -2918,23 +2915,17 @@ with main_tabs[1]:
         # ----------------------------------------------------
     
         category_labels = [
-            "No Rain (0.0 mm)",
             "Light Rain (1.0–10.0 mm)",
             "Moderate Rain (>10.0–30.0 mm)",
             "Heavy Rain (>30.0–60.0 mm)",
-            "Extreme Rain (>60 mm)"
+            "Very Heavy Rain (>60 mm)"
         ]
     
         # ----------------------------------------------------
         # CATEGORY VALUES
         # ----------------------------------------------------
     
-        category_values = [
-    
-            (
-                all_daily_values == 0
-            ).sum(),
-    
+        category_values = [    
             (
                 (all_daily_values >= 1)
                 &
@@ -3277,12 +3268,6 @@ with main_tabs[2]:
             ]
 
             category_values = [
-
-                # NO RAIN
-                (
-                    all_values == 0
-                ).sum(),
-
                 # LIGHT RAIN
                 (
                     (all_values >= 1)
@@ -3304,7 +3289,7 @@ with main_tabs[2]:
                     (all_values <= 60)
                 ).sum(),
 
-                # EXTREME RAIN
+                # Very Heavy RAIN
                 (
                     all_values > 60
                 ).sum()
@@ -3341,11 +3326,10 @@ with main_tabs[2]:
             # CATEGORY LABELS
             # =================================================
             category_labels = [
-                "No Rain (0.0 mm)",
                 "Light Rain (1.0–10.0 mm)",
                 "Moderate Rain (>10.0–30.0 mm)",
                 "Heavy Rain (>30.0–60.0 mm)",
-                "Extreme Rain (>60 mm)"
+                "Very Heavy Rain (>60 mm)"
             ]
 
             # =================================================
