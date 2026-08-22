@@ -1640,10 +1640,10 @@ with main_tabs[0]:
                 anomaly_colors.append("lightgray")
 
             elif value >= 0:
-                anomaly_colors.append("darkorange")
+                anomaly_colors.append("steelblue")
 
             else:
-                anomaly_colors.append("steelblue")
+                anomaly_colors.append("darkorange")
 
         bars = ax.bar(x,anomaly_percent.values,width=0.60,color=anomaly_colors,edgecolor="black",linewidth=0.8)
 
