@@ -3282,32 +3282,6 @@ with main_tabs[1]:
             alpha=0.4
         )
     
-        # ----------------------------------------------------
-        # LEGEND
-        # ----------------------------------------------------
-    
-        from matplotlib.patches import Patch
-    
-        legend_elements = [
-            Patch(
-                facecolor="steelblue",
-                edgecolor="black",
-                label="Above Mean"
-            ),
-    
-            Patch(
-                facecolor="orange",
-                edgecolor="black",
-                label="Below Mean"
-            )
-        ]
-    
-        ax.legend(
-            handles=legend_elements,
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left"
-        )
-    
         plt.tight_layout()
     
         st.pyplot(
