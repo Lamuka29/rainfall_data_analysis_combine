@@ -2000,7 +2000,7 @@ with main_tabs[0]:
             # ------------------------------------------------
             category_labels = [
                 "No Rain\n(0.0 mm)",
-                "Light Rain\n(1.0–10.0 mm)",
+                "Slight Rain\n(1.0–10.0 mm)",
                 "Moderate Rain\n(>10.0–30.0 mm)",
                 "Heavy Rain\n(>30.0–60.0 mm)",
                 "Very Heavy Rain\n(>60 mm)"
@@ -2010,55 +2010,27 @@ with main_tabs[0]:
             # CATEGORY VALUES
             # ------------------------------------------------
             category_values = [
-    
                 # NO RAIN
-                (
-                    category_data == 0
-                ).sum(),
-    
+                (category_data == 0).sum(),
                 # LIGHT RAIN
-                (
-                    (category_data >= 1)
-                    &
-                    (category_data <= 10)
-                ).sum(),
-    
+                ((category_data >= 1)&(category_data <= 10)).sum(),
                 # MODERATE RAIN
-                (
-                    (category_data > 10)
-                    &
-                    (category_data <= 30)
-                ).sum(),
-    
+                ((category_data > 10)&(category_data <= 30)).sum(),
                 # HEAVY RAIN
-                (
-                    (category_data > 30)
-                    &
-                    (category_data <= 60)
-                ).sum(),
-    
+                ((category_data > 30)&(category_data <= 60)).sum(),
                 # VERY HEAVY RAIN
-                (
-                    category_data > 60
-                ).sum()
+                (category_data > 60).sum()
             ]
     
             # ------------------------------------------------
             # PLOT
             # ------------------------------------------------
-            fig, ax = plt.subplots(
-                figsize=(14, 8)
-            )
-    
+            fig, ax = plt.subplots(figsize=(14, 8))
+            
             bg_color = BG_COLOR
     
-            fig.patch.set_facecolor(
-                bg_color
-            )
-    
-            ax.set_facecolor(
-                bg_color
-            )
+            fig.patch.set_facecolor(bg_color)
+            ax.set_facecolor(bg_color)
     
             x = np.arange(
                 len(category_labels)
@@ -2099,29 +2071,16 @@ with main_tabs[0]:
             # ------------------------------------------------
             ax.set_title(
                 f"{file_name}\n"
-                f"Daily Rainfall Category Distribution - "
+                f"Rainfall Data Category Distribution - "
                 f"{target_year}",
                 fontsize=16,
                 fontweight="bold"
             )
     
-            ax.set_xlabel(
-                "Rainfall Category",
-                fontsize=12
-            )
-    
-            ax.set_ylabel(
-                "Number of Days",
-                fontsize=12
-            )
-    
-            ax.set_xticks(
-                x
-            )
-    
-            ax.set_xticklabels(
-                category_labels
-            )
+            ax.set_xlabel("Rainfall Data Category",fontsize=12)
+            ax.set_ylabel("Number of Days",fontsize=12)
+            ax.set_xticks(x)
+            ax.set_xticklabels(category_labels)
     
             ax.grid(
                 True,
@@ -2132,10 +2091,7 @@ with main_tabs[0]:
     
             plt.tight_layout()
     
-            st.pyplot(
-                fig,
-                use_container_width=True
-            )
+            st.pyplot(fig,use_container_width=True)
     
             # ------------------------------------------------
             # DOWNLOAD PNG
@@ -2169,9 +2125,7 @@ with main_tabs[0]:
     
         else:
     
-            st.warning(
-                "Tiada data hujan sah untuk menghasilkan graf."
-            )
+            st.warning("Tiada data hujan sah untuk menghasilkan graf.")
     # ========================================================
     # TAB 9
     # PIE CHART
@@ -2611,6 +2565,7 @@ with main_tabs[1]:
         "📊 Yearly Rainfall",
         "🔥 Heatmap",
         "📦 Boxplot",
+        "📊 Histogram"
         "🥧 Rainfall Category",
         "📉 Anomaly",
         "📋 Yearly Statistics"
@@ -3079,10 +3034,204 @@ with main_tabs[1]:
                 "untuk menghasilkan boxplot."
             )
     # ========================================================
-    # TAB 4 - RAINFALL CATEGORY
+    # TAB 4 - HISTOGRAM
+    # ========================================================
+
+    with all_year_tabs[3]:
+
+        st.subheader(
+            f"📊 Distribution of Annual Rainfall "
+            f"{YEAR_RANGE_TEXT}"
+        )
+
+        st.caption(
+            "Taburan jumlah hujan tahunan berdasarkan "
+            f"semua tahun dalam {YEAR_RANGE_TEXT}."
+        )
+
+        # ----------------------------------------------------
+        # ANNUAL TOTAL RAINFALL
+        # ----------------------------------------------------
+
+        annual_hist_values = (
+            yearly_monthly_total
+            .sum(
+                axis=1,
+                skipna=True
+            )
+            .dropna()
+        )
+
+        # ----------------------------------------------------
+        # CHECK DATA
+        # ----------------------------------------------------
+
+        if len(annual_hist_values) > 0:
+
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+
+            fig.patch.set_facecolor(
+                BG_COLOR
+            )
+
+            ax.set_facecolor(
+                BG_COLOR
+            )
+
+            # ------------------------------------------------
+            # HISTOGRAM
+            # ------------------------------------------------
+
+            ax.hist(
+                annual_hist_values.values,
+                bins=10,
+                color="steelblue",
+                edgecolor="black",
+                linewidth=0.8
+            )
+
+            # ------------------------------------------------
+            # MEAN LINE
+            # ------------------------------------------------
+
+            mean_annual_hist = (
+                annual_hist_values.mean()
+            )
+
+            ax.axvline(
+                mean_annual_hist,
+                color=LINE_COLOR,
+                linewidth=2.5,
+                linestyle="--",
+                label=(
+                    f"Mean Annual Rainfall "
+                    f"({mean_annual_hist:.1f} mm)"
+                )
+            )
+
+            # ------------------------------------------------
+            # TITLE
+            # ------------------------------------------------
+
+            ax.set_title(
+                f"{file_name}\n"
+                f"Distribution of Annual Rainfall "
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
+
+            # ------------------------------------------------
+            # AXIS LABEL
+            # ------------------------------------------------
+
+            ax.set_xlabel(
+                "Annual Total Rainfall (mm)",
+                fontsize=12
+            )
+
+            ax.set_ylabel(
+                "Number of Years",
+                fontsize=12
+            )
+
+            # ------------------------------------------------
+            # GRID
+            # ------------------------------------------------
+
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+
+            ax.legend(
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left"
+            )
+
+            plt.tight_layout()
+
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+
+            # ------------------------------------------------
+            # DOWNLOAD PLOT
+            # ------------------------------------------------
+
+            img_buffer = io.BytesIO()
+
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+
+            img_buffer.seek(0)
+
+            st.download_button(
+                "📥 Download Annual Histogram",
+                data=img_buffer.getvalue(),
+                file_name=(
+                    f"{file_name}_"
+                    f"annual_histogram_{YEAR_RANGE_TEXT}.png"
+                ),
+                mime="image/png",
+                key=(
+                    f"download_annual_histogram_"
+                    f"{file_name}"
+                )
+            )
+
+            plt.close(fig)
+
+            # ------------------------------------------------
+            # ANNUAL VALUES TABLE
+            # ------------------------------------------------
+
+            st.subheader(
+                "📋 Annual Rainfall Values"
+            )
+
+            annual_hist_table = pd.DataFrame({
+                "Year":
+                    annual_hist_values.index,
+
+                "Annual Total Rainfall (mm)":
+                    annual_hist_values.values
+            })
+
+            annual_hist_table[
+                "Annual Total Rainfall (mm)"
+            ] = (
+                annual_hist_table[
+                    "Annual Total Rainfall (mm)"
+                ].round(2)
+            )
+
+            st.dataframe(
+                annual_hist_table,
+                use_container_width=True,
+                hide_index=True
+            )
+
+        else:
+
+            st.warning(
+                "Tiada data jumlah hujan tahunan "
+                "untuk menghasilkan histogram."
+            )
+    # ========================================================
+    # TAB 5 - RAINFALL CATEGORY
     # ========================================================
     
-    with all_year_tabs[3]:
+    with all_year_tabs[4]:
     
         st.subheader(
             f"🥧 Rainfall Category Distribution "
@@ -3273,10 +3422,10 @@ with main_tabs[1]:
                 "Tiada data hujan sah untuk menghasilkan pie chart."
             )
     # ========================================================
-    # TAB 5 - YEARLY ANOMALY
+    # TAB 6 - YEARLY ANOMALY
     # ========================================================
     
-    with all_year_tabs[4]:
+    with all_year_tabs[5]:
     
         st.subheader(
             f"📉 Annual Rainfall Anomaly "
@@ -3591,10 +3740,10 @@ with main_tabs[1]:
             )
         )
     # ========================================================
-    # TAB 6 - YEARLY STATISTICS
+    # TAB 7 - YEARLY STATISTICS
     # ========================================================
 
-    with all_year_tabs[5]:
+    with all_year_tabs[6]:
 
         st.subheader(
             f"Yearly Rainfall Statistics "
