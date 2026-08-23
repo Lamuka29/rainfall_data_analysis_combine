@@ -3040,14 +3040,12 @@ with main_tabs[1]:
     with all_year_tabs[3]:
     
         st.subheader(
-            f"📊 Daily Rainfall Distribution "
+            f"📊 Daily Data Distribution "
             f"{YEAR_RANGE_TEXT}"
         )
     
         st.caption(
-            "Taburan bilangan hari mengikut kategori "
-            f"hujan bagi semua tahun {YEAR_RANGE_TEXT}."
-        )
+            "Taburan bilangan hari mengikut kategori hujan bagi semua tahun {YEAR_RANGE_TEXT}.")
     
         # ----------------------------------------------------
         # GET ALL DAILY VALUES
@@ -3071,7 +3069,7 @@ with main_tabs[1]:
     
         category_labels = [
             "No Rain (0.0 mm)",
-            "Light Rain (1.0–10.0 mm)",
+            "Slight Rain (1.0–10.0 mm)",
             "Moderate Rain (>10.0–30.0 mm)",
             "Heavy Rain (>30.0–60.0 mm)",
             "Very Heavy Rain (>60 mm)"
@@ -3088,7 +3086,7 @@ with main_tabs[1]:
                 histogram_values == 0
             ).sum(),
     
-            # LIGHT RAIN
+            # SLIGHT RAIN
             (
                 (histogram_values >= 1)
                 &
@@ -3187,14 +3185,14 @@ with main_tabs[1]:
     
             ax.set_title(
                 f"{file_name}\n"
-                f"Daily Rainfall Distribution "
+                f"Daily Data Distribution "
                 f"{YEAR_RANGE_TEXT}",
                 fontsize=16,
                 fontweight="bold"
             )
     
             ax.set_xlabel(
-                "Rainfall Category",
+                "Daily Data Category",
                 fontsize=12
             )
     
@@ -3262,12 +3260,12 @@ with main_tabs[1]:
             # ------------------------------------------------
     
             st.subheader(
-                "📋 Rainfall Category Statistics"
+                "📋 Daily Data Category Statistics"
             )
     
             category_table = pd.DataFrame({
     
-                "Rainfall Category":
+                "Data Category":
                     category_labels,
     
                 "Number of Days":
