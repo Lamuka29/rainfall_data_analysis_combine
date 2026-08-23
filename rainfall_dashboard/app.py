@@ -1946,7 +1946,7 @@ with main_tabs[0]:
         
         max_daily_table = pd.DataFrame({
             "Month": months,
-            "Maximum Daily Rainfall (mm)": max_daily.values
+            "Maximum Daily Rainfall (mm)": max_daily
         })
         
         max_daily_table = max_daily_table.round(2)
