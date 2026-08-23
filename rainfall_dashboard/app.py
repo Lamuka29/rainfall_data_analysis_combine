@@ -2565,7 +2565,7 @@ with main_tabs[1]:
         "📊 Yearly Rainfall",
         "🔥 Heatmap",
         "📦 Boxplot",
-        "📊 Histogram"
+        "📊 Histogram",
         "🥧 Rainfall Category",
         "📉 Anomaly",
         "📋 Yearly Statistics"
