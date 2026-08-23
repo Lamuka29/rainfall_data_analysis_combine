@@ -1464,6 +1464,48 @@ with main_tabs[0]:
             mime="image/png",
             key=f"download_monthly_rainfall_{selected_station}_{target_year}"
         )
+
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        plot_table = pd.DataFrame({
+            "Month": months,
+            f"Total Rainfall {target_year} (mm)":
+                rainfall_target.values,
+            f"Mean Rainfall {YEAR_RANGE_TEXT} (mm)":
+                mean_monthly_total.values,
+            "Anomaly (%)":
+                anomaly_percent.values
+        })
+        
+        plot_table = plot_table.round(2)
+        
+        st.dataframe(
+            plot_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            plot_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_monthly_rainfall_"
+                f"{target_year}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_monthly_rainfall_table_"
+                f"{selected_station}_{target_year}"
+            )
+        )
         
         plt.close(fig)
     # ========================================================
@@ -1613,6 +1655,43 @@ with main_tabs[0]:
             mime="image/png",
             key=f"download_heatmap_{selected_station}_{target_year}"
         )
+
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        heatmap_table = (
+            heatmap_data
+            .reset_index()
+        )
+        
+        heatmap_table = heatmap_table.round(2)
+        
+        st.dataframe(
+            heatmap_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            heatmap_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_rainfall_heatmap_"
+                f"{YEAR_RANGE_TEXT}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_heatmap_table_"
+                f"{selected_station}_{YEAR_RANGE_TEXT}"
+            )
+        )
         
         plt.close(fig)
     # ========================================================
@@ -1704,6 +1783,47 @@ with main_tabs[0]:
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
             key=f"download_anomaly_{selected_station}_{target_year}"
+        )
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        anomaly_table = pd.DataFrame({
+            "Month": months,
+            f"Total Rainfall {target_year} (mm)":
+                rainfall_target.values,
+            f"Mean Rainfall {YEAR_RANGE_TEXT} (mm)":
+                mean_monthly_total.values,
+            "Anomaly (%)":
+                anomaly_percent.values
+        })
+        
+        anomaly_table = anomaly_table.round(2)
+        
+        st.dataframe(
+            anomaly_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            anomaly_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_rainfall_anomaly_"
+                f"{target_year}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_anomaly_table_"
+                f"{selected_station}_{target_year}"
+            )
         )
         
         plt.close(fig)
@@ -1820,6 +1940,42 @@ with main_tabs[0]:
             mime="image/png",
             key=f"download_Max_rainfall_{selected_station}_{target_year}"
         )
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        max_daily_table = pd.DataFrame({
+            "Month": months,
+            "Maximum Daily Rainfall (mm)": max_daily.values
+        })
+        
+        max_daily_table = max_daily_table.round(2)
+        
+        st.dataframe(
+            max_daily_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            max_daily_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_maximum_daily_rainfall_"
+                f"{target_year}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_max_daily_table_"
+                f"{selected_station}_{target_year}"
+            )
+        )
 
         plt.close(fig)
     # ========================================================
@@ -1895,6 +2051,40 @@ with main_tabs[0]:
             mime="image/png",
             key=f"download_Wet_days_{selected_station}_{target_year}"
         )
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        wet_days_table = pd.DataFrame({
+            "Month": months,
+            "Number of Wet Days": wet_days.values
+        })
+        
+        st.dataframe(
+            wet_days_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            wet_days_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_wet_days_"
+                f"{target_year}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_wet_days_table_"
+                f"{selected_station}_{target_year}"
+            )
+        )
         
         plt.close(fig)
     # ========================================================
@@ -1966,6 +2156,42 @@ with main_tabs[0]:
             file_name=f"{selected_station}_target_year_{target_year}.png",
             mime="image/png",
             key=f"download_standard_deviation_{selected_station}_{target_year}"
+        )
+        # ========================================================
+        # TABLE DATA
+        # ========================================================
+        
+        std_table = pd.DataFrame({
+            "Month": months,
+            "Standard Deviation (mm)": std_daily.values
+        })
+        
+        std_table = std_table.round(2)
+        
+        st.dataframe(
+            std_table,
+            use_container_width=True,
+            hide_index=True
+        )
+        
+        csv = (
+            std_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+        
+        st.download_button(
+            "📥 Download Table CSV",
+            data=csv,
+            file_name=(
+                f"{selected_station}_standard_deviation_"
+                f"{target_year}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_std_table_"
+                f"{selected_station}_{target_year}"
+            )
         )
 
         plt.close(fig)
@@ -2121,7 +2347,40 @@ with main_tabs[0]:
                     f"{selected_station}_{target_year}"
                 )
             )
-    
+            # ========================================================
+            # TABLE DATA
+            # ========================================================
+            
+            category_bar_table = pd.DataFrame({
+                "Rainfall Category": category_labels,
+                "Number of Days": category_values
+            })
+            
+            st.dataframe(
+                category_bar_table,
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            csv = (
+                category_bar_table
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=(
+                    f"{selected_station}_rainfall_category_"
+                    f"{target_year}.csv"
+                ),
+                mime="text/csv",
+                key=(
+                    f"download_category_bar_table_"
+                    f"{selected_station}_{target_year}"
+                )
+            )
             plt.close(fig)
     
         else:
@@ -2204,12 +2463,7 @@ with main_tabs[0]:
             category_table["Percentage (%)"] = category_table["Percentage (%)"].round(2)
 
             st.dataframe(category_table,use_container_width=True,hide_index=True)
-            csv = (
-                analysis_table
-                .round(2)
-                .to_csv()
-                .encode("utf-8")
-            )
+            csv = (analysis_table.to_csv(index=False).encode("utf-8"))
             
             st.download_button(
                 "📥 Download Table CSV",
@@ -2382,6 +2636,91 @@ with main_tabs[0]:
                 file_name=f"{selected_station}_target_year_{target_year}.png",
                 mime="image/png",
                 key=f"download_boxplot_{selected_station}_{target_year}"
+            )
+            # ========================================================
+            # BOXPLOT SUMMARY TABLE
+            # ========================================================
+            
+            boxplot_summary = []
+            
+            for month, values in zip(
+                months,
+                boxplot_data
+            ):
+            
+                if len(values) > 0:
+            
+                    values_array = np.array(values)
+            
+                    boxplot_summary.append({
+                        "Month": month,
+                        "Wet Days": len(values_array),
+                        "Minimum (mm)": np.min(values_array),
+                        "Q1 (mm)": np.percentile(
+                            values_array,
+                            25
+                        ),
+                        "Median (mm)": np.median(
+                            values_array
+                        ),
+                        "Mean (mm)": np.mean(
+                            values_array
+                        ),
+                        "Q3 (mm)": np.percentile(
+                            values_array,
+                            75
+                        ),
+                        "Maximum (mm)": np.max(
+                            values_array
+                        ),
+                        "Standard Deviation (mm)": np.std(
+                            values_array,
+                            ddof=1
+                        ) if len(values_array) > 1 else 0
+                    })
+            
+                else:
+            
+                    boxplot_summary.append({
+                        "Month": month,
+                        "Wet Days": 0,
+                        "Minimum (mm)": np.nan,
+                        "Q1 (mm)": np.nan,
+                        "Median (mm)": np.nan,
+                        "Mean (mm)": np.nan,
+                        "Q3 (mm)": np.nan,
+                        "Maximum (mm)": np.nan,
+                        "Standard Deviation (mm)": np.nan
+                    })
+            
+            boxplot_table = pd.DataFrame(
+                boxplot_summary
+            ).round(2)
+            
+            st.dataframe(
+                boxplot_table,
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            csv = (
+                boxplot_table
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+            
+            st.download_button(
+                "📥 Download Table CSV",
+                data=csv,
+                file_name=(
+                    f"{selected_station}_boxplot_summary_"
+                    f"{target_year}.csv"
+                ),
+                mime="text/csv",
+                key=(
+                    f"download_boxplot_table_"
+                    f"{selected_station}_{target_year}"
+                )
             )
             
             plt.close(fig)
