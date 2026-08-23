@@ -4077,6 +4077,7 @@ with main_tabs[2]:
             comparison_tabs = st.tabs([
                 "📊 Total & Mean Rainfall",
                 "📉 Anomaly",
+                "📊 Rainfall Category",
                 "🥧 Rainfall Category"
             ])
 
@@ -4085,7 +4086,7 @@ with main_tabs[2]:
             # TOTAL + MEAN RAINFALL
             # BAR + LINE
             # =================================================
-            with comparison_tabs[0]:
+            with bs[0]:
             
                 st.subheader(
                     f"📊 Monthly Total & Mean Rainfall Comparison "
@@ -4439,10 +4440,10 @@ with main_tabs[2]:
                     key="download_comparison_mean_table"
                 )
             # =================================================
-            # TAB 3
+            # TAB 2
             # ANOMALY - BAR
             # =================================================
-            with comparison_tabs[2]:
+            with comparison_tabs[1]:
 
                 st.subheader(
                     f"📉 Monthly Rainfall Anomaly "
@@ -4662,6 +4663,254 @@ with main_tabs[2]:
                     mime="text/csv",
                     key="download_comparison_anomaly_table"
                 )
+        # =================================================
+        # TAB 3
+        # RAINFALL CATEGORY COMPARISON
+        # =================================================
+        with comparison_tabs[2]:
+        
+            st.subheader(
+                f"📊 Daily Rainfall Category Comparison "
+                f"{YEAR_RANGE_TEXT}"
+            )
+        
+            st.caption(
+                "Perbandingan bilangan hari mengikut kategori "
+                f"hujan bagi setiap stesen sepanjang {YEAR_RANGE_TEXT}."
+            )
+        
+            category_labels = [
+                "No Rain\n(0.0 mm)",
+                "Light Rain\n(1.0–10.0 mm)",
+                "Moderate Rain\n(>10–30 mm)",
+                "Heavy Rain\n(>30–60 mm)",
+                "Very Heavy Rain\n(>60 mm)"
+            ]
+        
+            # --------------------------------------------
+            # PREPARE CATEGORY DATA
+            # --------------------------------------------
+        
+            category_data = {}
+        
+            for station in comparison_data:
+        
+                values = (
+                    successful_results[
+                        [
+                            result["file_name"]
+                            for result in successful_results
+                        ].index(station)
+                    ]["all_daily"]
+                    [months]
+                    .stack()
+                )
+        
+                values = values[
+                    values.notna()
+                    &
+                    (values >= VALID_MIN)
+                ]
+        
+                category_data[station] = [
+        
+                    # NO RAIN
+                    (
+                        values == 0
+                    ).sum(),
+        
+                    # LIGHT
+                    (
+                        (values >= 1)
+                        &
+                        (values <= 10)
+                    ).sum(),
+        
+                    # MODERATE
+                    (
+                        (values > 10)
+                        &
+                        (values <= 30)
+                    ).sum(),
+        
+                    # HEAVY
+                    (
+                        (values > 30)
+                        &
+                        (values <= 60)
+                    ).sum(),
+        
+                    # VERY HEAVY
+                    (
+                        values > 60
+                    ).sum()
+                ]
+        
+            # --------------------------------------------
+            # GRAPH
+            # --------------------------------------------
+        
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+        
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
+        
+            x = np.arange(
+                len(category_labels)
+            )
+        
+            n_stations = len(
+                category_data
+            )
+        
+            bar_width = (
+                0.8 / n_stations
+            )
+        
+            legend_handles = []
+        
+            # --------------------------------------------
+            # BARS
+            # --------------------------------------------
+        
+            for i, station in enumerate(
+                category_data
+            ):
+        
+                values = category_data[station]
+        
+                offset = (
+                    i
+                    - (n_stations - 1) / 2
+                ) * bar_width
+        
+                bars = ax.bar(
+                    x + offset,
+                    values,
+                    width=bar_width,
+                    edgecolor="black",
+                    linewidth=0.8,
+                    label=station
+                )
+        
+                # VALUE LABEL
+                for bar, value in zip(
+                    bars,
+                    values
+                ):
+        
+                    ax.annotate(
+                        f"{value:,}",
+                        (
+                            bar.get_x()
+                            + bar.get_width() / 2,
+                            value
+                        ),
+                        xytext=(0, 5),
+                        textcoords="offset points",
+                        ha="center",
+                        fontsize=8,
+                        fontweight="bold"
+                    )
+        
+            # --------------------------------------------
+            # GRAPH SETTINGS
+            # --------------------------------------------
+        
+            ax.set_title(
+                f"Daily Rainfall Category Comparison\n"
+                f"{YEAR_RANGE_TEXT}",
+                fontsize=16,
+                fontweight="bold"
+            )
+        
+            ax.set_xlabel(
+                "Rainfall Category",
+                fontsize=12
+            )
+        
+            ax.set_ylabel(
+                "Number of Days",
+                fontsize=12
+            )
+        
+            ax.set_xticks(x)
+        
+            ax.set_xticklabels(
+                category_labels
+            )
+        
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+        
+            ax.legend(
+                title="Station",
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left"
+            )
+        
+            plt.tight_layout()
+        
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+        
+            # --------------------------------------------
+            # DOWNLOAD
+            # --------------------------------------------
+        
+            img_buffer = io.BytesIO()
+        
+            fig.savefig(
+                img_buffer,
+                format="png",
+                dpi=300,
+                bbox_inches="tight"
+            )
+        
+            img_buffer.seek(0)
+        
+            st.download_button(
+                "📥 Download Rainfall Category Plot",
+                data=img_buffer.getvalue(),
+                file_name=(
+                    f"station_comparison_category_"
+                    f"{YEAR_RANGE_TEXT}.png"
+                ),
+                mime="image/png",
+                key="download_comparison_category_plot"
+            )
+        
+            plt.close(fig)
+        
+            # --------------------------------------------
+            # TABLE
+            # --------------------------------------------
+        
+            category_table = pd.DataFrame(
+                category_data,
+                index=category_labels
+            )
+        
+            category_table.index.name = (
+                "Rainfall Category"
+            )
+        
+            st.subheader(
+                "📋 Rainfall Category Comparison Table"
+            )
+        
+            st.dataframe(
+                category_table,
+                use_container_width=True
+            )
             # =================================================
             # TAB 4
             # RAINFALL CATEGORY - PIE
