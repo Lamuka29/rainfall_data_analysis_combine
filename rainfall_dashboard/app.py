@@ -2183,7 +2183,7 @@ with main_tabs[0]:
             
                     # Titik diletakkan di sebelah kanan box
                     x_points = np.random.normal(
-                        i + 0.18,
+                        i + 1.0,
                         0.025,
                         size=len(values)
                     )
@@ -2835,7 +2835,7 @@ with main_tabs[1]:
             
                     # Titik diletakkan di sebelah kanan box
                     x_points = np.random.normal(
-                        i + 0.18,
+                        i + 1.0,
                         0.025,
                         size=len(values)
                     )
