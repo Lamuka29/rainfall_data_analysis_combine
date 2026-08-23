@@ -776,7 +776,7 @@ for result in successful_results:
     # RAINFALL CATEGORY
     # ========================================================
     category_labels = [
-        "Light Rain (1.0–10.0 mm)",
+        "Slight Rain (1.0–10.0 mm)",
         "Moderate Rain (>10.0–30.0 mm)",
         "Heavy Rain (>30.0–60.0 mm)",
         "Very Heavy Rain (>60 mm)"
@@ -1970,66 +1970,208 @@ with main_tabs[0]:
         plt.close(fig)
     # ========================================================
     # TAB 8
-    # HISTOGRAM
+    # RAINFALL CATEGORY DISTRIBUTION
     # ========================================================
     with tabs[7]:
-
-        st.subheader(f"Distribution of Daily Rainfall - {target_year}")
-
-        if len(hist_values) > 0:
-            fig, ax = plt.subplots(figsize=(14, 8))
+    
+        st.subheader(
+            f"Daily Rainfall Category Distribution - {target_year}"
+        )
+    
+        # ----------------------------------------------------
+        # GET DAILY DATA INCLUDING 0.0 MM
+        # ----------------------------------------------------
+        category_data = (
+            target_data[months]
+            .stack()
+        )
+    
+        # Remove N.A. and keep valid rainfall >= 0
+        category_data = category_data[
+            category_data.notna()
+            &
+            (category_data >= 0)
+        ]
+    
+        if len(category_data) > 0:
+    
+            # ------------------------------------------------
+            # CATEGORY LABELS
+            # ------------------------------------------------
+            category_labels = [
+                "No Rain\n(0.0 mm)",
+                "Light Rain\n(1.0–10.0 mm)",
+                "Moderate Rain\n(>10.0–30.0 mm)",
+                "Heavy Rain\n(>30.0–60.0 mm)",
+                "Very Heavy Rain\n(>60 mm)"
+            ]
+    
+            # ------------------------------------------------
+            # CATEGORY VALUES
+            # ------------------------------------------------
+            category_values = [
+    
+                # NO RAIN
+                (
+                    category_data == 0
+                ).sum(),
+    
+                # LIGHT RAIN
+                (
+                    (category_data >= 1)
+                    &
+                    (category_data <= 10)
+                ).sum(),
+    
+                # MODERATE RAIN
+                (
+                    (category_data > 10)
+                    &
+                    (category_data <= 30)
+                ).sum(),
+    
+                # HEAVY RAIN
+                (
+                    (category_data > 30)
+                    &
+                    (category_data <= 60)
+                ).sum(),
+    
+                # VERY HEAVY RAIN
+                (
+                    category_data > 60
+                ).sum()
+            ]
+    
+            # ------------------------------------------------
+            # PLOT
+            # ------------------------------------------------
+            fig, ax = plt.subplots(
+                figsize=(14, 8)
+            )
+    
             bg_color = BG_COLOR
-
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-
-            ax.hist(
-                hist_values,
-                bins=15,
-                color="green",
+    
+            fig.patch.set_facecolor(
+                bg_color
+            )
+    
+            ax.set_facecolor(
+                bg_color
+            )
+    
+            x = np.arange(
+                len(category_labels)
+            )
+    
+            bars = ax.bar(
+                x,
+                category_values,
                 edgecolor="black",
                 linewidth=0.8
             )
-
+    
+            # ------------------------------------------------
+            # VALUE LABEL
+            # ------------------------------------------------
+            for bar, value in zip(
+                bars,
+                category_values
+            ):
+    
+                ax.annotate(
+                    f"{value}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 5),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                    fontweight="bold"
+                )
+    
+            # ------------------------------------------------
+            # TITLE
+            # ------------------------------------------------
             ax.set_title(
                 f"{file_name}\n"
-                f"Distribution of Daily Rainfall - "
+                f"Daily Rainfall Category Distribution - "
                 f"{target_year}",
                 fontsize=16,
                 fontweight="bold"
             )
-
-            ax.set_xlabel("Daily Rainfall (mm)",fontsize=12)
-            ax.set_ylabel("Number of Days",fontsize=12)
-            ax.grid(True,axis="y",linestyle="--",alpha=0.4)
-
+    
+            ax.set_xlabel(
+                "Rainfall Category",
+                fontsize=12
+            )
+    
+            ax.set_ylabel(
+                "Number of Days",
+                fontsize=12
+            )
+    
+            ax.set_xticks(
+                x
+            )
+    
+            ax.set_xticklabels(
+                category_labels
+            )
+    
+            ax.grid(
+                True,
+                axis="y",
+                linestyle="--",
+                alpha=0.4
+            )
+    
             plt.tight_layout()
-
-            st.pyplot(fig,use_container_width=True)
-
+    
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+    
+            # ------------------------------------------------
+            # DOWNLOAD PNG
+            # ------------------------------------------------
             img_buffer = io.BytesIO()
-            
+    
             fig.savefig(
                 img_buffer,
                 format="png",
                 dpi=300,
                 bbox_inches="tight"
             )
-            
+    
             img_buffer.seek(0)
-            
+    
             st.download_button(
                 "📥 Download Plot PNG",
                 data=img_buffer.getvalue(),
-                file_name=f"{selected_station}_target_year_{target_year}.png",
+                file_name=(
+                    f"{selected_station}_rainfall_category_"
+                    f"{target_year}.png"
+                ),
                 mime="image/png",
-                key=f"download_rainfall_distribution_{selected_station}_{target_year}"
+                key=(
+                    f"download_rainfall_category_"
+                    f"{selected_station}_{target_year}"
+                )
             )
-            
+    
             plt.close(fig)
-
+    
         else:
-            st.warning(f"Tiada data hujan ≥ 0.1 mm untuk histogram.")
+    
+            st.warning(
+                "Tiada data hujan sah untuk menghasilkan graf."
+            )
     # ========================================================
     # TAB 9
     # PIE CHART
@@ -2974,7 +3116,7 @@ with main_tabs[1]:
         # ----------------------------------------------------
     
         category_labels = [
-            "Light Rain (1.0–10.0 mm)",
+            "Slight Rain (1.0–10.0 mm)",
             "Moderate Rain (>10.0–30.0 mm)",
             "Heavy Rain (>30.0–60.0 mm)",
             "Very Heavy Rain (>60 mm)"
@@ -3644,7 +3786,7 @@ with main_tabs[2]:
             ]
 
             category_values = [
-                # LIGHT RAIN
+                # SLIGHT RAIN
                 (
                     (all_values >= 1)
                     &
@@ -3702,7 +3844,7 @@ with main_tabs[2]:
             # CATEGORY LABELS
             # =================================================
             category_labels = [
-                "Light Rain (1.0–10.0 mm)",
+                "Slight Rain (1.0–10.0 mm)",
                 "Moderate Rain (>10.0–30.0 mm)",
                 "Heavy Rain (>30.0–60.0 mm)",
                 "Very Heavy Rain (>60 mm)"
