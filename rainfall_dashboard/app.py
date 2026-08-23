@@ -1946,7 +1946,7 @@ with main_tabs[0]:
         
         max_daily_table = pd.DataFrame({
             "Month": months,
-            "Maximum Daily Rainfall (mm)": max_daily
+            "Maximum Daily Rainfall (mm)": list(max_daily)
         })
         
         max_daily_table = max_daily_table.round(2)
@@ -2057,7 +2057,7 @@ with main_tabs[0]:
         
         wet_days_table = pd.DataFrame({
             "Month": months,
-            "Number of Wet Days": wet_days.values
+            "Number of Wet Days": list(wet_days)
         })
         
         st.dataframe(
@@ -2163,7 +2163,7 @@ with main_tabs[0]:
         
         std_table = pd.DataFrame({
             "Month": months,
-            "Standard Deviation (mm)": std_daily.values
+            "Standard Deviation (mm)": list(std_daily)
         })
         
         std_table = std_table.round(2)
