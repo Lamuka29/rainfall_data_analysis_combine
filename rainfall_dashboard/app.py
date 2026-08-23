@@ -4662,7 +4662,6 @@ with main_tabs[2]:
                     mime="text/csv",
                     key="download_comparison_anomaly_table"
                 )
-            q
             # =================================================
             # TAB 3
             # RAINFALL CATEGORY - PIE
