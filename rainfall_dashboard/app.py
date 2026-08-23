@@ -2160,7 +2160,7 @@ with main_tabs[0]:
                 ),
                 mime="image/png",
                 key=(
-                    f"download_rainfall_category_"
+                    f"download_Histogram_"
                     f"{selected_station}_{target_year}"
                 )
             )
