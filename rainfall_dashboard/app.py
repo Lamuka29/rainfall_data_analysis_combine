@@ -4662,77 +4662,65 @@ with main_tabs[2]:
                     mime="text/csv",
                     key="download_comparison_anomaly_table"
                 )
+            q
             # =================================================
             # TAB 3
             # RAINFALL CATEGORY - PIE
             # =================================================
             with comparison_tabs[2]:
-            
+
                 st.subheader(
                     f"🥧 Rainfall Category Comparison "
                     f"{YEAR_RANGE_TEXT}"
                 )
-            
+
                 st.caption(
                     "Taburan kategori hujan berdasarkan "
                     "semua data harian dalam tempoh "
-                    f"{YEAR_RANGE_TEXT}. "
-                    "Kategori No Rain tidak dipaparkan dalam pie chart."
+                    f"{YEAR_RANGE_TEXT}."
                 )
-            
-                # --------------------------------------------
-                # PIE LABELS - WITHOUT NO RAIN
-                # --------------------------------------------
-                pie_labels = [
-                    "Light Rain\n(1.0–10.0 mm)",
-                    "Moderate Rain\n(>10–30 mm)",
-                    "Heavy Rain\n(>30–60 mm)",
-                    "Very Heavy Rain\n(>60 mm)"
-                ]
-            
+
                 # --------------------------------------------
                 # PIE CHART FOR EACH STATION
                 # --------------------------------------------
                 category_columns = st.columns(
                     len(comparison_data)
                 )
-            
+
                 for col, station in zip(
                     category_columns,
                     comparison_data
                 ):
-            
+
                     with col:
-            
+
                         st.markdown(
                             f"### 📍 {station}"
                         )
-            
-                        # Ambil 4 kategori sahaja
-                        # [1:] = buang No Rain
+
                         values = (
-                            comparison_data[station]["category"][1:]
+                            comparison_data[station]["category"]
                         )
-            
+
                         total_days = sum(values)
-            
+
                         if total_days > 0:
-            
+
                             fig, ax = plt.subplots(
                                 figsize=(7, 6)
                             )
-            
+
                             fig.patch.set_facecolor(
                                 BG_COLOR
                             )
-            
+
                             ax.set_facecolor(
                                 BG_COLOR
                             )
-            
+
                             wedges, texts, autotexts = ax.pie(
                                 values,
-                                labels=pie_labels,
+                                labels=category_labels,
                                 autopct="%1.1f%%",
                                 startangle=90,
                                 counterclock=False,
@@ -4741,58 +4729,53 @@ with main_tabs[2]:
                                     "linewidth": 0.8
                                 }
                             )
-            
+
                             for autotext in autotexts:
-            
+
                                 autotext.set_fontsize(9)
-            
+
                                 autotext.set_fontweight(
                                     "bold"
                                 )
-            
+
                             ax.set_title(
                                 station,
                                 fontsize=13,
                                 fontweight="bold"
                             )
-            
+
                             plt.tight_layout()
-            
+
                             st.pyplot(
                                 fig,
                                 use_container_width=True
                             )
-            
                             img_buffer = io.BytesIO()
-            
+                            
                             fig.savefig(
                                 img_buffer,
                                 format="png",
                                 dpi=300,
                                 bbox_inches="tight"
                             )
-            
+                            
                             img_buffer.seek(0)
-            
+                            
                             st.download_button(
                                 f"📥 Download {station} Pie Chart",
                                 data=img_buffer.getvalue(),
-                                file_name=(
-                                    f"{station}_rainfall_category_"
-                                    f"{YEAR_RANGE_TEXT}.png"
-                                ),
+                                file_name=f"{station}_rainfall_category_{YEAR_RANGE_TEXT}.png",
                                 mime="image/png",
                                 key=f"download_category_plot_{station}"
                             )
-            
                             plt.close(fig)
-            
+
                         else:
-            
+
                             st.warning(
-                                "Tiada data hujan ≥ 1.0 mm."
+                                "Tiada data hujan sah."
                             )
-            
+                            
                 # --------------------------------------------
                 # CATEGORY TABLE
                 # --------------------------------------------
@@ -4800,44 +4783,39 @@ with main_tabs[2]:
                     {
                         station:
                         comparison_data[station]["category"]
-            
+
                         for station
                         in comparison_data
                     },
                     index=category_labels
                 )
-            
+
                 category_comparison_table.index.name = (
                     "Rainfall Category"
                 )
-            
+
                 st.subheader(
                     "📋 Rainfall Category Comparison Table"
                 )
-            
+
                 st.dataframe(
                     category_comparison_table,
                     use_container_width=True
                 )
-            
                 csv = (
                     category_comparison_table
                     .to_csv()
                     .encode("utf-8")
                 )
-            
+                
                 st.download_button(
                     "📥 Download Category Comparison Table CSV",
                     data=csv,
-                    file_name=(
-                        f"station_comparison_category_"
-                        f"{YEAR_RANGE_TEXT}.csv"
-                    ),
+                    file_name=f"station_comparison_category_{YEAR_RANGE_TEXT}.csv",
                     mime="text/csv",
                     key="download_category_comparison_table"
                 )
-            
-                st.divider()
+                st.divider()            
 # ============================================================
 # FOOTER
 # ============================================================
