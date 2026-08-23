@@ -3034,198 +3034,271 @@ with main_tabs[1]:
                 "untuk menghasilkan boxplot."
             )
     # ========================================================
-    # TAB 4 - HISTOGRAM
+    # TAB 4 - HISTOGRAM BY RAINFALL CATEGORY
     # ========================================================
-
+    
     with all_year_tabs[3]:
-
+    
         st.subheader(
-            f"📊 Distribution of Annual Rainfall "
+            f"📊 Daily Rainfall Distribution "
             f"{YEAR_RANGE_TEXT}"
         )
-
+    
         st.caption(
-            "Taburan jumlah hujan tahunan berdasarkan "
-            f"semua tahun dalam {YEAR_RANGE_TEXT}."
+            "Taburan bilangan hari mengikut kategori "
+            f"hujan bagi semua tahun {YEAR_RANGE_TEXT}."
         )
-
+    
         # ----------------------------------------------------
-        # ANNUAL TOTAL RAINFALL
+        # GET ALL DAILY VALUES
         # ----------------------------------------------------
-
-        annual_hist_values = (
-            yearly_monthly_total
-            .sum(
-                axis=1,
-                skipna=True
-            )
-            .dropna()
+    
+        histogram_values = (
+            yearly_result["all_daily"]
+            [months]
+            .stack()
         )
-
+    
+        histogram_values = histogram_values[
+            histogram_values.notna()
+            &
+            (histogram_values >= VALID_MIN)
+        ]
+    
+        # ----------------------------------------------------
+        # CATEGORY LABELS
+        # ----------------------------------------------------
+    
+        category_labels = [
+            "No Rain (0.0 mm)",
+            "Light Rain (1.0–10.0 mm)",
+            "Moderate Rain (>10.0–30.0 mm)",
+            "Heavy Rain (>30.0–60.0 mm)",
+            "Very Heavy Rain (>60 mm)"
+        ]
+    
+        # ----------------------------------------------------
+        # CATEGORY VALUES
+        # ----------------------------------------------------
+    
+        category_values = [
+    
+            # NO RAIN
+            (
+                histogram_values == 0
+            ).sum(),
+    
+            # LIGHT RAIN
+            (
+                (histogram_values >= 1)
+                &
+                (histogram_values <= 10)
+            ).sum(),
+    
+            # MODERATE RAIN
+            (
+                (histogram_values > 10)
+                &
+                (histogram_values <= 30)
+            ).sum(),
+    
+            # HEAVY RAIN
+            (
+                (histogram_values > 30)
+                &
+                (histogram_values <= 60)
+            ).sum(),
+    
+            # VERY HEAVY RAIN
+            (
+                histogram_values > 60
+            ).sum()
+        ]
+    
         # ----------------------------------------------------
         # CHECK DATA
         # ----------------------------------------------------
-
-        if len(annual_hist_values) > 0:
-
+    
+        total_days = sum(category_values)
+    
+        if total_days > 0:
+    
             fig, ax = plt.subplots(
                 figsize=(14, 8)
             )
-
+    
             fig.patch.set_facecolor(
                 BG_COLOR
             )
-
+    
             ax.set_facecolor(
                 BG_COLOR
             )
-
+    
             # ------------------------------------------------
-            # HISTOGRAM
+            # BAR CHART
             # ------------------------------------------------
-
-            ax.hist(
-                annual_hist_values.values,
-                bins=10,
-                color="steelblue",
+    
+            x = np.arange(
+                len(category_labels)
+            )
+    
+            bars = ax.bar(
+                x,
+                category_values,
+                width=0.65,
+                color=[
+                    "lightgray",
+                    "skyblue",
+                    "gold",
+                    "orange",
+                    "red"
+                ],
                 edgecolor="black",
                 linewidth=0.8
             )
-
+    
             # ------------------------------------------------
-            # MEAN LINE
+            # VALUE LABEL
             # ------------------------------------------------
-
-            mean_annual_hist = (
-                annual_hist_values.mean()
-            )
-
-            ax.axvline(
-                mean_annual_hist,
-                color=LINE_COLOR,
-                linewidth=2.5,
-                linestyle="--",
-                label=(
-                    f"Mean Annual Rainfall "
-                    f"({mean_annual_hist:.1f} mm)"
+    
+            for bar, value in zip(
+                bars,
+                category_values
+            ):
+    
+                ax.annotate(
+                    f"{value:,}",
+                    (
+                        bar.get_x()
+                        + bar.get_width() / 2,
+                        value
+                    ),
+                    xytext=(0, 6),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=10,
+                    fontweight="bold"
                 )
-            )
-
+    
             # ------------------------------------------------
-            # TITLE
+            # GRAPH SETTINGS
             # ------------------------------------------------
-
+    
             ax.set_title(
                 f"{file_name}\n"
-                f"Distribution of Annual Rainfall "
+                f"Daily Rainfall Distribution "
                 f"{YEAR_RANGE_TEXT}",
                 fontsize=16,
                 fontweight="bold"
             )
-
-            # ------------------------------------------------
-            # AXIS LABEL
-            # ------------------------------------------------
-
+    
             ax.set_xlabel(
-                "Annual Total Rainfall (mm)",
+                "Rainfall Category",
                 fontsize=12
             )
-
+    
             ax.set_ylabel(
-                "Number of Years",
+                "Number of Days",
                 fontsize=12
             )
-
-            # ------------------------------------------------
-            # GRID
-            # ------------------------------------------------
-
+    
+            ax.set_xticks(x)
+    
+            ax.set_xticklabels(
+                category_labels,
+                rotation=15,
+                ha="right"
+            )
+    
             ax.grid(
                 True,
                 axis="y",
                 linestyle="--",
                 alpha=0.4
             )
-
-            ax.legend(
-                bbox_to_anchor=(1.02, 1),
-                loc="upper left"
-            )
-
+    
             plt.tight_layout()
-
+    
             st.pyplot(
                 fig,
                 use_container_width=True
             )
-
+    
             # ------------------------------------------------
             # DOWNLOAD PLOT
             # ------------------------------------------------
-
+    
             img_buffer = io.BytesIO()
-
+    
             fig.savefig(
                 img_buffer,
                 format="png",
                 dpi=300,
                 bbox_inches="tight"
             )
-
+    
             img_buffer.seek(0)
-
+    
             st.download_button(
-                "📥 Download Annual Histogram",
+                "📥 Download Histogram PNG",
                 data=img_buffer.getvalue(),
                 file_name=(
                     f"{file_name}_"
-                    f"annual_histogram_{YEAR_RANGE_TEXT}.png"
+                    f"rainfall_category_histogram_"
+                    f"{YEAR_RANGE_TEXT}.png"
                 ),
                 mime="image/png",
                 key=(
-                    f"download_annual_histogram_"
+                    f"download_yearly_histogram_"
                     f"{file_name}"
                 )
             )
-
+    
             plt.close(fig)
-
+    
             # ------------------------------------------------
-            # ANNUAL VALUES TABLE
+            # CATEGORY TABLE
             # ------------------------------------------------
-
+    
             st.subheader(
-                "📋 Annual Rainfall Values"
+                "📋 Rainfall Category Statistics"
             )
-
-            annual_hist_table = pd.DataFrame({
-                "Year":
-                    annual_hist_values.index,
-
-                "Annual Total Rainfall (mm)":
-                    annual_hist_values.values
+    
+            category_table = pd.DataFrame({
+    
+                "Rainfall Category":
+                    category_labels,
+    
+                "Number of Days":
+                    category_values,
+    
+                "Percentage (%)": [
+                    (
+                        value / total_days
+                    ) * 100
+                    for value in category_values
+                ]
             })
-
-            annual_hist_table[
-                "Annual Total Rainfall (mm)"
+    
+            category_table[
+                "Percentage (%)"
             ] = (
-                annual_hist_table[
-                    "Annual Total Rainfall (mm)"
+                category_table[
+                    "Percentage (%)"
                 ].round(2)
             )
-
+    
             st.dataframe(
-                annual_hist_table,
+                category_table,
                 use_container_width=True,
                 hide_index=True
             )
-
+    
         else:
-
+    
             st.warning(
-                "Tiada data jumlah hujan tahunan "
-                "untuk menghasilkan histogram."
+                "Tiada data hujan sah untuk menghasilkan histogram."
             )
     # ========================================================
     # TAB 5 - RAINFALL CATEGORY
