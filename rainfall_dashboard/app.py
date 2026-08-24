@@ -5543,4 +5543,4 @@ with main_tabs[2]:
 # ============================================================
 st.divider()
 
-st.caption("🌧️ Rainfall Data Analysis | Quality Control, Climatological Mean, Anomaly and Statistical Analysis| Iya iya ja kau ba" )
+st.caption("🌧️ Rainfall Data Analysis | Station Targeted Year Data Analysis, All Years Station Data Analysis and Stations Rainfall Data Comparison Quality Control |\n")
