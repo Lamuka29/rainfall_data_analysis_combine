@@ -4506,18 +4506,8 @@ with main_tabs[1]:
 # STATION COMPARISON
 # ============================================================
 with main_tabs[2]:
-
-    st.header(
-        f"🔄 Station Comparison {YEAR_RANGE_TEXT}"
-    )
-
-    st.markdown(
-        f"""
-        Perbandingan jumlah, purata, anomaly dan kategori
-        hujan bagi **2 atau lebih stesen** untuk tempoh
-        **{YEAR_RANGE_TEXT}**.
-        """
-    )
+    st.header(f"🔄 Station Comparison {YEAR_RANGE_TEXT}")
+    st.markdown(f"Perbandingan jumlah, purata, anomaly dan kategori hujan bagi **2 atau lebih stesen** untuk tempoh **{YEAR_RANGE_TEXT}**.")
 
     # ========================================================
     # SELECT STATIONS
@@ -4534,21 +4524,15 @@ with main_tabs[2]:
     )
 
     if len(comparison_stations) < 2:
-
-        st.warning(
-            "⚠️ Sila pilih sekurang-kurangnya 2 stesen "
-            "untuk membuat perbandingan."
-        )
+        st.warning("⚠️ Sila pilih sekurang-kurangnya 2 stesen untuk membuat perbandingan.")
 
     else:
-
         # ====================================================
         # PREPARE COMPARISON DATA
         # ====================================================
         comparison_data = {}
 
         for station in comparison_stations:
-
             station_result = next(
                 (
                     result
@@ -4561,141 +4545,59 @@ with main_tabs[2]:
             if station_result is None:
                 continue
 
-            yearly_data = (
-                station_result["yearly_monthly_total"]
-                .reindex(columns=months)
-            )
-
+            yearly_data = (station_result["yearly_monthly_total"].reindex(columns=months))
             # ------------------------------------------------
-            # TOTAL RAINFALL BY MONTH
+            # TOTAL AND MEAN RAINFALL BY MONTH
             # ALL YEARS IN FILE
             # ------------------------------------------------
-            monthly_total = (
-                yearly_data
-                .sum(
-                    axis=0,
-                    skipna=True
-                )
-                .reindex(months)
-            )
-
-            # ------------------------------------------------
-            # MEAN RAINFALL BY MONTH
-            # ALL YEARS IN FILE
-            # ------------------------------------------------
-            monthly_mean = (
-                yearly_data
-                .mean(
-                    axis=0,
-                    skipna=True
-                )
-                .reindex(months)
-            )
+            monthly_total = (yearly_data.sum(axis=0,skipna=True).reindex(months))
+            monthly_mean = (yearly_data.mean(axis=0,skipna=True).reindex(months))
 
             # ------------------------------------------------
             # ANOMALY
             # BASED ON MONTHLY MEAN VS
             # OVERALL 12-MONTH MEAN
             # ------------------------------------------------
-            overall_mean = (
-                monthly_mean
-                .mean(skipna=True)
-            )
+            overall_mean = (monthly_mean.mean(skipna=True))
 
-            if (
-                pd.notna(overall_mean)
-                and overall_mean != 0
-            ):
-
-                anomaly = (
-                    (
-                        monthly_mean
-                        - overall_mean
-                    )
-                    / overall_mean
-                ) * 100
+            if (pd.notna(overall_mean)and overall_mean != 0):
+                anomaly = ((monthly_mean - overall_mean) / overall_mean) * 100
 
             else:
-
-                anomaly = pd.Series(
-                    np.nan,
-                    index=months
-                )
-
+                anomaly = pd.Series(np.nan,index=months)
             # ------------------------------------------------
             # RAINFALL CATEGORY
             # ALL DAILY DATA
             # ------------------------------------------------
-            all_daily = (
-                station_result["all_daily"]
-            )
-
-            all_values = (
-                all_daily[months]
-                .stack()
-            )
-
-            all_values = all_values[
-                all_values.notna()
-                &
-                (all_values >= VALID_MIN)
-            ]
+            all_daily = (station_result["all_daily"])
+            
+            all_values = (all_daily[months].stack())
+            all_values = all_values[all_values.notna() & (all_values >= VALID_MIN)]
 
             category_values = [
                 # SLIGHT RAIN
-                (
-                    (all_values >= 1)
-                    &
-                    (all_values <= 10)
-                ).sum(),
-
+                ((all_values >= 1)&(all_values <= 10)).sum(),
                 # MODERATE RAIN
-                (
-                    (all_values > 10)
-                    &
-                    (all_values <= 30)
-                ).sum(),
-
+                ((all_values > 10)&(all_values <= 30)).sum(),
                 # HEAVY RAIN
-                (
-                    (all_values > 30)
-                    &
-                    (all_values <= 60)
-                ).sum(),
-
+                ((all_values > 30)&(all_values <= 60)).sum(),
                 # Very Heavy RAIN
-                (
-                    all_values > 60
-                ).sum()
+                (all_values > 60).sum()
             ]
 
             comparison_data[station] = {
-
-                "total":
-                    monthly_total,
-
-                "mean":
-                    monthly_mean,
-
-                "anomaly":
-                    anomaly,
-
-                "category":
-                    category_values
+                "total":monthly_total,
+                "mean":monthly_mean,
+                "anomaly":anomaly,
+                "category":category_values
             }
-
         # ====================================================
         # CHECK DATA
         # ====================================================
         if len(comparison_data) < 2:
-
-            st.warning(
-                "⚠️ Data tidak mencukupi untuk "
-                "membandingkan sekurang-kurangnya 2 stesen."
-            )
+            st.warning("⚠️ Data tidak mencukupi untuk membandingkan sekurang-kurangnya 2 stesen.")
 
         else:
-
             # =================================================
             # CATEGORY LABELS
             # =================================================
@@ -4705,7 +4607,6 @@ with main_tabs[2]:
                 "Heavy Rain (>30.0–60.0 mm)",
                 "Very Heavy Rain (>60 mm)"
             ]
-
             # =================================================
             # COMPARISON TABS
             # =================================================
@@ -4714,7 +4615,6 @@ with main_tabs[2]:
                 "📉 Anomaly",
                 "🥧 Rainfall Category"
             ])
-
             # =================================================
             # TAB 1
             # TOTAL + MEAN RAINFALL
@@ -4722,14 +4622,8 @@ with main_tabs[2]:
             # =================================================
             with comparison_tabs[0]:
             
-                st.subheader(
-                    f"📊 Monthly Total & Mean Rainfall Comparison "
-                    f"{YEAR_RANGE_TEXT}"
-                )
-            
-                st.caption(
-                    "Bar menunjukkan jumlah hujan bulanan, manakala "
-                    "garisan menunjukkan purata hujan bulanan bagi "
+                st.subheader(f"📊 Monthly Total & Mean Rainfall Comparison {YEAR_RANGE_TEXT}")
+                st.caption("Bar menunjukkan jumlah hujan bulanan, manakala garisan menunjukkan purata hujan bulanan bagi "
                     f"setiap stesen berdasarkan {YEAR_RANGE_TEXT}."
                 )
             
@@ -4739,41 +4633,20 @@ with main_tabs[2]:
             
                 fig.patch.set_facecolor(BG_COLOR)
                 ax.set_facecolor(BG_COLOR)
-            
                 # --------------------------------------------
                 # X POSITION
                 # --------------------------------------------
-            
-                x = np.arange(
-                    len(months)
-                )
-            
-                n_stations = len(
-                    comparison_data
-                )
-            
-                bar_width = (
-                    0.8 / n_stations
-                )
-            
+                x = np.arange(len(months))
+                n_stations = len(comparison_data)
+                bar_width = (0.8 / n_stations)
                 # --------------------------------------------
                 # COLOUR
                 # --------------------------------------------
-            
-                station_colors = plt.cm.tab10(
-                    np.linspace(
-                        0,
-                        1,
-                        n_stations
-                    )
-                )
-            
+                station_colors = plt.cm.tab10(np.linspace(0,1,n_stations))
                 legend_handles = []
-            
                 # --------------------------------------------
                 # EACH STATION
                 # --------------------------------------------
-            
                 for i, (station, color) in enumerate(
                     zip(
                         comparison_data,
@@ -4785,25 +4658,17 @@ with main_tabs[2]:
                         comparison_data[station]["total"]
                         .reindex(months)
                     )
-            
                     mean_values = (
                         comparison_data[station]["mean"]
                         .reindex(months)
                     )
-            
                     # ----------------------------------------
                     # BAR POSITION
                     # ----------------------------------------
-            
-                    offset = (
-                        i
-                        - (n_stations - 1) / 2
-                    ) * bar_width
-            
+                    offset = (i - (n_stations - 1) / 2) * bar_width
                     # ----------------------------------------
                     # TOTAL RAINFALL - BAR
                     # ----------------------------------------
-            
                     bars = ax.bar(
                         x + offset,
                         total_values.values,
@@ -4813,11 +4678,9 @@ with main_tabs[2]:
                         edgecolor="black",
                         linewidth=0.8
                     )
-            
                     # ----------------------------------------
                     # MEAN RAINFALL - LINE
                     # ----------------------------------------
-            
                     line, = ax.plot(
                         x,
                         mean_values.values,
@@ -4827,18 +4690,12 @@ with main_tabs[2]:
                         linewidth=2.5,
                         linestyle="-"
                     )
-            
                     # ----------------------------------------
                     # VALUE LABEL - TOTAL
                     # ----------------------------------------
-            
-                    for bar, value in zip(
-                        bars,
-                        total_values.values
-                    ):
+                    for bar, value in zip(bars,total_values.values):
             
                         if pd.notna(value):
-            
                             ax.annotate(
                                 f"{value:.0f}",
                                 (
@@ -4852,18 +4709,12 @@ with main_tabs[2]:
                                 va="bottom",
                                 fontsize=7
                             )
-            
                     # ----------------------------------------
                     # VALUE LABEL - MEAN
                     # ----------------------------------------
-            
-                    for xi, value in zip(
-                        x,
-                        mean_values.values
-                    ):
+                    for xi, value in zip(x,mean_values.values):
             
                         if pd.notna(value):
-            
                             ax.annotate(
                                 f"{value:.1f}",
                                 (
@@ -4877,11 +4728,9 @@ with main_tabs[2]:
                                 fontsize=7,
                                 fontweight="bold"
                             )
-            
                     # ----------------------------------------
                     # LEGEND
                     # ----------------------------------------
-            
                     legend_handles.append(
                         Patch(
                             facecolor=color,
@@ -4901,47 +4750,30 @@ with main_tabs[2]:
                             label=f"{station} - Mean"
                         )
                     )
-            
                 # --------------------------------------------
                 # GRAPH SETTINGS
                 # --------------------------------------------
-            
                 ax.set_title(
                     f"Monthly Total & Mean Rainfall Comparison\n"
                     f"{YEAR_RANGE_TEXT}",
                     fontsize=16,
                     fontweight="bold"
                 )
-            
-                ax.set_xlabel(
-                    "Month",
-                    fontsize=12
-                )
-            
-                ax.set_ylabel(
-                    "Rainfall (mm)",
-                    fontsize=12
-                )
-            
-                ax.set_xticks(
-                    x
-                )
-            
-                ax.set_xticklabels(
-                    months
-                )
-            
+
+                ax.set_xlabel("Month",fontsize=12)
+                ax.set_ylabel("Rainfall (mm)",fontsize=12)
+                ax.set_xticks(x)
+                ax.set_xticklabels(months)
+                
                 ax.grid(
                     True,
                     axis="y",
                     linestyle="--",
                     alpha=0.4
                 )
-            
                 # --------------------------------------------
                 # LEGEND
                 # --------------------------------------------
-            
                 ax.legend(
                     handles=legend_handles,
                     title="Station",
@@ -4952,20 +4784,13 @@ with main_tabs[2]:
                 )
             
                 plt.tight_layout()
-            
-                st.pyplot(
-                    fig,
-                    use_container_width=True
-                )
-            
+                st.pyplot(fig,use_container_width=True)
                 # --------------------------------------------
                 # DOWNLOAD PLOT
                 # --------------------------------------------
-            
                 img_buffer = io.BytesIO()
             
-                fig.savefig(
-                    img_buffer,
+                fig.savefig(img_buffer,
                     format="png",
                     dpi=300,
                     bbox_inches="tight"
@@ -4985,14 +4810,10 @@ with main_tabs[2]:
                 )
             
                 plt.close(fig)
-            
                 # --------------------------------------------
                 # TOTAL TABLE
                 # --------------------------------------------
-            
-                st.subheader(
-                    "📋 Monthly Total Rainfall"
-                )
+                st.subheader("📋 Monthly Total Rainfall")
             
                 total_table = pd.DataFrame(
                     {
@@ -5029,14 +4850,10 @@ with main_tabs[2]:
                     mime="text/csv",
                     key="download_comparison_total_table"
                 )
-            
                 # --------------------------------------------
                 # MEAN TABLE
                 # --------------------------------------------
-            
-                st.subheader(
-                    "📋 Mean Monthly Rainfall"
-                )
+                st.subheader("📋 Mean Monthly Rainfall")
             
                 mean_table = pd.DataFrame(
                     {
@@ -5078,17 +4895,12 @@ with main_tabs[2]:
             # ANOMALY - BAR
             # =================================================
             with comparison_tabs[1]:
-
                 st.subheader(
                     f"📉 Monthly Rainfall Anomaly "
                     f"{YEAR_RANGE_TEXT}"
                 )
 
-                st.caption(
-                    "Anomaly dikira berdasarkan perbezaan "
-                    "purata hujan bulanan daripada purata "
-                    "keseluruhan 12 bulan bagi setiap stesen."
-                )
+                st.caption("Anomaly dikira berdasarkan perbezaan purata hujan bulanan daripada purata keseluruhan 12 bulan bagi setiap stesen.")
 
                 fig, ax = plt.subplots(
                     figsize=(14, 8)
@@ -5096,22 +4908,18 @@ with main_tabs[2]:
 
                 fig.patch.set_facecolor(BG_COLOR)
                 ax.set_facecolor(BG_COLOR)
-
                 # --------------------------------------------
                 # BAR POSITION
                 # --------------------------------------------
                 x_anomaly = np.arange(
                     len(months)
                 )
-
                 n_stations = len(
                     comparison_data
                 )
-
                 bar_width = (
                     0.8 / n_stations
                 )
-
                 # --------------------------------------------
                 # BARS
                 # --------------------------------------------
@@ -5160,14 +4968,11 @@ with main_tabs[2]:
                     ):
 
                         if pd.notna(value):
-
                             if value >= 0:
-
                                 offset_text = 5
                                 vertical = "bottom"
 
                             else:
-
                                 offset_text = -12
                                 vertical = "top"
 
@@ -5302,18 +5107,14 @@ with main_tabs[2]:
             # RAINFALL CATEGORY - PIE
             # =================================================
             with comparison_tabs[2]:
-            
                 st.subheader(
                     f"🥧 Rainfall Category Comparison "
                     f"{YEAR_RANGE_TEXT}"
                 )
             
-                st.caption(
-                    "Taburan kategori hujan berdasarkan "
-                    "semua data harian dalam tempoh "
+                st.caption("Taburan kategori hujan berdasarkan semua data harian dalam tempoh "
                     f"{YEAR_RANGE_TEXT}."
                 )
-            
                 # --------------------------------------------
                 # PIE COLOURS
                 # --------------------------------------------
@@ -5323,7 +5124,6 @@ with main_tabs[2]:
                     "orange",     # Heavy Rain
                     "red"         # Very Heavy Rain
                 ]
-            
                 # --------------------------------------------
                 # PIE CHART FOR EACH STATION
                 # --------------------------------------------
@@ -5337,35 +5137,27 @@ with main_tabs[2]:
                 ):
             
                     with col:
-            
                         st.markdown(
                             f"### 📍 {station}"
                         )
             
-                        values = (
-                            comparison_data[station]["category"]
-                        )
+                        values = (comparison_data[station]["category"])
             
                         total_days = sum(values)
             
                         if total_days > 0:
-            
                             fig, ax = plt.subplots(
                                 figsize=(7, 6)
                             )
-            
                             fig.patch.set_facecolor(
                                 BG_COLOR
                             )
-            
                             ax.set_facecolor(
                                 BG_COLOR
                             )
-            
                             # ----------------------------------------
                             # PIE CHART
                             # ----------------------------------------
-            
                             wedges, texts, autotexts = ax.pie(
                                 values,
                                 labels=category_labels,
@@ -5382,21 +5174,17 @@ with main_tabs[2]:
                             # ----------------------------------------
                             # PERCENTAGE LABEL
                             # ----------------------------------------
-            
                             for autotext in autotexts:
             
                                 autotext.set_fontsize(
                                     9
                                 )
-            
                                 autotext.set_fontweight(
                                     "bold"
                                 )
-            
                             # ----------------------------------------
                             # TITLE
                             # ----------------------------------------
-            
                             ax.set_title(
                                 station,
                                 fontsize=13,
@@ -5404,20 +5192,16 @@ with main_tabs[2]:
                             )
             
                             plt.tight_layout()
-            
                             # ----------------------------------------
                             # DISPLAY
                             # ----------------------------------------
-            
                             st.pyplot(
                                 fig,
                                 use_container_width=True
                             )
-            
                             # ----------------------------------------
                             # DOWNLOAD PNG
                             # ----------------------------------------
-            
                             img_buffer = io.BytesIO()
             
                             fig.savefig(
@@ -5446,31 +5230,24 @@ with main_tabs[2]:
                             plt.close(fig)
             
                         else:
-            
-                            st.warning(
-                                "Tiada data hujan sah."
-                            )
+                            st.warning("Tiada data hujan sah.")
                 # --------------------------------------------
                 # CATEGORY TABLE WITH PERCENTAGE
                 # --------------------------------------------
-                
                 category_table_data = {}
                 
                 for station in comparison_data:
-                
                     values = comparison_data[station]["category"]
                 
                     total_days = sum(values)
                 
                     if total_days > 0:
-                
                         percentages = [
                             (value / total_days) * 100
                             for value in values
                         ]
                 
                     else:
-                
                         percentages = [
                             0
                             for value in values
@@ -5483,7 +5260,6 @@ with main_tabs[2]:
                     category_table_data[
                         f"{station} - Percentage (%)"
                     ] = percentages
-                
                 
                 category_comparison_table = pd.DataFrame(
                     category_table_data,
@@ -5498,29 +5274,22 @@ with main_tabs[2]:
                 for column in category_comparison_table.columns:
                 
                     if "Percentage" in column:
-                
                         category_comparison_table[column] = (
                             category_comparison_table[column]
                             .round(2)
                         )
-                
                 # --------------------------------------------
                 # DISPLAY TABLE
                 # --------------------------------------------
-                
-                st.subheader(
-                    "📋 Rainfall Category Comparison Table"
-                )
+                st.subheader("📋 Rainfall Category Comparison Table")
                 
                 st.dataframe(
                     category_comparison_table,
                     use_container_width=True
                 )
-                
                 # --------------------------------------------
                 # DOWNLOAD TABLE
                 # --------------------------------------------
-                
                 csv = (
                     category_comparison_table
                     .to_csv()
