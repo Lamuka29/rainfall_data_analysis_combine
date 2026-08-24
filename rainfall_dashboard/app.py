@@ -3213,7 +3213,51 @@ with main_tabs[1]:
         )
 
         plt.close(fig)
+        # ------------------------------------------------
+        # YEARLY RAINFALL TABLE
+        # ------------------------------------------------
 
+        yearly_table = pd.DataFrame({
+            "Year": yearly_total.index,
+            "Annual Total Rainfall (mm)": yearly_total.values
+        })
+
+        yearly_table[
+            "Annual Total Rainfall (mm)"
+        ] = yearly_table[
+            "Annual Total Rainfall (mm)"
+        ].round(2)
+
+        st.subheader(
+            "📋 Annual Rainfall Data"
+        )
+
+        st.dataframe(
+            yearly_table,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        csv = (
+            yearly_table
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
+
+        st.download_button(
+            "📥 Download Yearly Rainfall Table CSV",
+            data=csv,
+            file_name=(
+                f"{file_name}_"
+                f"yearly_rainfall_"
+                f"{YEAR_RANGE_TEXT}.csv"
+            ),
+            mime="text/csv",
+            key=(
+                f"download_yearly_rainfall_table_"
+                f"{file_name}"
+            )
+        )
     # ========================================================
     # TAB 2 - HEATMAP
     # ========================================================
@@ -3533,7 +3577,58 @@ with main_tabs[1]:
             )
             
             plt.close(fig)
+            # ------------------------------------------------
+            # BOXPLOT TABLE
+            # ------------------------------------------------
     
+            boxplot_table = pd.DataFrame()
+    
+            for month, values in zip(
+                boxplot_labels,
+                boxplot_data
+            ):
+    
+                temp = pd.DataFrame({
+                    "Month": month,
+                    "Monthly Total Rainfall (mm)": values
+                })
+    
+                boxplot_table = pd.concat(
+                    [boxplot_table, temp],
+                    ignore_index=True
+                )
+    
+            st.subheader(
+                "📋 Monthly Rainfall Distribution Data"
+            )
+    
+            st.dataframe(
+                boxplot_table.round(2),
+                use_container_width=True,
+                hide_index=True
+            )
+    
+            csv = (
+                boxplot_table
+                .round(2)
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+    
+            st.download_button(
+                "📥 Download Boxplot Table CSV",
+                data=csv,
+                file_name=(
+                    f"{file_name}_"
+                    f"boxplot_data_"
+                    f"{YEAR_RANGE_TEXT}.csv"
+                ),
+                mime="text/csv",
+                key=(
+                    f"download_yearly_boxplot_table_"
+                    f"{file_name}"
+                )
+            )
         else:
     
             st.warning(
@@ -3547,20 +3642,21 @@ with main_tabs[1]:
     with all_year_tabs[3]:
     
         st.subheader(
-            f"📊 Daily Data Distribution "
+            f"📊 Daily Rainfall Distribution "
             f"{YEAR_RANGE_TEXT}"
         )
     
         st.caption(
-            "Taburan bilangan hari mengikut kategori hujan bagi semua tahun {YEAR_RANGE_TEXT}.")
+            f"Taburan bilangan hari mengikut kategori hujan bagi "
+            f"semua tahun {YEAR_RANGE_TEXT}."
+        )
     
         # ----------------------------------------------------
         # GET ALL DAILY VALUES
         # ----------------------------------------------------
     
         histogram_values = (
-            yearly_result["all_daily"]
-            [months]
+            yearly_result["all_daily"][months]
             .stack()
         )
     
@@ -3571,7 +3667,7 @@ with main_tabs[1]:
         ]
     
         # ----------------------------------------------------
-        # CATEGORY LABELS
+        # CATEGORY
         # ----------------------------------------------------
     
         category_labels = [
@@ -3582,67 +3678,57 @@ with main_tabs[1]:
             "Very Heavy Rain (>60 mm)"
         ]
     
-        # ----------------------------------------------------
-        # CATEGORY VALUES
-        # ----------------------------------------------------
-    
         category_values = [
     
-            # NO RAIN
-            (
-                histogram_values == 0
-            ).sum(),
+            (histogram_values == 0).sum(),
     
-            # SLIGHT RAIN
             (
                 (histogram_values >= 1)
                 &
                 (histogram_values <= 10)
             ).sum(),
     
-            # MODERATE RAIN
             (
                 (histogram_values > 10)
                 &
                 (histogram_values <= 30)
             ).sum(),
     
-            # HEAVY RAIN
             (
                 (histogram_values > 30)
                 &
                 (histogram_values <= 60)
             ).sum(),
     
-            # VERY HEAVY RAIN
-            (
-                histogram_values > 60
-            ).sum()
+            (histogram_values > 60).sum()
         ]
-    
-        # ----------------------------------------------------
-        # CHECK DATA
-        # ----------------------------------------------------
     
         total_days = sum(category_values)
     
         if total_days > 0:
     
+            # ------------------------------------------------
+            # COLOUR
+            # ------------------------------------------------
+    
+            category_colors = [
+                "lightgray",
+                "green",
+                "yellow",
+                "orange",
+                "red"
+            ]
+    
+            # ------------------------------------------------
+            # PLOT
+            # ------------------------------------------------
+    
             fig, ax = plt.subplots(
                 figsize=(14, 8)
             )
     
-            fig.patch.set_facecolor(
-                BG_COLOR
-            )
-    
-            ax.set_facecolor(
-                BG_COLOR
-            )
-    
-            # ------------------------------------------------
-            # BAR CHART
-            # ------------------------------------------------
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
     
             x = np.arange(
                 len(category_labels)
@@ -3652,13 +3738,7 @@ with main_tabs[1]:
                 x,
                 category_values,
                 width=0.65,
-                color=[
-                    "lightgray",
-                    "skyblue",
-                    "gold",
-                    "orange",
-                    "red"
-                ],
+                color=category_colors,
                 edgecolor="black",
                 linewidth=0.8
             )
@@ -3686,20 +3766,16 @@ with main_tabs[1]:
                     fontweight="bold"
                 )
     
-            # ------------------------------------------------
-            # GRAPH SETTINGS
-            # ------------------------------------------------
-    
             ax.set_title(
                 f"{file_name}\n"
-                f"Daily Data Distribution "
+                f"Daily Rainfall Distribution "
                 f"{YEAR_RANGE_TEXT}",
                 fontsize=16,
                 fontweight="bold"
             )
     
             ax.set_xlabel(
-                "Daily Data Category",
+                "Daily Rainfall Category",
                 fontsize=12
             )
     
@@ -3763,35 +3839,31 @@ with main_tabs[1]:
             plt.close(fig)
     
             # ------------------------------------------------
-            # CATEGORY TABLE
+            # TABLE
             # ------------------------------------------------
-    
-            st.subheader(
-                "📋 Daily Data Category Statistics"
-            )
     
             category_table = pd.DataFrame({
     
-                "Data Category":
+                "Rainfall Category":
                     category_labels,
     
                 "Number of Days":
                     category_values,
     
                 "Percentage (%)": [
-                    (
-                        value / total_days
-                    ) * 100
+                    (value / total_days) * 100
                     for value in category_values
                 ]
             })
     
             category_table[
                 "Percentage (%)"
-            ] = (
-                category_table[
-                    "Percentage (%)"
-                ].round(2)
+            ] = category_table[
+                "Percentage (%)"
+            ].round(2)
+    
+            st.subheader(
+                "📋 Daily Rainfall Category Statistics"
             )
     
             st.dataframe(
@@ -3800,13 +3872,38 @@ with main_tabs[1]:
                 hide_index=True
             )
     
+            # ------------------------------------------------
+            # DOWNLOAD TABLE
+            # ------------------------------------------------
+    
+            csv = (
+                category_table
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+    
+            st.download_button(
+                "📥 Download Histogram Table CSV",
+                data=csv,
+                file_name=(
+                    f"{file_name}_"
+                    f"rainfall_category_histogram_"
+                    f"{YEAR_RANGE_TEXT}.csv"
+                ),
+                mime="text/csv",
+                key=(
+                    f"download_yearly_histogram_table_"
+                    f"{file_name}"
+                )
+            )
+    
         else:
     
             st.warning(
                 "Tiada data hujan sah untuk menghasilkan histogram."
             )
     # ========================================================
-    # TAB 5 - RAINFALL CATEGORY
+    # TAB 5 - RAINFALL CATEGORY PIE
     # ========================================================
     
     with all_year_tabs[4]:
@@ -3817,43 +3914,39 @@ with main_tabs[1]:
         )
     
         st.caption(
-            "Taburan kategori hujan berdasarkan semua "
-            f"data harian dalam {file_name} "
-            f"bagi tempoh {YEAR_RANGE_TEXT}."
+            "Peratusan hari hujan mengikut kategori bagi semua "
+            f"tahun {YEAR_RANGE_TEXT}."
         )
     
         # ----------------------------------------------------
-        # GET ALL DAILY VALUES
+        # GET DAILY VALUES
         # ----------------------------------------------------
     
         all_daily_values = (
-            yearly_result["all_daily"]
-            [months]
+            yearly_result["all_daily"][months]
             .stack()
         )
     
+        # Buang N.A. dan 0.0 mm
         all_daily_values = all_daily_values[
             all_daily_values.notna()
             &
-            (all_daily_values >= VALID_MIN)
+            (all_daily_values >= 1.0)
         ]
     
         # ----------------------------------------------------
-        # CATEGORY LABELS
+        # CATEGORY
         # ----------------------------------------------------
     
-        category_labels = [
-            "Slight Rain (1.0–10.0 mm)",
-            "Moderate Rain (>10.0–30.0 mm)",
-            "Heavy Rain (>30.0–60.0 mm)",
-            "Very Heavy Rain (>60 mm)"
+        pie_labels = [
+            "Slight Rain\n(1.0–10.0 mm)",
+            "Moderate Rain\n(>10.0–30.0 mm)",
+            "Heavy Rain\n(>30.0–60.0 mm)",
+            "Very Heavy Rain\n(>60 mm)"
         ]
     
-        # ----------------------------------------------------
-        # CATEGORY VALUES
-        # ----------------------------------------------------
+        pie_values = [
     
-        category_values = [    
             (
                 (all_daily_values >= 1)
                 &
@@ -3877,31 +3970,36 @@ with main_tabs[1]:
             ).sum()
         ]
     
-        total_days = sum(
-            category_values
-        )
+        total_wet_days = sum(pie_values)
     
-        # ----------------------------------------------------
-        # PIE CHART
-        # ----------------------------------------------------
+        if total_wet_days > 0:
     
-        if total_days > 0:
+            # ------------------------------------------------
+            # PIE COLOUR
+            # ------------------------------------------------
+    
+            pie_colors = [
+                "green",
+                "yellow",
+                "orange",
+                "red"
+            ]
+    
+            # ------------------------------------------------
+            # PLOT
+            # ------------------------------------------------
     
             fig, ax = plt.subplots(
-                figsize=(9, 7)
+                figsize=(10, 8)
             )
     
-            fig.patch.set_facecolor(
-                BG_COLOR
-            )
-    
-            ax.set_facecolor(
-                BG_COLOR
-            )
+            fig.patch.set_facecolor(BG_COLOR)
+            ax.set_facecolor(BG_COLOR)
     
             wedges, texts, autotexts = ax.pie(
-                category_values,
-                labels=category_labels,
+                pie_values,
+                labels=pie_labels,
+                colors=pie_colors,
                 autopct="%1.1f%%",
                 startangle=90,
                 counterclock=False,
@@ -3913,13 +4011,8 @@ with main_tabs[1]:
     
             for autotext in autotexts:
     
-                autotext.set_fontsize(
-                    9
-                )
-    
-                autotext.set_fontweight(
-                    "bold"
-                )
+                autotext.set_fontsize(10)
+                autotext.set_fontweight("bold")
     
             ax.set_title(
                 f"{file_name}\n"
@@ -3935,51 +4028,57 @@ with main_tabs[1]:
                 fig,
                 use_container_width=True
             )
+    
+            # ------------------------------------------------
+            # DOWNLOAD PIE
+            # ------------------------------------------------
+    
             img_buffer = io.BytesIO()
-            
+    
             fig.savefig(
                 img_buffer,
                 format="png",
                 dpi=300,
                 bbox_inches="tight"
             )
-            
+    
             img_buffer.seek(0)
-            
+    
             st.download_button(
-                "📥 Download Heatmap PNG",
+                "📥 Download Pie Chart PNG",
                 data=img_buffer.getvalue(),
-                file_name=f"{file_name}_heatmap_{YEAR_RANGE_TEXT}.png",
+                file_name=(
+                    f"{file_name}_"
+                    f"rainfall_category_pie_"
+                    f"{YEAR_RANGE_TEXT}.png"
+                ),
                 mime="image/png",
-                key=f"download_yearly_rainfall_category_{file_name}"
+                key=(
+                    f"download_yearly_pie_"
+                    f"{file_name}"
+                )
             )
-
+    
             plt.close(fig)
     
             # ------------------------------------------------
-            # CATEGORY TABLE
+            # TABLE
             # ------------------------------------------------
-    
-            st.subheader(
-                "📋 Rainfall Category Statistics"
-            )
     
             category_table = pd.DataFrame({
     
-                "Rainfall Category":
-                    category_labels,
+                "Rainfall Category": [
+                    label.replace("\n", " ")
+                    for label in pie_labels
+                ],
     
-                "Number of Days":
-                    category_values,
+                "Number of Wet Days":
+                    pie_values,
     
-                "Percentage (%)":
-                    [
-                        (
-                            value
-                            / total_days
-                        ) * 100
-                        for value in category_values
-                    ]
+                "Percentage (%)": [
+                    (value / total_wet_days) * 100
+                    for value in pie_values
+                ]
             })
     
             category_table[
@@ -3988,16 +4087,46 @@ with main_tabs[1]:
                 "Percentage (%)"
             ].round(2)
     
+            st.subheader(
+                "📋 Rainfall Category Statistics"
+            )
+    
             st.dataframe(
                 category_table,
                 use_container_width=True,
                 hide_index=True
             )
     
+            # ------------------------------------------------
+            # DOWNLOAD TABLE
+            # ------------------------------------------------
+    
+            csv = (
+                category_table
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+    
+            st.download_button(
+                "📥 Download Pie Chart Table CSV",
+                data=csv,
+                file_name=(
+                    f"{file_name}_"
+                    f"rainfall_category_pie_"
+                    f"{YEAR_RANGE_TEXT}.csv"
+                ),
+                mime="text/csv",
+                key=(
+                    f"download_yearly_pie_table_"
+                    f"{file_name}"
+                )
+            )
+    
         else:
     
             st.warning(
-                "Tiada data hujan sah untuk menghasilkan pie chart."
+                "Tiada data hujan ≥ 1.0 mm "
+                "untuk menghasilkan pie chart."
             )
     # ========================================================
     # TAB 6 - YEARLY ANOMALY
