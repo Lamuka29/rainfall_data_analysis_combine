@@ -5450,45 +5450,83 @@ with main_tabs[2]:
                             st.warning(
                                 "Tiada data hujan sah."
                             )
-            
                 # --------------------------------------------
-                # CATEGORY TABLE
+                # CATEGORY TABLE WITH PERCENTAGE
                 # --------------------------------------------
-            
+                
+                category_table_data = {}
+                
+                for station in comparison_data:
+                
+                    values = comparison_data[station]["category"]
+                
+                    total_days = sum(values)
+                
+                    if total_days > 0:
+                
+                        percentages = [
+                            (value / total_days) * 100
+                            for value in values
+                        ]
+                
+                    else:
+                
+                        percentages = [
+                            0
+                            for value in values
+                        ]
+                
+                    category_table_data[
+                        f"{station} - Days"
+                    ] = values
+                
+                    category_table_data[
+                        f"{station} - Percentage (%)"
+                    ] = percentages
+                
+                
                 category_comparison_table = pd.DataFrame(
-                    {
-                        station:
-                        comparison_data[station]["category"]
-            
-                        for station
-                        in comparison_data
-                    },
+                    category_table_data,
                     index=category_labels
                 )
-            
+                
                 category_comparison_table.index.name = (
                     "Rainfall Category"
                 )
-            
+                
+                # Round percentage
+                for column in category_comparison_table.columns:
+                
+                    if "Percentage" in column:
+                
+                        category_comparison_table[column] = (
+                            category_comparison_table[column]
+                            .round(2)
+                        )
+                
+                # --------------------------------------------
+                # DISPLAY TABLE
+                # --------------------------------------------
+                
                 st.subheader(
                     "📋 Rainfall Category Comparison Table"
                 )
-            
+                
                 st.dataframe(
                     category_comparison_table,
                     use_container_width=True
                 )
-            
+                
                 # --------------------------------------------
                 # DOWNLOAD TABLE
                 # --------------------------------------------
-            
+                
                 csv = (
                     category_comparison_table
                     .to_csv()
                     .encode("utf-8")
                 )
-            
+                
                 st.download_button(
                     "📥 Download Category Comparison Table CSV",
                     data=csv,
@@ -5499,7 +5537,6 @@ with main_tabs[2]:
                     mime="text/csv",
                     key="download_category_comparison_table"
                 )
-            
                 st.divider()
 # ============================================================
 # FOOTER
