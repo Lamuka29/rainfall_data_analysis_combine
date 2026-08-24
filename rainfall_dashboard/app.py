@@ -2454,7 +2454,37 @@ with main_tabs[0]:
         # ====================================================
     
         if sum(pie_values) > 0:
-    
+                    # ------------------------------------------------
+                    # PIE COLORS
+                    # ------------------------------------------------
+                    pie_colors = [
+                        "green",     # Slight Rain
+                        "yellow",        # Moderate Rain
+                        "orange",      # Heavy Rain
+                        "red"          # Very Heavy Rain
+                    ]
+            
+                    fig, ax = plt.subplots(
+                        figsize=(10, 8)
+                    )
+            
+                    bg_color = BG_COLOR
+            
+                    fig.patch.set_facecolor(bg_color)
+                    ax.set_facecolor(bg_color)
+            
+                    wedges, texts, autotexts = ax.pie(
+                        category_values,
+                        labels=category_labels,
+                        colors=pie_colors,
+                        autopct="%1.1f%%",
+                        startangle=90,
+                        counterclock=False,
+                        wedgeprops={
+                            "edgecolor": "black",
+                            "linewidth": 0.8
+                        }
+                    )
             # =================================================
             # PIE CHART
             # =================================================
