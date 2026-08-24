@@ -2391,19 +2391,91 @@ with main_tabs[0]:
     # PIE CHART
     # ========================================================
     with tabs[8]:
-
-        st.subheader(f"Percentage of Days by Rainfall Category - {target_year}")
-
-        if sum(category_values) > 0:
-            fig, ax = plt.subplots(figsize=(10, 8))
+    
+        st.subheader(
+            f"Percentage of Wet Days by Rainfall Category - "
+            f"{target_year}"
+        )
+    
+        # ====================================================
+        # DAILY RAINFALL DATA
+        # ====================================================
+    
+        category_data = (
+            target_data[months]
+            .stack()
+        )
+    
+        # Buang N.A. dan 0.0 mm
+        # Hanya ambil hari hujan >= 1.0 mm
+        category_data = category_data[
+            category_data.notna()
+            &
+            (category_data >= 1.0)
+        ]
+    
+        # ====================================================
+        # RAINFALL CATEGORY
+        # ====================================================
+    
+        pie_labels = [
+            "Slight Rain\n(1.0–10.0 mm)",
+            "Moderate Rain\n(>10.0–30.0 mm)",
+            "Heavy Rain\n(>30.0–60.0 mm)",
+            "Very Heavy Rain\n(>60 mm)"
+        ]
+    
+        pie_values = [
+            (
+                (category_data >= 1)
+                &
+                (category_data <= 10)
+            ).sum(),
+    
+            (
+                (category_data > 10)
+                &
+                (category_data <= 30)
+            ).sum(),
+    
+            (
+                (category_data > 30)
+                &
+                (category_data <= 60)
+            ).sum(),
+    
+            (
+                category_data > 60
+            ).sum()
+        ]
+    
+        # ====================================================
+        # CHECK DATA
+        # ====================================================
+    
+        if sum(pie_values) > 0:
+    
+            # =================================================
+            # PIE CHART
+            # =================================================
+    
+            fig, ax = plt.subplots(
+                figsize=(10, 8)
+            )
+    
             bg_color = BG_COLOR
-
-            fig.patch.set_facecolor(bg_color)
-            ax.set_facecolor(bg_color)
-
+    
+            fig.patch.set_facecolor(
+                bg_color
+            )
+    
+            ax.set_facecolor(
+                bg_color
+            )
+    
             wedges, texts, autotexts = ax.pie(
-                category_values,
-                labels=category_labels,
+                pie_values,
+                labels=pie_labels,
                 autopct="%1.1f%%",
                 startangle=90,
                 counterclock=False,
@@ -2412,69 +2484,148 @@ with main_tabs[0]:
                     "linewidth": 0.8
                 }
             )
-
+    
+            # =================================================
+            # PERCENTAGE LABEL
+            # =================================================
+    
             for autotext in autotexts:
-                autotext.set_fontsize(11)
-                autotext.set_fontweight("bold")
-
+    
+                autotext.set_fontsize(
+                    11
+                )
+    
+                autotext.set_fontweight(
+                    "bold"
+                )
+    
+            # =================================================
+            # TITLE
+            # =================================================
+    
             ax.set_title(
                 f"{file_name}\n"
-                f"Percentage of Days by Rainfall "
+                f"Percentage of Wet Days by Rainfall "
                 f"Category - {target_year}",
                 fontsize=16,
                 fontweight="bold"
             )
-
+    
             plt.tight_layout()
-
-            st.pyplot(fig,use_container_width=True)
-
+    
+            # =================================================
+            # DISPLAY
+            # =================================================
+    
+            st.pyplot(
+                fig,
+                use_container_width=True
+            )
+    
+            # =================================================
+            # DOWNLOAD PNG
+            # =================================================
+    
             img_buffer = io.BytesIO()
-            
+    
             fig.savefig(
                 img_buffer,
                 format="png",
                 dpi=300,
                 bbox_inches="tight"
             )
-            
+    
             img_buffer.seek(0)
-            
+    
             st.download_button(
                 "📥 Download Plot PNG",
                 data=img_buffer.getvalue(),
-                file_name=f"{selected_station}_target_year_{target_year}.png",
+                file_name=(
+                    f"{selected_station}_rainfall_category_"
+                    f"{target_year}.png"
+                ),
                 mime="image/png",
-                key=f"download_rainfall_category_{selected_station}_{target_year}"
+                key=(
+                    f"download_rainfall_category_"
+                    f"{selected_station}_{target_year}"
+                )
             )
-            
+    
             plt.close(fig)
-
-            total_days = sum(category_values)
-
+    
+            # =================================================
+            # TABLE
+            # =================================================
+    
+            total_wet_days = sum(
+                pie_values
+            )
+    
             category_table = pd.DataFrame({
-
-                "Rainfall Category":category_labels,
-                "Number of Days":category_values,
-                "Percentage (%)":
-                    [(count /total_days) * 100 for count in category_values]
+    
+                "Rainfall Category":
+                    pie_labels,
+    
+                "Number of Days":
+                    pie_values,
+    
+                "Percentage (%)": [
+                    (
+                        count /
+                        total_wet_days
+                    ) * 100
+                    for count in pie_values
+                ]
             })
-
-            category_table["Percentage (%)"] = category_table["Percentage (%)"].round(2)
-
-            st.dataframe(category_table,use_container_width=True,hide_index=True)
-            csv = (analysis_table.to_csv(index=False).encode("utf-8"))
-            
+    
+            category_table[
+                "Percentage (%)"
+            ] = (
+                category_table[
+                    "Percentage (%)"
+                ].round(2)
+            )
+    
+            # =================================================
+            # DISPLAY TABLE
+            # =================================================
+    
+            st.dataframe(
+                category_table,
+                use_container_width=True,
+                hide_index=True
+            )
+    
+            # =================================================
+            # DOWNLOAD TABLE CSV
+            # =================================================
+    
+            csv = (
+                category_table
+                .to_csv(index=False)
+                .encode("utf-8")
+            )
+    
             st.download_button(
                 "📥 Download Table CSV",
                 data=csv,
-                file_name=f"{selected_station}_analysis_{target_year}.csv",
+                file_name=(
+                    f"{selected_station}_rainfall_category_"
+                    f"{target_year}.csv"
+                ),
                 mime="text/csv",
-                key=f"download_rainfall_category_table_{selected_station}_{target_year}"
+                key=(
+                    f"download_rainfall_category_table_"
+                    f"{selected_station}_{target_year}"
+                )
             )
-        
+    
         else:
-            st.warning("Tiada data sah untuk pie chart.")
+    
+            st.warning(
+                "Tiada data hujan ≥ 1.0 mm "
+                "untuk menghasilkan pie chart."
+            )
     # ========================================================
     # TAB 10
     # BOXPLOT
